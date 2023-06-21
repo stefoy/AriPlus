@@ -70,8 +70,8 @@ If ($Task -eq 'Processing')
         foreach ($sqlDb in $sqlDatabases) 
         {
             $subscription = $Subscriptions | Where-Object { $_.id -eq $storageAccount.subscriptionId }
-    
-            if ($sqlDb.Contains("vcore")) 
+            
+            if ($sqlDb.kind.Contains("vcore")) 
             {
                 $metricDefs += [PSCustomObject]@{ MetricName = 'cpu_limit'; StartTime = $metricStartTime;  EndTime = $metricEndTime; Interval = '24h';  Aggregation = 'Maximum'; Measure = 'Largest'; Id = $sqlDb.Id; SubName = $sqlDb.Name; ResourceGroup = $sqlDb.ResourceGroup; Name = $sqlDb.Name; Location = $sqlDb.Location; Service = 'SQL Database' }
                 $metricDefs += [PSCustomObject]@{ MetricName = 'cpu_used'; StartTime = $metricStartTime;  EndTime = $metricEndTime; Interval = '1h';  Aggregation = 'Maximum'; Measure = 'Average'; Id = $sqlDb.Id; SubName = $sqlDb.Name; ResourceGroup = $sqlDb.ResourceGroup; Name = $sqlDb.Name; Location = $sqlDb.Location; Service = 'SQL Database' }               
