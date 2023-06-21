@@ -5,15 +5,16 @@ This project is intend to help Cloud Admins and anyone that might need an easy a
 
 ARIPlus has been customized to capture additional information such as utilization metrics.
 
-##Prerequisites
+## Prerequisites
 You can use Azure Resource Inventory in both in Cloudshell and Powershell Desktop.
 
 What things you need to run the script
 
-Install-Module ImportExcel
-Install Azure CLI
-Install Azure CLI Account Extension
-Install Azure CLI Resource-Graph Extension
+* Install-Module ImportExcel
+* Install Azure CLI
+* Install Azure CLI Account Extension
+* Install Azure CLI Resource-Graph Extension
+* 
 By default Azure Resource Inventory will call to install the required Powershell modules and Azure CLI components but you must have administrator privileges during the script execution.
 
 Special Thanks for Doug Finke, the Author of Powershell ImportExcel Module.
