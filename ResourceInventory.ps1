@@ -22,7 +22,7 @@ function Variables
 {
     $Global:ResourceContainers = @()
     $Global:Resources = @()
-    $Global:Subscriptions = @()
+    $Global:Subscriptions = ''
     $Global:ReportName = $ReportName   
 
     if ($Online.IsPresent) { $Global:RunOnline = $true }else { $Global:RunOnline = $false }
