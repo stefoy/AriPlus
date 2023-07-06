@@ -1,9 +1,12 @@
-param($Subscriptions, $Resources, $Task ,$File, $Metrics, $TableStyle)
+param($Subscriptions, $Resources, $Task ,$File, $Metrics, $TableStyle, $ConcurencyLimit)
 
 If ($Task -eq 'Processing')
 {
-    $tmp = @()
-    $metricDefs = @()
+    $tmp = [System.Collections.Concurrent.ConcurrentBag[psobject]]::new()
+    $tmpParallel = [System.Collections.Concurrent.ConcurrentBag[psobject]]::new()
+
+
+    $metricDefs = [System.Collections.Generic.List[object]]::new()
 
     $metricsLookbackPeriodDays = -31
     $metricStartTime = (Get-Date).AddDays($metricsLookbackPeriodDays)
@@ -21,8 +24,8 @@ If ($Task -eq 'Processing')
         {
             $subscription = $Subscriptions | Where-Object { $_.id -eq $virtualMachine.subscriptionId }
 
-            $metricDefs += [PSCustomObject]@{ MetricName = 'Percentage CPU'; StartTime = $metricStartTime;  EndTime = $metricEndTime; Interval = '1h';  Aggregation = 'Maximum'; Measure = 'Average'; Id = $virtualMachine.Id; SubName = $subscription.Name; ResourceGroup = $virtualMachine.ResourceGroup; Name = $virtualMachine.Name; Location = $virtualMachine.Location; Service = 'Virtual Machines' }
-            $metricDefs += [PSCustomObject]@{ MetricName = 'Available Memory Bytes'; StartTime = $metricStartTime;  EndTime = $metricEndTime; Interval = '1h';  Aggregation = 'Minimum'; Measure = 'Average'; Id = $virtualMachine.Id; SubName = $subscription.Name; ResourceGroup = $virtualMachine.ResourceGroup; Name = $virtualMachine.Name; Location = $virtualMachine.Location; Service = 'Virtual Machines' }
+            $metricDefs.Add([PSCustomObject]@{ MetricName = 'Percentage CPU'; StartTime = $metricTimeSevenDay;  EndTime = $metricEndTime; Interval = '1h';  Aggregation = 'Maximum'; Measure = 'Average'; Id = $virtualMachine.Id; SubName = $subscription.Name; ResourceGroup = $virtualMachine.ResourceGroup; Name = $virtualMachine.Name; Location = $virtualMachine.Location; Service = 'Virtual Machines' })
+            $metricDefs.Add([PSCustomObject]@{ MetricName = 'Available Memory Bytes'; StartTime = $metricTimeSevenDay;  EndTime = $metricEndTime; Interval = '1h';  Aggregation = 'Minimum'; Measure = 'Average'; Id = $virtualMachine.Id; SubName = $subscription.Name; ResourceGroup = $virtualMachine.ResourceGroup; Name = $virtualMachine.Name; Location = $virtualMachine.Location; Service = 'Virtual Machines' })
         }
     }
 
@@ -33,33 +36,33 @@ If ($Task -eq 'Processing')
     if($storageAccounts)
     {
         foreach ($storageAccount in $storageAccounts) 
-        {
-            $subscription = $Subscriptions | Where-Object { $_.id -eq $storageAccount.subscriptionId }
+         {
+             $subscription = $Subscriptions | Where-Object { $_.id -eq $storageAccount.subscriptionId }
 
-            $metricDefs += [PSCustomObject]@{ MetricName = 'UsedCapacity'; StartTime = $metricTimeOneDay;  EndTime = $metricEndTime; Interval = '1h';  Aggregation = 'Average'; Measure = 'Largest'; Id = $storageAccount.Id; SubName = $subscription.Name; ResourceGroup = $storageAccount.ResourceGroup; Name = $storageAccount.Name; Location = $storageAccount.Location; Service = 'Storage Account' }
-            $metricDefs += [PSCustomObject]@{ MetricName = 'Transactions'; StartTime = $metricStartTime;  EndTime = $metricEndTime; Interval = '24h';  Aggregation = 'Total'; Measure = 'Sum'; Id = $storageAccount.Id; SubName = $subscription.Name; ResourceGroup = $storageAccount.ResourceGroup; Name = $storageAccount.Name; Location = $storageAccount.Location; Service = 'Storage Account' }
-            $metricDefs += [PSCustomObject]@{ MetricName = 'Egress'; StartTime = $metricTimeOneDay;  EndTime = $metricEndTime; Interval = '1h';  Aggregation = 'Total'; Measure = 'Sum'; Id = $storageAccount.Id; SubName = $subscription.Name; ResourceGroup = $storageAccount.ResourceGroup; Name = $storageAccount.Name; Location = $storageAccount.Location; Service = 'Storage Account' }
-            $metricDefs += [PSCustomObject]@{ MetricName = 'Ingress'; StartTime = $metricTimeOneDay;  EndTime = $metricEndTime; Interval = '1h';  Aggregation = 'Total'; Measure = 'Sum'; Id = $storageAccount.Id; SubName = $subscription.Name; ResourceGroup = $storageAccount.ResourceGroup; Name = $storageAccount.Name; Location = $storageAccount.Location; Service = 'Storage Account' }
-        }
+             $metricDefs.Add([PSCustomObject]@{ MetricName = 'UsedCapacity'; StartTime = $metricTimeOneDay;  EndTime = $metricEndTime; Interval = '1h';  Aggregation = 'Average'; Measure = 'Largest'; Id = $storageAccount.Id; SubName = $subscription.Name; ResourceGroup = $storageAccount.ResourceGroup; Name = $storageAccount.Name; Location = $storageAccount.Location; Service = 'Storage Account' })
+             $metricDefs.Add([PSCustomObject]@{ MetricName = 'Transactions'; StartTime = $metricTimeSevenDay;  EndTime = $metricEndTime; Interval = '24h';  Aggregation = 'Total'; Measure = 'Sum'; Id = $storageAccount.Id; SubName = $subscription.Name; ResourceGroup = $storageAccount.ResourceGroup; Name = $storageAccount.Name; Location = $storageAccount.Location; Service = 'Storage Account' })
+             $metricDefs.Add([PSCustomObject]@{ MetricName = 'Egress'; StartTime = $metricTimeOneDay;  EndTime = $metricEndTime; Interval = '1h';  Aggregation = 'Total'; Measure = 'Sum'; Id = $storageAccount.Id; SubName = $subscription.Name; ResourceGroup = $storageAccount.ResourceGroup; Name = $storageAccount.Name; Location = $storageAccount.Location; Service = 'Storage Account' })
+             $metricDefs.Add([PSCustomObject]@{ MetricName = 'Ingress'; StartTime = $metricTimeOneDay;  EndTime = $metricEndTime; Interval = '1h';  Aggregation = 'Total'; Measure = 'Sum'; Id = $storageAccount.Id; SubName = $subscription.Name; ResourceGroup = $storageAccount.ResourceGroup; Name = $storageAccount.Name; Location = $storageAccount.Location; Service = 'Storage Account' })
+         }
     }
 
     #Define Blob Metrics
 
-    if($storageAccounts)
-    {
-        foreach ($storageAccount in $storageAccounts) 
-        {
-            $subscription = $Subscriptions | Where-Object { $_.id -eq $storageAccount.subscriptionId }
-            $blobResourceId = $storageAccount.id + '/blobServices/default'
+     if($storageAccounts)
+     {
+         foreach ($storageAccount in $storageAccounts) 
+         {
+             $subscription = $Subscriptions | Where-Object { $_.id -eq $storageAccount.subscriptionId }
+             $blobResourceId = $storageAccount.id + '/blobServices/default'
 
-            $metricDefs += [PSCustomObject]@{ MetricName = 'ContainerCount'; StartTime = $metricTimeOneDay;  EndTime = $metricEndTime; Interval = '1h';  Aggregation = 'Average'; Measure = 'Largest'; Id = $blobResourceId; SubName = $subscription.Name; ResourceGroup = $storageAccount.ResourceGroup; Name = $storageAccount.Name; Location = $storageAccount.Location; Service = 'Blob Service Account' }
-            $metricDefs += [PSCustomObject]@{ MetricName = 'BlobCapacity'; StartTime = $metricTimeOneDay;  EndTime = $metricEndTime; Interval = '1h';  Aggregation = 'Average'; Measure = 'Largest'; Id = $blobResourceId; SubName = $subscription.Name; ResourceGroup = $storageAccount.ResourceGroup; Name = $storageAccount.Name; Location = $storageAccount.Location; Service = 'Blob Service Account' }
-            $metricDefs += [PSCustomObject]@{ MetricName = 'BlobCount'; StartTime = $metricTimeOneDay;  EndTime = $metricEndTime; Interval = '1h';  Aggregation = 'Average'; Measure = 'Largest'; Id = $blobResourceId; SubName = $subscription.Name; ResourceGroup = $storageAccount.ResourceGroup; Name = $storageAccount.Name; Location = $storageAccount.Location; Service = 'Blob Service Account' }
-            $metricDefs += [PSCustomObject]@{ MetricName = 'Transactions'; StartTime = $metricStartTime;  EndTime = $metricEndTime; Interval = '24h';  Aggregation = 'Average'; Measure = 'Sum'; Id = $blobResourceId; SubName = $subscription.Name; ResourceGroup = $storageAccount.ResourceGroup; Name = $storageAccount.Name; Location = $storageAccount.Location; Service = 'Blob Service Account' }
-            $metricDefs += [PSCustomObject]@{ MetricName = 'Egress'; StartTime = $metricStartTime;  EndTime = $metricEndTime; Interval = '1h';  Aggregation = 'Total'; Measure = 'Sum'; Id = $blobResourceId; SubName = $subscription.Name; ResourceGroup = $storageAccount.ResourceGroup; Name = $storageAccount.Name; Location = $storageAccount.Location; Service = 'Blob Service Account' }
-            $metricDefs += [PSCustomObject]@{ MetricName = 'Ingress'; StartTime = $metricStartTime;  EndTime = $metricEndTime; Interval = '1h';  Aggregation = 'Total'; Measure = 'Sum'; Id = $blobResourceId; SubName = $subscription.Name; ResourceGroup = $storageAccount.ResourceGroup; Name = $storageAccount.Name; Location = $storageAccount.Location; Service = 'Blob Service Account' }
-        }
-    }
+             $metricDefs.Add([PSCustomObject]@{ MetricName = 'ContainerCount'; StartTime = $metricTimeOneDay;  EndTime = $metricEndTime; Interval = '1h';  Aggregation = 'Average'; Measure = 'Largest'; Id = $blobResourceId; SubName = $subscription.Name; ResourceGroup = $storageAccount.ResourceGroup; Name = $storageAccount.Name; Location = $storageAccount.Location; Service = 'Blob Service Account' })
+             $metricDefs.Add([PSCustomObject]@{ MetricName = 'BlobCapacity'; StartTime = $metricTimeOneDay;  EndTime = $metricEndTime; Interval = '1h';  Aggregation = 'Average'; Measure = 'Largest'; Id = $blobResourceId; SubName = $subscription.Name; ResourceGroup = $storageAccount.ResourceGroup; Name = $storageAccount.Name; Location = $storageAccount.Location; Service = 'Blob Service Account' })
+             $metricDefs.Add([PSCustomObject]@{ MetricName = 'BlobCount'; StartTime = $metricTimeOneDay;  EndTime = $metricEndTime; Interval = '1h';  Aggregation = 'Average'; Measure = 'Largest'; Id = $blobResourceId; SubName = $subscription.Name; ResourceGroup = $storageAccount.ResourceGroup; Name = $storageAccount.Name; Location = $storageAccount.Location; Service = 'Blob Service Account' })
+             $metricDefs.Add([PSCustomObject]@{ MetricName = 'Transactions'; StartTime = $metricTimeSevenDay;  EndTime = $metricEndTime; Interval = '24h';  Aggregation = 'Average'; Measure = 'Sum'; Id = $blobResourceId; SubName = $subscription.Name; ResourceGroup = $storageAccount.ResourceGroup; Name = $storageAccount.Name; Location = $storageAccount.Location; Service = 'Blob Service Account' })
+             $metricDefs.Add([PSCustomObject]@{ MetricName = 'Egress'; StartTime = $metricStartTime;  EndTime = $metricEndTime; Interval = '1h';  Aggregation = 'Total'; Measure = 'Sum'; Id = $blobResourceId; SubName = $subscription.Name; ResourceGroup = $storageAccount.ResourceGroup; Name = $storageAccount.Name; Location = $storageAccount.Location; Service = 'Blob Service Account' })
+             $metricDefs.Add([PSCustomObject]@{ MetricName = 'Ingress'; StartTime = $metricStartTime;  EndTime = $metricEndTime; Interval = '1h';  Aggregation = 'Total'; Measure = 'Sum'; Id = $blobResourceId; SubName = $subscription.Name; ResourceGroup = $storageAccount.ResourceGroup; Name = $storageAccount.Name; Location = $storageAccount.Location; Service = 'Blob Service Account' })
+         }
+     }
 
     #Define SQL Metrics
 
@@ -69,36 +72,56 @@ If ($Task -eq 'Processing')
     {
         foreach ($sqlDb in $sqlDatabases) 
         {
-            $subscription = $Subscriptions | Where-Object { $_.id -eq $storageAccount.subscriptionId }
+            $subscription = $Subscriptions | Where-Object { $_.id -eq $sqlDb.subscriptionId }
             
             if ($sqlDb.kind.Contains("vcore")) 
             {
-                $metricDefs += [PSCustomObject]@{ MetricName = 'cpu_limit'; StartTime = $metricTimeOneDay;  EndTime = $metricEndTime; Interval = '24h';  Aggregation = 'Maximum'; Measure = 'Largest'; Id = $sqlDb.Id; SubName = $sqlDb.Name; ResourceGroup = $sqlDb.ResourceGroup; Name = $sqlDb.Name; Location = $sqlDb.Location; Service = 'SQL Database' }
-                $metricDefs += [PSCustomObject]@{ MetricName = 'cpu_used'; StartTime = $metricStartTime;  EndTime = $metricEndTime; Interval = '1h';  Aggregation = 'Maximum'; Measure = 'Maximum'; Id = $sqlDb.Id; SubName = $sqlDb.Name; ResourceGroup = $sqlDb.ResourceGroup; Name = $sqlDb.Name; Location = $sqlDb.Location; Service = 'SQL Database' }               
+                $metricDefs.Add([PSCustomObject]@{ MetricName = 'cpu_limit'; StartTime = $metricTimeSevenDay;  EndTime = $metricEndTime; Interval = '24h';  Aggregation = 'Maximum'; Measure = 'Largest'; Id = $sqlDb.Id; SubName = $subscription.Name; ResourceGroup = $sqlDb.ResourceGroup; Name = $sqlDb.Name; Location = $sqlDb.Location; Service = 'SQL Database' })
+                $metricDefs.Add([PSCustomObject]@{ MetricName = 'cpu_used'; StartTime = $metricTimeSevenDay;  EndTime = $metricEndTime; Interval = '1h';  Aggregation = 'Maximum'; Measure = 'Average'; Id = $sqlDb.Id; SubName = $subscription.Name; ResourceGroup = $sqlDb.ResourceGroup; Name = $sqlDb.Name; Location = $sqlDb.Location; Service = 'SQL Database' })             
             }
             else 
             {
-                $metricDefs += [PSCustomObject]@{ MetricName = 'dtu_limit'; StartTime = $metricTimeOneDay;  EndTime = $metricEndTime; Interval = '24h';  Aggregation = 'Maximum'; Measure = 'Largest'; Id = $sqlDb.Id; SubName = $sqlDb.Name; ResourceGroup = $sqlDb.ResourceGroup; Name = $sqlDb.Name; Location = $sqlDb.Location; Service = 'SQL Database' }
-                $metricDefs += [PSCustomObject]@{ MetricName = 'dtu_used'; StartTime = $metricStartTime;  EndTime = $metricEndTime; Interval = '1h';  Aggregation = 'Maximum'; Measure = 'Maximum'; Id = $sqlDb.Id; SubName = $sqlDb.Name; ResourceGroup = $sqlDb.ResourceGroup; Name = $sqlDb.Name; Location = $sqlDb.Location; Service = 'SQL Database' }
+                $metricDefs.Add([PSCustomObject]@{ MetricName = 'dtu_limit'; StartTime = $metricTimeSevenDay;  EndTime = $metricEndTime; Interval = '24h';  Aggregation = 'Maximum'; Measure = 'Largest'; Id = $sqlDb.Id; SubName = $subscription.Name; ResourceGroup = $sqlDb.ResourceGroup; Name = $sqlDb.Name; Location = $sqlDb.Location; Service = 'SQL Database' })
+                $metricDefs.Add([PSCustomObject]@{ MetricName = 'dtu_used'; StartTime = $metricTimeSevenDay;  EndTime = $metricEndTime; Interval = '1h';  Aggregation = 'Maximum'; Measure = 'Average'; Id = $sqlDb.Id; SubName = $subscription.Name; ResourceGroup = $sqlDb.ResourceGroup; Name = $sqlDb.Name; Location = $sqlDb.Location; Service = 'SQL Database' })
             }
             
-            $metricDefs += [PSCustomObject]@{ MetricName = 'allocated_data_storage'; StartTime = $metricTimeOneDay;  EndTime = $metricEndTime; Interval = '24h';  Aggregation = 'Average'; Measure = 'Largest'; Id = $sqlDb.Id; SubName = $sqlDb.Name; ResourceGroup = $sqlDb.ResourceGroup; Name = $sqlDb.Name; Location = $sqlDb.Location; Service = 'SQL Database' }
-            $metricDefs += [PSCustomObject]@{ MetricName = 'storage'; StartTime = $metricTimeOneDay;  EndTime = $metricEndTime; Interval = '24h';  Aggregation = 'Average'; Measure = 'Largest'; Id = $sqlDb.Id; SubName = $sqlDb.Name; ResourceGroup = $sqlDb.ResourceGroup; Name = $sqlDb.Name; Location = $sqlDb.Location; Service = 'SQL Database' }
-            $metricDefs += [PSCustomObject]@{ MetricName = 'physical_data_read_percent'; StartTime = $metricTimeSevenDay;  EndTime = $metricEndTime; Interval = '1h';  Aggregation = 'Average'; Measure = 'Largest'; Id = $sqlDb.Id; SubName = $sqlDb.Name; ResourceGroup = $sqlDb.ResourceGroup; Name = $sqlDb.Name; Location = $sqlDb.Location; Service = 'SQL Database' }
-            $metricDefs += [PSCustomObject]@{ MetricName = 'log_write_percent'; StartTime = $metricTimeSevenDay;  EndTime = $metricEndTime; Interval = '1h';  Aggregation = 'Average'; Measure = 'Largest'; Id = $sqlDb.Id; SubName = $sqlDb.Name; ResourceGroup = $sqlDb.ResourceGroup; Name = $sqlDb.Name; Location = $sqlDb.Location; Service = 'SQL Database' }
+            $metricDefs.Add([PSCustomObject]@{ MetricName = 'allocated_data_storage'; StartTime = $metricTimeOneDay;  EndTime = $metricEndTime; Interval = '24h';  Aggregation = 'Average'; Measure = 'Largest'; Id = $sqlDb.Id; SubName = $subscription.Name; ResourceGroup = $sqlDb.ResourceGroup; Name = $sqlDb.Name; Location = $sqlDb.Location; Service = 'SQL Database' })
+            $metricDefs.Add([PSCustomObject]@{ MetricName = 'storage'; StartTime = $metricTimeOneDay;  EndTime = $metricEndTime; Interval = '24h';  Aggregation = 'Average'; Measure = 'Largest'; Id = $sqlDb.Id; SubName = $subscription.Name; ResourceGroup = $sqlDb.ResourceGroup; Name = $sqlDb.Name; Location = $sqlDb.Location; Service = 'SQL Database' })
+            $metricDefs.Add([PSCustomObject]@{ MetricName = 'physical_data_read_percent'; StartTime = $metricTimeSevenDay;  EndTime = $metricEndTime; Interval = '1h';  Aggregation = 'Average'; Measure = 'Largest'; Id = $sqlDb.Id; SubName = $subscription.Name; ResourceGroup = $sqlDb.ResourceGroup; Name = $sqlDb.Name; Location = $sqlDb.Location; Service = 'SQL Database' })
+            $metricDefs.Add([PSCustomObject]@{ MetricName = 'log_write_percent'; StartTime = $metricTimeSevenDay;  EndTime = $metricEndTime; Interval = '1h';  Aggregation = 'Average'; Measure = 'Largest'; Id = $sqlDb.Id; SubName = $subscription.Name; ResourceGroup = $sqlDb.ResourceGroup; Name = $sqlDb.Name; Location = $sqlDb.Location; Service = 'SQL Database' })
         }
     }
 
-    # Run Metrics Queries
-    foreach($metricDef in $metricDefs)
-    {
-        Write-Host ("Processing {0} Metrics: {1}-{2}" -f $metricDef.Service, $metricDef.Name, $metricDef.MetricName) -BackgroundColor Black -ForegroundColor Green
+    # Define App Service Metrics
 
-        $metricQuery = (az monitor metrics list --resource $metricDef.Id --metric $metricDef.MetricName --start-time $metricDef.StartTime  --end-time $metricDef.EndTime --interval $metricDef.Interval --aggregation $metricDef.Aggregation | ConvertFrom-Json)
+    $appServices = $Resources | Where-Object { $_.TYPE -eq 'microsoft.web/sites' }
+    
+    if($appServices)
+    {
+        foreach ($app in $appServices) 
+        {
+            $subscription = $Subscriptions | Where-Object { $_.id -eq $app.subscriptionId }
+            
+            if ($app.kind.Contains("functionapp")) 
+            {
+                $metricDefs.Add([PSCustomObject]@{ MetricName = 'FunctionExecutionCount'; StartTime = $metricTimeSevenDay;  EndTime = $metricEndTime; Interval = '24h';  Aggregation = 'Total'; Measure = 'Sum'; Id = $app.Id; SubName = $subscription.Name; ResourceGroup = $app.ResourceGroup; Name = $app.Name; Location = $app.Location; Service = 'Functions' })
+                $metricDefs.Add([PSCustomObject]@{ MetricName = 'FunctionExecutionUnits'; StartTime = $metricTimeSevenDay;  EndTime = $metricEndTime; Interval = '24h';  Aggregation = 'Total'; Measure = 'Sum'; Id = $app.Id; SubName = $subscription.Name; ResourceGroup = $app.ResourceGroup; Name = $app.Name; Location = $app.Location; Service = 'Functions' })              
+            }
+        }
+    }
+
+    $metricCount = $metricDefs.Count
+    $metricCurrent = 0
+
+    $metricDefs | ForEach-Object -Parallel {
+        
+        Write-Host ("Processing {0} Metrics: {1}-{2}" -f $_.Service, $_.Name, $_.MetricName) -BackgroundColor Black -ForegroundColor Green
+
+        $metricQuery = (az monitor metrics list --resource $_.Id --metric $_.MetricName --start-time $_.StartTime  --end-time $_.EndTime --interval $_.Interval --aggregation $_.Aggregation | ConvertFrom-Json)
         
         $metricQueryResults = 0
 
-        switch ($metricDef.Aggregation)
+        switch ($_.Aggregation)
         {
             'Average'   { $metricQueryResults = $metricQuery.value.timeseries.data.average }
             'Maximum'   { $metricQueryResults = $metricQuery.value.timeseries.data.maximum }
@@ -108,30 +131,30 @@ If ($Task -eq 'Processing')
 
         $metricQueryResultsCount = ($metricQueryResults.Where({$_ -ne $null}).Count)
 
-        switch ($metricDef.Measure)
+        switch ($_.Measure)
         {
             'Average'   { $metricQueryResults = ($metricQueryResults | Measure-Object -Average).Average }
             'Maximum'   { $metricQueryResults = ($metricQueryResults | Measure-Object -Maximum).Maximum }
-            'Sum'     { $metricQueryResults = ($metricQueryResults | Measure-Object -Sum).Sum }
+            'Sum'       { $metricQueryResults = ($metricQueryResults | Measure-Object -Sum).Sum }
             'Minimum'   { $metricQueryResults = ($metricQueryResults | Measure-Object -Minimum).Minimum }
             'Largest'   { $metricQueryResults = ($metricQueryResults | Sort-Object -Descending)[0] }
         }
 
         $obj = @{
-            'ID'                = $metricDef.Id;
-            'Subscription'      = $metricDef.SubName;
-            'Resource Group'    = $metricDef.ResourceGroup;
-            'Name'              = $metricDef.Name;
-            'Location'          = $metricDef.Location;
-            'Service'           = $metricDef.Service;
-            'Metric'            = $metricDef.MetricName;
-            'Metric Aggregate'  = $metricDef.Aggregation;
-            'Metric Time Grain' = $metricDef.Interval;
+            'ID'                = $_.Id;
+            'Subscription'      = $_.SubName;
+            'Resource Group'    = $_.ResourceGroup;
+            'Name'              = $_.Name;
+            'Location'          = $_.Location;
+            'Service'           = $_.Service;
+            'Metric'            = $_.MetricName;
+            'Metric Aggregate'  = $_.Aggregation;
+            'Metric Time Grain' = $_.Interval;
             'Metric Value'      = $metricQueryResults;
             'Metric Count'      = $metricQueryResultsCount;
         }
-
-        $tmp += $obj
+        
+        ($using:tmp).Add($obj)
 
         $metricQuery = $null
         $metricQueryResults = $null
@@ -140,7 +163,7 @@ If ($Task -eq 'Processing')
         #$([System.GC]::GetTotalMemory($false))
         [System.GC]::Collect()
         #$([System.GC]::GetTotalMemory($true))
-    }
+    } -ThrottleLimit $ConcurencyLimit
 
     $tmp
 }
