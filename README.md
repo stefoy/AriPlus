@@ -14,7 +14,8 @@ What things you need to run the script
 * Install Azure CLI
 * Install Azure CLI Account Extension
 * Install Azure CLI Resource-Graph Extension
-* 
+* :exclamation: **REQUIRES POWERSHELL 7 or AZURE CLOUDSHELL**
+  
 By default Azure Resource Inventory will call to install the required Powershell modules and Azure CLI components but you must have administrator privileges during the script execution.
 
 Special Thanks for Doug Finke, the Author of Powershell ImportExcel Module.
