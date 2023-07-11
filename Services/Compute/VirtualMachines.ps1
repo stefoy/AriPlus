@@ -110,7 +110,6 @@ If ($Task -eq 'Processing')
                     'ResourceGroup'                 = $1.RESOURCEGROUP;
                     'Name'                          = $1.NAME;
                     'Location'                      = $1.LOCATION;
-                    'Zone'                          = [string]$1.ZONES;
                     'AvailabilitySet'               = $AVSET;
                     'Size'                          = $data.hardwareProfile.vmSize;
                     'vCPUs'                         = $vmsizemap[$data.hardwareProfile.vmSize].CPU;
@@ -126,14 +125,9 @@ If ($Task -eq 'Processing')
                     'DataDiskStorageType'           = $StorAcc;
                     'DataDiskSize'                  = $dataSize;
                     'PowerState'                    = $data.extended.instanceView.powerState.displayStatus;
-                    'NICName'                       = [string]$vmnic.name;
                     'VirtualNetwork'                = $virtualNetwork;
-                    'Subnet'                        = $subnet;
                     'NSG'                           = $networkSecurityGroup;
                     'CreatedTime'                   = $timecreated;
-                    'PerformanceAgent'              = if ($azDiag -ne '') { $true }else { $false };
-                    'AzureMonitor'                  = if ($Azinsights -ne '') { $true }else { $false };
-                    'Extensions'                    = $ext;
                     'ResourceU'                     = $ResUCount;
                 }
 
@@ -175,15 +169,9 @@ else
         $Exc.Add('DataDiskSize')
         $Exc.Add('PowerState')
         $Exc.Add('AvailabilitySet')
-        $Exc.Add('Zone')    
         $Exc.Add('VirtualNetwork')
-        $Exc.Add('Subnet')
         $Exc.Add('NSG')
-        $Exc.Add('NICName')
         $Exc.Add('CreatedTime')     
-        $Exc.Add('AzureMonitor')        
-        $Exc.Add('PerformanceAgent')     
-        $Exc.Add('Extensions')
         $Exc.Add('ResourceU')
 
         $ExcelVar = $SmaResources.VirtualMachines
