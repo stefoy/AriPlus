@@ -9,6 +9,19 @@ If ($Task -eq 'Processing')
         $AKS = $Resources | Where-Object {$_.TYPE -eq 'microsoft.containerservice/managedclusters'}
         $SFC = $Resources | Where-Object {$_.TYPE -eq 'microsoft.servicefabric/clusters'}
 
+    $vmsizemap = @{}
+
+    foreach($location in ($vmss | Select-Object -ExpandProperty location -Unique))
+    {
+        foreach ($vmsize in (az vm list-sizes -l $location | ConvertFrom-Json))
+        {
+            $vmsizemap[$vmsize.name] = @{
+                CPU = $vmSize.numberOfCores
+                RAM = [math]::Round($vmSize.memoryInMB / 1024, 0) 
+            }
+        }
+    }
+
     <######### Insert the resource Process here ########>
 
     if($vmss)
@@ -53,6 +66,8 @@ If ($Task -eq 'Processing')
                     'VM Size'                       = $1.sku.name;
                     'Instances'                     = $1.sku.capacity;
                     'Autoscale Enabled'             = $AutoSc;
+                    'vCPUs'                         = $vmsizemap[$data.hardwareProfile.vmSize].CPU;
+                    'RAM'                           = $vmsizemap[$data.hardwareProfile.vmSize].RAM;
                     'VM OS'                         = $OS;
                     'OS Image'                      = $data.virtualMachineProfile.storageProfile.imageReference.offer;
                     'Image Version'                 = $data.virtualMachineProfile.storageProfile.imageReference.sku;                            
@@ -111,6 +126,8 @@ Else
         $Exc.Add('Upgrade Policy')                                   
         $Exc.Add('Diagnostics')
         $Exc.Add('VM Size')
+        $Exc.Add('vCPUs')
+        $Exc.Add('RAM')
         $Exc.Add('Instances')
         $Exc.Add('Autoscale Enabled')
         $Exc.Add('VM OS')
