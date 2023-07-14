@@ -31,23 +31,13 @@ If ($Task -eq 'Processing')
                 'Enabled'                       = $data.enabled;
                 'State'                         = $data.state;
                 'SKU'                           = $data.sku;
-                'ClientCertEnabled'             = $data.clientCertEnabled;
-                'ClientCertMode'                = $data.clientCertMode;
-                'ContentAvailabilityState'      = $data.contentAvailabilityState;
-                'RuntimeAvailabilityState'      = $data.runtimeAvailabilityState;
-                'HTTPSOnly'                     = $data.httpsOnly;
-                'FTPSOnly'                      = $FTPS;
-                'PossibleInboundIPAddresses'    = $data.possibleInboundIpAddresses;
                 'RepositorySiteName'            = $data.repositorySiteName;
-                'ManagedIdentity'               = $MGMID;
                 'AvailabilityState'             = $data.availabilityState;
                 'Stack'                         = $data.SiteConfig.linuxFxVersion;
                 'VirtualNetwork'                = $VNET;
                 'Subnet'                        = $SUBNET;
                 'DefaultHostname'               = $data.defaultHostName;                        
                 'ContainerSize'                 = $data.containerSize;
-                'AdminEnabled'                  = $data.adminEnabled;                        
-                'FTPsHostName'                  = $data.ftpsHostName;                        
                 'ResourceU'                     = $ResUCount;
                 'ExctendedProperties'   = $1;
             }
@@ -76,24 +66,14 @@ Else
         $Exc.Add('Enabled')
         $Exc.Add('State')
         $Exc.Add('SKU')
-        $Exc.Add('ClientCertEnabled')
-        $Exc.Add('ClientCertMode')
-        $Exc.Add('ContentAvailabilityState')
-        $Exc.Add('RuntimeAvailabilityState')
-        $Exc.Add('HTTPSOnly')
-        $Exc.Add('FTPSOnly')
-        $Exc.Add('PossibleInboundIPAddresses')
         $Exc.Add('RepositorySiteName')
-        $Exc.Add('ManagedIdentity')
         $Exc.Add('AvailabilityState')
         $Exc.Add('Stack')
         $Exc.Add('VirtualNetwork')
         $Exc.Add('Subnet')
         $Exc.Add('DefaultHostname')                      
         $Exc.Add('ContainerSize')
-        $Exc.Add('AdminEnabled')                       
-        $Exc.Add('FTPsHostName')
-
+        
         $ExcelVar = $SmaResources.AppServices 
 
         $ExcelVar | 
