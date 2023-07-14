@@ -22,7 +22,6 @@ If ($Task -eq 'Processing') {
                     'Version'                           = $data.version;
                     'State'                             = $data.state;
                     'Zone'                              = $data.availabilityZone;
-                    'Administrator Login'               = $data.administratorLogin;
                     'Storage Size (GB)'                 = $data.storage.storageSizeGB;
                     'Limit IOPs'                        = $data.storage.iops;
                     'Auto Grow'                         = $data.storage.autoGrow;
@@ -35,7 +34,6 @@ If ($Task -eq 'Processing') {
                     'Geo Redundant Backup'              = $data.backup.geoRedundantBackup;
                     'High Availability'                 = $data.highAvailability.mode;
                     'High Availability State'           = $data.highAvailability.state;                            
-                    'FQDN'                              = $data.fullyQualifiedDomainName;
                 }
                 $tmp += $obj
                 if ($ResUCount -eq 1) { $ResUCount = 0 }           
@@ -62,7 +60,6 @@ Else {
         $Exc.Add('Version')
         $Exc.Add('State')
         $Exc.Add('Zone')
-        $Exc.Add('Administrator Login')
         $Exc.Add('Storage Size (GB)')
         $Exc.Add('Limit IOPs')
         $Exc.Add('Auto Grow')
@@ -75,7 +72,6 @@ Else {
         $Exc.Add('Geo Redundant Backup')
         $Exc.Add('High Availability')
         $Exc.Add('High Availability State')
-        $Exc.Add('FQDN')
 
         $ExcelVar = $SmaResources.MySQLFlexible 
 
