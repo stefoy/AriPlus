@@ -22,5 +22,9 @@ Special Thanks for Doug Finke, the Author of Powershell ImportExcel Module.
 
 ## Running the script
 
+This script uses Concurrency to to execute commands in parallel when gathering metrics, the default is set to 2, to override this use the option.
+
+  -ConcurrencyLimit <value> 
+
 * Run "ResourceInventory.ps1". In Azure CloudShell you're already authenticated. In PowerShell Desktop you will be redirected to  Azure sign-in page. 
 
