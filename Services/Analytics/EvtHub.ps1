@@ -33,7 +33,6 @@ If ($Task -eq 'Processing')
                     'AutoInflate'         = $data.isAutoInflateEnabled;
                     'MaxThroughputUnits' = $data.maximumThroughputUnits;
                     'KafkaEnabled'        = $data.kafkaEnabled;
-                    'Endpoint'             = $data.serviceBusEndpoint;
                     'CreatedTime'         = $timecreated;
                     'ResourceU'           = $ResUCount;
                 }
@@ -71,7 +70,6 @@ Else
         $Exc.Add('AutoInflate')
         $Exc.Add('MaxThroughputUnits')
         $Exc.Add('KafkaEnabled')
-        $Exc.Add('Endpoint')
         $Exc.Add('CreatedTime')  
 
         $ExcelVar = $SmaResources.EvtHub  
