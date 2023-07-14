@@ -24,16 +24,9 @@ If ($Task -eq 'Processing') {
                                 'VNET Name'                             = $1.NAME;
                                 'Location'                              = $1.LOCATION;
                                 'Zone'                                  = $1.ZONES;
-                                'Address Space'                         = $2;
                                 'Peering Name'                          = $4.name;
                                 'Peering VNet'                          = $4.properties.remoteVirtualNetwork.id.split('/')[8];
                                 'Peering State'                         = $4.properties.peeringState;
-                                'Peering Use Remote Gateways'           = $4.properties.useRemoteGateways;
-                                'Peering Allow Gateway Transit'         = $4.properties.allowGatewayTransit;
-                                'Peering Allow Forwarded Traffic'       = $4.properties.allowForwardedTraffic;
-                                'Peering Do Not Verify Remote Gateways' = $4.properties.doNotVerifyRemoteGateways;
-                                'Peering Allow Virtual Network Access'  = $4.properties.allowVirtualNetworkAccess;
-                                'Peering Address Space'                 = $5;
                                 'Resource U'                            = $ResUCount;
                             }
                             $tmp += $obj
@@ -60,13 +53,7 @@ Else {
         $Exc.Add('VNET Name')
         $Exc.Add('Address Space')
         $Exc.Add('Peering VNet')
-        $Exc.Add('Peering Address Space')
         $Exc.Add('Peering State')
-        $Exc.Add('Peering Use Remote Gateways')
-        $Exc.Add('Peering Allow Gateway Transit')
-        $Exc.Add('Peering Allow Forwarded Traffic')
-        $Exc.Add('Peering Do Not Verify Remote Gateways')
-        $Exc.Add('Peering Allow Virtual NetworkAccess')
 
 
         $ExcelVar = $SmaResources.VNETPeering 
