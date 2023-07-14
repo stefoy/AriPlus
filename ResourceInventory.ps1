@@ -499,7 +499,7 @@ function ExecuteInventoryProcessing()
         }
 
         $Global:SmaResources | ConvertTo-Json -depth 100 -compress | Out-File $Global:JsonFile
-        $Global:Resources | ConvertTo-Json -depth 100 -compress | Out-File $Global:AllResourceFile
+        #$Global:Resources | ConvertTo-Json -depth 100 -compress | Out-File $Global:AllResourceFile
         
         Write-Debug ('Resource Reporting Phase Done.')
     }
