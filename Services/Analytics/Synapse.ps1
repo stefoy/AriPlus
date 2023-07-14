@@ -20,14 +20,7 @@ if ($Task -eq 'Processing')
                 'ResourceGroup'                = $1.RESOURCEGROUP;
                 'Name'                         = $1.NAME;
                 'Location'                     = $1.LOCATION;
-                'PublicNetworkAccess'          = $data.publicNetworkAccess;
-                'PrivateEndpoints'             = [string]$pvt;
-                'DoubleEncryptionEnabled'      = [string]$data.encryption.doubleEncryptionEnabled;
-                'TrustedServiceBypassEnabled'  = $data.trustedServiceBypassEnabled;
-                'SQLAdministratorLogin'        = $data.sqlAdministratorLogin;
-                'ScopeEnabled'                 = [string]$data.extraProperties.IsScopeEnabled;
                 'WorkspaceType'                = [string]$data.extraProperties.WorkspaceType;
-                'PreventDataExfiltration'      = [string]$data.managedVirtualNetworkSettings.preventDataExfiltration;
                 'ManagedVirtualNetwork'        = $data.managedVirtualNetwork;                            
                 'ManagedResourceGroup'         = $data.managedResourceGroupName;
             }
@@ -52,14 +45,7 @@ else
         $Exc.Add('ResourceGroup')
         $Exc.Add('Name')
         $Exc.Add('Location')
-        $Exc.Add('PublicNetworkAccess')
-        $Exc.Add('PrivateEndpoints')
-        $Exc.Add('DoubleEncryptionEnabled')
-        $Exc.Add('TrustedServiceBypassEnabled')
-        $Exc.Add('SQLAdministratorLogin')
-        $Exc.Add('ScopeEnabled')
         $Exc.Add('WorkspaceType')
-        $Exc.Add('PreventDataExfiltration')
         $Exc.Add('ManagedVirtualNetwork')
         $Exc.Add('ManagedResourceGroup')
 
