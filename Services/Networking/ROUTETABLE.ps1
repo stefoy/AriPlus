@@ -20,13 +20,6 @@ If ($Task -eq 'Processing') {
                                 'Resource Group'                = $1.RESOURCEGROUP;
                                 'Name'                          = $1.NAME;
                                 'Location'                      = $1.LOCATION;
-                                'Disable BGP Route Propagation' = $data.disableBgpRoutePropagation;
-                                'Routes'                        = [string]$2.name;
-                                'Routes Prefixes'               = [string]$2.properties.addressPrefix;
-                                'Routes BGP Override'           = [string]$2.properties.hasBgpOverride;
-                                'Routes Next Hop IP'            = [string]$2.properties.nextHopIpAddress;
-                                'Routes Next Hop Type'          = [string]$2.properties.nextHopType;
-                                'Resource U'                    = $ResUCount;
                             }
                             $tmp += $obj
                             if ($ResUCount -eq 1) { $ResUCount = 0 } 
@@ -46,12 +39,7 @@ Else {
         $Exc.Add('Resource Group')
         $Exc.Add('Name')
         $Exc.Add('Location')
-        $Exc.Add('Disable BGP Route Propagation')
-        $Exc.Add('Routes')
-        $Exc.Add('Routes Prefixes')
-        $Exc.Add('Routes BGP Override')
-        $Exc.Add('Routes Next Hop IP')
-        $Exc.Add('Routes Next Hop Type')
+
 
         $ExcelVar = $SmaResources.ROUTETABLE 
 
