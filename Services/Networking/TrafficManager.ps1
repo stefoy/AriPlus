@@ -20,7 +20,6 @@ If ($Task -eq 'Processing') {
                     'Resource Group'                    = $1.RESOURCEGROUP;
                     'Name'                              = $1.NAME;
                     'Status'                            = $data.profilestatus;
-                    'DNS name'                          = $data.dnsconfig.fqdn;
                     'Routing method'                    = $data.trafficroutingmethod;
                     'Monitor status'                    = $data.monitorconfig.profilemonitorstatus;                            
                     'Resource U'                        = $ResUCount;
@@ -48,7 +47,6 @@ Else {
         $Exc.Add('Resource Group')
         $Exc.Add('Name')
         $Exc.Add('Status')
-        $Exc.Add('DNS name')
         $Exc.Add('Routing method')
         $Exc.Add('Monitor status')
 
