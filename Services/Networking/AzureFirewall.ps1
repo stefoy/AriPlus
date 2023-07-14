@@ -25,15 +25,6 @@ If ($Task -eq 'Processing') {
                             'Name'                              = $1.NAME;
                             'Location'                          = $1.LOCATION;
                             'SKU'                               = $data.sku.tier;
-                            'Threat Intel Mode'                 = $Threat;
-                            'Zone'                              = $Zones;
-                            'NAT Rules'                         = [int]$data.natRuleCollections.Count;
-                            'Application Rules'                 = [int]$data.applicationRuleCollections.Count;
-                            'Network Rules'                     = [int]$data.networkRuleCollections.Count;
-                            'Public IP Name'                    = $2.name;
-                            'Firewall VNET'                     = $2.properties.subnet.id.split('/')[8];
-                            'Firewall Private IP'               = $2.properties.privateIPAddress;
-                            'Resource U'                        = $ResUCount;
                         }
                         $tmp += $obj
                         if ($ResUCount -eq 1) { $ResUCount = 0 } 
@@ -59,14 +50,6 @@ Else {
         $Exc.Add('Name')
         $Exc.Add('Location')
         $Exc.Add('SKU')
-        $Exc.Add('Threat Intel Mode')
-        $Exc.Add('Zone')
-        $Exc.Add('NAT Rules')
-        $Exc.Add('Application Rules')
-        $Exc.Add('Network Rules')
-        $Exc.Add('Public IP Name')
-        $Exc.Add('Firewall VNET')
-        $Exc.Add('Firewall Private IP')
 
         $ExcelVar = $SmaResources.AzureFirewall 
 
