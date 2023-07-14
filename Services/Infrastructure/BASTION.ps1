@@ -26,9 +26,7 @@ If ($Task -eq 'Processing')
                     'Name'            = $1.NAME;
                     'Location'        = $1.LOCATION;
                     'SKU'             = $1.sku.name;
-                    'DNS Name'        = $data.dnsName;
                     'Virtual Network' = $BastVNET;
-                    'Public IP'       = $BastPIP;
                     'Scale Units'     = $data.scaleUnits;
                 }
                 $tmp += $obj
@@ -56,9 +54,7 @@ Else
         $Exc.Add('Name')
         $Exc.Add('Location')
         $Exc.Add('SKU')
-        $Exc.Add('DNS Name')
         $Exc.Add('Virtual Network')
-        $Exc.Add('Public IP')
         $Exc.Add('Scale Units')
 
         $ExcelVar = $SmaResources.BASTION  
