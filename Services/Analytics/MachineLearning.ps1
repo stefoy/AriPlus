@@ -29,13 +29,8 @@ If ($Task -eq 'Processing') {
                     'SKU'                       = $sku.name;
                     'Friendly Name'             = $data.friendlyName;
                     'Description'               = $data.description;
-                    'HBI Workspace'             = $data.hbiWorkspace;
                     'Container Registry'        = $containerRegistry;
                     'Storage HNS Enabled'       = $data.storageHnsEnabled;
-                    'Private Link Count'        = $data.privateLinkCount;
-                    'Public Access Behind Vnet' = $data.allowPublicAccessWhenBehindVnet;
-                    'Discovery Url'             = $data.discoveryUrl;
-                    'ML Flow Tracking Uri'      = $data.mlFlowTrackingUri;
                     'Storage Account'           = $StorageAcc;
                     'Key Vault'                 = $KeyVault;
                     'Created Time'              = $timecreated;
@@ -69,13 +64,8 @@ Else {
         $Exc.Add('SKU')
         $Exc.Add('FriendlyName')
         $Exc.Add('Description')
-        $Exc.Add('HBIWorkspace')
         $Exc.Add('ContainerRegistry')
         $Exc.Add('StorageHNSEnabled')
-        $Exc.Add('PrivateLinkCount')
-        $Exc.Add('PublicAccessBehindVnet')
-        $Exc.Add('DiscoveryUrl')
-        $Exc.Add('MLFlowTrackingUri')
         $Exc.Add('StorageAccount')
         $Exc.Add('KeyVault')
         $Exc.Add('ApplicationInsight')
