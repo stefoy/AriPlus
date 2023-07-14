@@ -30,12 +30,6 @@ If ($Task -eq 'Processing') {
                     'SKU'                               = $data.sku.name;
                     'Capacity'                          = $data.sku.capacity;
                     'Friendly Name'                     = $data.friendlyName;
-                    'Cloud Connectors'                  = [string]$CloudConnectors;
-                    'Private Endpoints'                 = [string]$pvted;
-                    'Managed Resource Group'            = [string]$data.managedResourceGroupName;
-                    'Managed Storage Account'           = [string]$StorageAcc;
-                    'Managed Event Hub'                 = [string]$eventHubNamespace;
-                    'Public Network Access'             = $data.publicNetworkAccess;
                     'Created By'                        = $data.createdBy;      
                     'Created Time'                      = $timecreated;                      
                 }
@@ -63,12 +57,6 @@ Else {
         $Exc.Add('SKU')
         $Exc.Add('Capacity')
         $Exc.Add('Friendly Name')
-        $Exc.Add('Cloud Connectors')
-        $Exc.Add('Private Endpoints')
-        $Exc.Add('Managed Resource Group')
-        $Exc.Add('Managed Storage Account')
-        $Exc.Add('Managed Event Hub')
-        $Exc.Add('Public Network Access')
         $Exc.Add('Created By')
         $Exc.Add('Created Time')
 
