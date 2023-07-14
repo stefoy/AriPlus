@@ -26,7 +26,6 @@ If ($Task -eq 'Processing') {
                         'Location'                          = $loc.location;
                         'Role'                              = $loc.role;
                         'State'                             = $data.state;
-                        'IP Filter Rules'                   = [string]$IpFilter;
                         'Event Retention Time In Days'      = [string]$data.eventHubEndpoints.events.retentionTimeInDays;
                         'Event Partition Count'             = [string]$data.eventHubEndpoints.events.partitionCount;
                         'Events Path'                       = [string]$data.eventHubEndpoints.events.path;
@@ -60,7 +59,6 @@ Else {
         $Exc.Add('Location')
         $Exc.Add('Role')
         $Exc.Add('State')
-        $Exc.Add('IP Filter Rules')
         $Exc.Add('Event Retention Time In Days')
         $Exc.Add('Event Partition Count')
         $Exc.Add('Events Path')
