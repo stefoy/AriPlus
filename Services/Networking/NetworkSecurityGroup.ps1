@@ -27,21 +27,8 @@ If ($Task -eq 'Processing') {
                     'Resource Group'               = $1.RESOURCEGROUP;
                     'Name'                         = $1.NAME;
                     'Location'                     = $1.LOCATION;
-                    'Security Rules'               = [string]$2.name;
-                    'Direction'                    = [string]$2.properties.direction;
-                    'Access'                       = [string]$2.properties.Access;
-                    'Priority'                     = [string]$2.properties.priority;
                     'Protocol'                     = [string]$2.properties.protocol;
-                    'Source Address Prefixes'      = [string]$2.properties.sourceAddressPrefixes;
-                    'Source Address Prefix'        = [string]$2.properties.sourceAddressPrefix;
-                    'Source Port Ranges'           = [string]$2.properties.sourcePortRanges;
-                    'Source Port Range'            = [string]$2.properties.sourcePortRange;
-                    'Destination Address Prefixes' = [string]$2.properties.destinationAddressPrefixes;
-                    'Destination Address Prefix'   = [string]$2.properties.destinationAddressPrefix;
-                    'Destination Port Ranges'      = [string]$2.properties.destinationPortRanges;
-                    'Destination Port Range'       = [string]$2.properties.destinationPortRange;
                     'NICs'                         = [string]$data.networkInterfaces.id -Join ",";
-                    'Subnets'                      = [string]$data.Subnets.id;
                     'Orphaned'                     = $Orphaned;
                 }
                 $tmp += $obj
@@ -67,21 +54,8 @@ If ($Task -eq 'Processing') {
         $Exc.Add('Resource Group')
         $Exc.Add('Name')
         $Exc.Add('Location')
-        $Exc.Add('Security Rules')
-        $Exc.Add('Direction')
-        $Exc.Add('Access')
-        $Exc.Add('Priority')
         $Exc.Add('Protocol')
-        $Exc.Add('Source Address Prefixes')
-        $Exc.Add('Source Address Prefix')
-        $Exc.Add('Source Port Ranges')
-        $Exc.Add('Source Port Range')
-        $Exc.Add('Destination Address Prefixes')
-        $Exc.Add('Destination Address Prefix')
-        $Exc.Add('Destination Port Ranges')
-        $Exc.Add('Destination Port Range')
         $Exc.Add('NICs')
-        $Exc.Add('Subnets')
         $Exc.Add('Orphaned')
 
         $ExcelVar |
