@@ -28,13 +28,7 @@ If ($Task -eq 'Processing') {
                     'Location'              = $1.LOCATION;
                     'Zone'                  = $Zones;
                     'Version'               = $data.redisVersion;
-                    'Public Network Access' = $data.publicNetworkAccess;
-                    'FQDN'                  = $data.hostName;
-                    'Port'                  = $data.port;
-                    'Enable Non SSL Port'   = $data.enableNonSslPort;
                     'Minimum TLS Version'   = $MinTLS;
-                    'SSL Port'              = $data.sslPort;
-                    'Private Endpoint'      = $PvtEndP;
                     'Sku'                   = $data.sku.name;
                     'Capacity'              = $data.sku.capacity;
                     'Family'                = $data.sku.family;
@@ -59,17 +53,8 @@ Else {
 
         $TableName = ('RedisCacheTable_'+($SmaResources.RedisCache.id | Select-Object -Unique).count)
         $condtxt = @()
-        $condtxt += New-ConditionalText "Not Configured" -Range E:E
-        $condtxt += New-ConditionalText Default -Range K:K
-        $condtxt += New-ConditionalText 1.0 -Range K:K
-        $condtxt += New-ConditionalText 1.1 -Range K:K
-        $condtxt += New-ConditionalText TRUE -Range J:J
-        $condtxt += New-ConditionalText VERDADEIRO -Range J:J
 
         $Style = @()        
-        $Style += New-ExcelStyle -HorizontalAlignment Center -AutoSize -NumberFormat 0.0 -Range K:K
-        $Style += New-ExcelStyle -HorizontalAlignment Center -AutoSize -NumberFormat 0 -Range A:J
-        $Style += New-ExcelStyle -HorizontalAlignment Center -AutoSize -NumberFormat 0 -Range L:Z
         
         $Exc = New-Object System.Collections.Generic.List[System.Object]
         $Exc.Add('Subscription')
@@ -77,14 +62,8 @@ Else {
         $Exc.Add('Name')                    
         $Exc.Add('Location')           
         $Exc.Add('Zone')                    
-        $Exc.Add('Version')                 
-        $Exc.Add('Public Network Access')
-        $Exc.Add('FQDN')                    
-        $Exc.Add('Port')                    
-        $Exc.Add('Enable Non SSL Port')
+        $Exc.Add('Version')                               
         $Exc.Add('Minimum TLS Version')         
-        $Exc.Add('SSL Port')   
-        $Exc.Add('Private Endpoint')             
         $Exc.Add('Sku')                     
         $Exc.Add('Capacity')
         $Exc.Add('Family')                  
