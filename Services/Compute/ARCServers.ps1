@@ -29,9 +29,6 @@ If ($Task -eq 'Processing')
                             'osName'               = $data.osName;
                             'osVersion'            = $data.osVersion;
                             'osSku'                = $data.osSku;
-                            'machineFqdn'          = $data.machineFqdn;
-                            'dnsFqdn'              = $data.dnsFqdn;
-                            'adFqdn'               = $data.adFqdn;
                             'domainName'           = $data.domainName;
                             'Resource U'           = $ResUCount;
                         }
@@ -64,9 +61,6 @@ Else
         $Exc.Add('osName')
         $Exc.Add('osVersion')
         $Exc.Add('osSku')
-        $Exc.Add('machineFqdn')
-        $Exc.Add('dnsFqdn')
-        $Exc.Add('adFqdn')
         $Exc.Add('domainName')
 
         $ExcelVar = $SmaResources.ARCServers  
