@@ -7,7 +7,7 @@ param ($TenantID,
         [switch]$SkipMetrics, 
         [switch]$Help, 
         [switch]$DeviceLogin,
-        $ConcurencyLimit = 2,
+        $ConcurrencyLimit = 2,
         $AzureEnvironment,
         $ReportName = 'ResourcesReport', 
         $OutputDirectory)
@@ -393,7 +393,7 @@ function ExecuteInventoryProcessing()
                 }
             }
 
-            $Global:AzMetrics = & $MetricPath -Subscriptions $Subscriptions -Resources $Resources -Task "Processing" -File $file -Metrics $null -TableStyle $null -ConcurencyLimit $ConcurencyLimit
+            $Global:AzMetrics = & $MetricPath -Subscriptions $Subscriptions -Resources $Resources -Task "Processing" -File $file -Metrics $null -TableStyle $null -ConcurrencyLimit $ConcurrencyLimit
         }
     }
 
