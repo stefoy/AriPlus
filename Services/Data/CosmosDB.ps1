@@ -37,14 +37,10 @@ If ($Task -eq 'Processing') {
                     'VNET Filtering'            = $data.isVirtualNetworkFilterEnabled;
                     'Virtual Networks'          = [string]$VNETs;
                     'Free Tier Discount'        = $FreeTier;
-                    'Public Access'             = $data.publicNetworkAccess;
                     'Default Consistency'       = $data.consistencyPolicy.defaultConsistencyLevel;
                     'Private Endpoint'          = $PVTENDP;
                     'Read Locations'            = [string]$data.readLocations.locationName;
                     'Write Locations'           = [string]$data.writeLocations.locationName;
-                    'CORS'                      = [string]$data.cors;
-                    'URI'                       = $Mongo;
-                    'Resource U'                = $ResUCount;
                 }
                 $tmp += $obj
                 if ($ResUCount -eq 1) { $ResUCount = 0 }          
@@ -79,13 +75,10 @@ Else
         $Exc.Add('VNET Filtering')
         $Exc.Add('Virtual Networks')
         $Exc.Add('Free Tier Discount')
-        $Exc.Add('Public Access')
         $Exc.Add('Default Consistency')
         $Exc.Add('Private Endpoint')
         $Exc.Add('Read Locations')
         $Exc.Add('Write Locations')
-        $Exc.Add('CORS')
-        $Exc.Add('URI')
 
 
         $ExcelVar = $SmaResources.CosmosDB 
