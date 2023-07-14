@@ -25,10 +25,6 @@ if ($Task -eq 'Processing') {
                         'Name'                  = $1.NAME;
                         'Location'              = $1.LOCATION;
                         'Kind'                  = $1.kind;
-                        'Admin Login'           = $data.administratorLogin;
-                        'Private Endpoint'      = $pvtep.id;
-                        'FQDN'                  = $data.fullyQualifiedDomainName;
-                        'Public Network Access' = $data.publicNetworkAccess;
                         'State'                 = $data.state;
                         'Version'               = $data.version;
                         'Resource U'            = $ResUCount;
@@ -58,10 +54,6 @@ else {
         $Exc.Add('Name')
         $Exc.Add('Location')
         $Exc.Add('Kind')
-        $Exc.Add('Admin Login')
-        $Exc.Add('Private Endpoint')
-        $Exc.Add('FQDN')
-        $Exc.Add('Public Network Access')
         $Exc.Add('State')
         $Exc.Add('Version')
         $Exc.Add('Zone Redundant')
