@@ -22,14 +22,9 @@ If ($Task -eq 'Processing') {
                             'Name'                                         = $1.NAME;
                             'Location'                                     = $1.LOCATION;
                             'Zone'                                         = $1.ZONES;
-                            'Address Space'                                = $2;
                             'Enable DDOS Protection'                       = $data.enableDdosProtection;
                             'DNS Servers'                                  = [string]$data.dhcpOptions.dnsServers;
                             'Subnet Name'                                  = $3.name;
-                            'Subnet Prefix'                                = $3.properties.addressPrefix;
-                            'Used IPs'                                     = [string]$3.properties.ipConfigurations.id.count;
-                            'Subnet Private Link Service Network Policies' = $3.properties.privateLinkServiceNetworkPolicies;
-                            'Subnet Private Endpoint Network Policies'     = $3.properties.privateEndpointNetworkPolicies;
                             'Subnet Route Table'                           = if ($3.properties.routeTable.id) { $3.properties.routeTable.id.split("/")[8] };
                             'Subnet Network Security Group'                = if ($3.properties.networkSecurityGroup.id) { $3.properties.networkSecurityGroup.id.split("/")[8] };
                             'Resource U'                                   = $ResUCount;
@@ -56,14 +51,9 @@ Else {
         $Exc.Add('Name')
         $Exc.Add('Location')
         $Exc.Add('Zone')
-        $Exc.Add('Address Space')
         $Exc.Add('Enable DDOS Protection')
         $Exc.Add('DNS Servers')
         $Exc.Add('Subnet Name')
-        $Exc.Add('Used IPs')
-        $Exc.Add('Subnet Prefix')
-        $Exc.Add('Subnet Private Link Service Network Policies')
-        $Exc.Add('Subnet Private Endpoint Network Policies')
         $Exc.Add('Subnet Route Table')
         $Exc.Add('Subnet Network Security Group')
 
