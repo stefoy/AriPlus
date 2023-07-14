@@ -1,4 +1,4 @@
-param($Subscriptions, $Resources, $Task ,$File, $Metrics, $TableStyle, $ConcurencyLimit)
+param($Subscriptions, $Resources, $Task ,$File, $Metrics, $TableStyle, $ConcurrencyLimit)
 
 If ($Task -eq 'Processing')
 {
@@ -178,7 +178,7 @@ If ($Task -eq 'Processing')
         #$([System.GC]::GetTotalMemory($false))
         [System.GC]::Collect()
         #$([System.GC]::GetTotalMemory($true))
-    } -ThrottleLimit $ConcurencyLimit
+    } -ThrottleLimit $ConcurrencyLimit
 
     $tmp
 }
