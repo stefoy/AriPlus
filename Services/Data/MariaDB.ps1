@@ -26,20 +26,13 @@ If ($Task -eq 'Processing') {
                     'Tier'                      = $sku.tier;
                     'Capacity'                  = $sku.capacity;
                     'MariaDB Version'           = $data.version;
-                    'Private Endpoint'          = $PVTENDP;
                     'Backup Retention Days'     = $data.storageProfile.backupRetentionDays;
                     'Geo-Redundant Backup'      = $data.storageProfile.geoRedundantBackup;
                     'Auto Grow'                 = $data.storageProfile.storageAutogrow;
                     'Storage MB'                = $data.storageProfile.storageMB;
-                    'Public Network Access'     = $data.publicNetworkAccess;
-                    'Admin Login'               = $data.administratorLogin;
-                    'Infrastructure Encryption' = $data.InfrastructureEncryption;
                     'Minimum TLS Version'       = "$($data.minimalTlsVersion -Replace '_', '.' -Replace 'tls', 'TLS')";
                     'State'                     = $data.userVisibleState;
                     'Replica Capacity'          = $data.replicaCapacity;
-                    'Replication Role'          = $data.replicationRole;
-                    'BYOK Enforcement'          = $data.byokEnforcement;
-                    'SSL Enforcement'           = $data.sslEnforcement;
                     'Resource U'                = $ResUCount;
                 }
                 $tmp += $obj
@@ -72,20 +65,13 @@ Else {
         $Exc.Add('Tier')
         $Exc.Add('Capacity')
         $Exc.Add('MariaDB Version')
-        $Exc.Add('Private Endpoint')
         $Exc.Add('Backup Retention Days')
         $Exc.Add('Geo-Redundant Backup')
         $Exc.Add('Auto Grow')
         $Exc.Add('Storage MB')
-        $Exc.Add('Public Network Access')
-        $Exc.Add('Admin Login')
-        $Exc.Add('Infrastructure Encryption')
         $Exc.Add('Minimum TLS Version')
         $Exc.Add('State')
         $Exc.Add('Replica Capacity')
-        $Exc.Add('Replication Role')
-        $Exc.Add('BYOK Enforcement')
-        $Exc.Add('SSL Enforcement')
 
         $ExcelVar = $SmaResources.MariaDB
 
