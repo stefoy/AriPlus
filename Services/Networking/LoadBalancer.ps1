@@ -273,14 +273,12 @@ Else {
         $Exc.Add('Frontend Name')
         $Exc.Add('Frontend Target')
         $Exc.Add('Frontend Type')
-        $Exc.Add('Frontend Subnet')
         $Exc.Add('Backend Pool Name')
         $Exc.Add('Backend Target')
         $Exc.Add('Backend Type')
         $Exc.Add('Probe Name')
         $Exc.Add('Probe Interval (sec)')
         $Exc.Add('Probe Protocol')
-        $Exc.Add('Probe Port')
         $Exc.Add('Probe Unhealthy threshold')
 
         $ExcelVar = $SmaResources.LoadBalancer 
