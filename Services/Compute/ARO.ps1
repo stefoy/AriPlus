@@ -19,25 +19,12 @@ If ($Task -eq 'Processing') {
                     'Clusters'             = $1.NAME;
                     'Location'             = $1.LOCATION;
                     'AROVersion'          = $data.clusterProfile.version;
-                    'ARODomain'           = $data.clusterProfile.domain;
                     'OutboundType'        = $data.networkProfile.outboundType;
-                    'IngressProfileName' = $data.ingressProfiles.name;
-                    'IngressProfileType' = $data.ingressProfiles.visibility;
-                    'IngressProfileIP'   = $data.ingressProfiles.ip;
-                    'APIServerType'      = $data.apiserverProfile.visibility;
-                    'APIServerURL'       = $data.apiserverProfile.url;
-                    'APIServerIP'        = $data.apiserverProfile.ip;
-                    'DockerPodCidr'      = $data.networkProfile.podCidr;
-                    'ServiceCidr'         = $data.networkProfile.serviceCidr;
-                    'ConsoleURL'          = $data.consoleProfile.url;                   
-                    'MasterSKU'           = $data.masterProfile.vmSize;
-                    'MastervNET'          = if($data.masterProfile.subnetId){$data.masterProfile.subnetId.split("/")[8]};
-                    'MasterSubnet'        = if($data.masterProfile.subnetId){$data.masterProfile.subnetId.split("/")[10]};                    
+                    'APIServerType'      = $data.apiserverProfile.visibility;               
+                    'MasterSKU'           = $data.masterProfile.vmSize;                 
                     'WorkerSKU'           = $data.workerProfiles.vmSize | Select-Object -Unique;        
                     'WorkerDiskSize'      = $data.workerProfiles.diskSizeGB | Select-Object -Unique;        
-                    'TotalWorkerNodes'   = $data.workerProfiles.count;        
-                    'WorkervNET'          = $data.workerProfiles.subnetId | ForEach-Object { $_.split("/")[8] } | Select-Object -Unique; 
-                    'WorkerSubnet'        = $data.workerProfiles.subnetId | ForEach-Object { $_.split("/")[10] } | Select-Object -Unique;       
+                    'TotalWorkerNodes'   = $data.workerProfiles.count;            
                     'ResourceU'           = $ResUCount;
                 }
                 $tmp += $obj
@@ -58,25 +45,11 @@ Else {
         $Exc.Add('Clusters')         
         $Exc.Add('Location')             
         $Exc.Add('AROVersion')          
-        $Exc.Add('ARODomain')           
         $Exc.Add('OutboundType')        
-        $Exc.Add('IngressProfileName')
-        $Exc.Add('IngressProfileType') 
-        $Exc.Add('IngressProfileIP')   
-        $Exc.Add('APIServerType')      
-        $Exc.Add('APIServerURL')       
-        $Exc.Add('APIServerIP')        
-        $Exc.Add('DockerPodCidr')      
-        $Exc.Add('ServiceCidr')         
-        $Exc.Add('ConsoleURL')                
-        $Exc.Add('MasterSKU')           
-        $Exc.Add('MastervNET')          
-        $Exc.Add('MasterSubnet')                     
+        $Exc.Add('MasterSKU')                            
         $Exc.Add('WorkerSKU')           
         $Exc.Add('WorkerDiskSize')        
         $Exc.Add('TotalWorkerNodes')   
-        $Exc.Add('WorkervNET')          
-        $Exc.Add('WorkerSubnet')
 
         $ExcelVar = $SmaResources.ARO 
 
