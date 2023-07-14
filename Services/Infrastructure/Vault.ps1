@@ -28,15 +28,11 @@ If ($Task -eq 'Processing')
                             'Location'                   = $1.LOCATION;
                             'SKU Family'                 = $data.sku.family;
                             'SKU'                        = $data.sku.name;
-                            'Vault Uri'                  = $data.vaultUri;
                             'Enable RBAC'                = $data.enableRbacAuthorization;
                             'Enable Soft Delete'         = $Soft;
                             'Enable for Disk Encryption' = $data.enabledForDiskEncryption;
                             'Enable for Template Deploy' = $data.enabledForTemplateDeployment;
                             'Soft Delete Retention Days' = $data.softDeleteRetentionInDays;
-                            'Certificate Permissions'    = [string]$2.permissions.certificates | ForEach-Object {$_ + ', '};
-                            'Key Permissions'            = [string]$2.permissions.keys | ForEach-Object {$_ + ', '};
-                            'Secret Permissions'         = [string]$2.permissions.secrets | ForEach-Object {$_ + ', '} ;
                             'Resource U'                 = $ResUCount;
                         }
                         $tmp += $obj
@@ -70,15 +66,11 @@ Else
         $Exc.Add('Location')
         $Exc.Add('SKU Family')
         $Exc.Add('SKU')
-        $Exc.Add('Vault Uri')
         $Exc.Add('Enable RBAC')
         $Exc.Add('Enable Soft Delete')
         $Exc.Add('Enable for Disk Encryption')
         $Exc.Add('Enable for Template Deploy')
         $Exc.Add('Soft Delete Retention Days')
-        $Exc.Add('Certificate Permissions')
-        $Exc.Add('Key Permissions')
-        $Exc.Add('Secret Permissions')
 
         $ExcelVar = $SmaResources.Vault 
 
