@@ -32,16 +32,11 @@ If ($Task -eq 'Processing') {
                     'State Reason'              = $data.stateReason;
                     'Virtual Network'           = $VNET;
                     'Subnet'                    = $Subnet;
-                    'Data Management Public IP' = $DataPIP;
-                    'Engine Public IP'          = $EnginePIP;
-                    'Tenants Permissions'       = $TenantPerm;
                     'Disk Encryption'           = $data.enableDiskEncryption;
                     'Streaming Ingestion'       = $data.enableStreamingIngest;
                     'Optimized Autoscale'       = $AutoScale;
                     'Optimized Autoscale Min'   = $data.optimizedAutoscale.minimum;
                     'Optimized Autoscale Max'   = $data.optimizedAutoscale.maximum;
-                    'URI'                       = $data.uri;
-                    'Data Ingestion Uri'        = $data.dataIngestionUri;
                     'Resource U'                = $ResUCount;
                 }
                 $tmp += $obj
@@ -78,16 +73,11 @@ Else {
         $Exc.Add('State Reason')
         $Exc.Add('Virtual Network')
         $Exc.Add('Subnet')
-        $Exc.Add('Data Management Public IP')
-        $Exc.Add('Engine Public IP')
-        $Exc.Add('Tenants Permissions')
         $Exc.Add('Disk Encryption')
         $Exc.Add('Streaming Ingestion')
         $Exc.Add('Optimized Autoscale')
         $Exc.Add('Optimized Autoscale Min')
         $Exc.Add('Optimized Autoscale Max')
-        $Exc.Add('URI')
-        $Exc.Add('Data Ingestion Uri')
 
         $ExcelVar = $SmaResources.DataExplorerCluster 
 
