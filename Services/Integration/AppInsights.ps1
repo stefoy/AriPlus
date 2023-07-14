@@ -27,12 +27,9 @@ If ($Task -eq 'Processing') {
                     'Application Type'                  = $data.Application_Type;
                     'Flow Type'                         = $data.Flow_Type;
                     'Version'                           = $data.Ver;
-                    'Request Source'                    = $data.Request_Source;
                     'Data Sampling %'                   = [string]$Sampling;
                     'Retention In Days'                 = $data.RetentionInDays;
                     'Ingestion Mode'                    = $data.IngestionMode;
-                    'Public Access For Ingestion'       = $data.publicNetworkAccessForIngestion;
-                    'Public Access For Query'           = $data.publicNetworkAccessForQuery;    
                     'Created Time'                      = $timecreated;                            
                 }
                 $tmp += $obj
@@ -62,12 +59,9 @@ Else {
         $Exc.Add('Application Type')
         $Exc.Add('Flow Type')
         $Exc.Add('Version')
-        $Exc.Add('Request Source')
         $Exc.Add('Data Sampling %')
         $Exc.Add('Retention In Days')
         $Exc.Add('Ingestion Mode')
-        $Exc.Add('Public Access For Ingestion')
-        $Exc.Add('Public Access For Query')
         $Exc.Add('Created Time')
 
         $ExcelVar = $SmaResources.AppInsights 
