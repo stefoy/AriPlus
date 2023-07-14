@@ -155,18 +155,24 @@ If ($Task -eq 'Processing')
             'Largest'   { $metricQueryResults = ($metricQueryResults | Sort-Object -Descending)[0] }
         }
 
+        if($metricQueryResultsCount -eq 0)
+        {
+            $metricQueryResults = 0
+            $metricQueryResultsCount = 0
+        }
+
         $obj = @{
-            'ID'                = $_.Id;
-            'Subscription'      = $_.SubName;
-            'Resource Group'    = $_.ResourceGroup;
-            'Name'              = $_.Name;
-            'Location'          = $_.Location;
-            'Service'           = $_.Service;
-            'Metric'            = $_.MetricName;
-            'Metric Aggregate'  = $_.Aggregation;
-            'Metric Time Grain' = $_.Interval;
-            'Metric Value'      = $metricQueryResults;
-            'Metric Count'      = $metricQueryResultsCount;
+            'ID'                   = $_.Id;
+            'Subscription'         = $_.SubName;
+            'ResourceGroup'        = $_.ResourceGroup;
+            'Name'                 = $_.Name;
+            'Location'             = $_.Location;
+            'Service'              = $_.Service;
+            'Metric'               = $_.MetricName;
+            'MetricAggregate'      = $_.Aggregation;
+            'MetricTimeGrain'      = $_.Interval;
+            'MetricValue'          = $metricQueryResults;
+            'MetricCount'          = $metricQueryResultsCount;
         }
         
         ($using:tmp).Add($obj)
@@ -189,13 +195,13 @@ else
     $Metrics | 
         ForEach-Object { [PSCustomObject]$_ } | 
         Select-Object 'Subscription',
-        'Resource Group',
+        'ResourceGroup',
         'Name',
         'Location',
         'Service',
         'Metric',
-        'Metric Aggregate',
-        'Metric Time Grain',
-        'Metric Value',
-        'Metric Count' | Export-Excel -Path $File -WorksheetName 'Metrics' -AutoSize -MaxAutoSizeRows 100 -TableName 'Metrics' -TableStyle $tableStyle -Style $Style -Numberformat '0' -MoveToEnd 
+        'MetricAggregate',
+        'MetricTimeGrain',
+        'MetricValue',
+        'MetricCount' | Export-Excel -Path $File -WorksheetName 'Metrics' -AutoSize -MaxAutoSizeRows 100 -TableName 'Metrics' -TableStyle $tableStyle -Style $Style -Numberformat '0' -MoveToEnd 
 }
