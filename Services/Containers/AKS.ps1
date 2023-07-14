@@ -32,12 +32,7 @@ If ($Task -eq 'Processing')
                     'Private Cluster'            = $data.apiServerAccessProfile.enablePrivateCluster;
                     'Container Insights'         = $Insights;                    
                     'Outbound Type'              = $data.networkProfile.outboundType;
-                    'LoadBalancer Sku'           = $data.networkProfile.loadBalancerSku;
-                    'Docker Pod Cidr'            = $data.networkProfile.podCidr;
-                    'Service Cidr'               = $data.networkProfile.serviceCidr;
-                    'Docker Bridge Cidr'         = $data.networkProfile.dockerBridgeCidr;                   
-                    'Network DNS Service IP'     = $data.networkProfile.dnsServiceIP;
-                    'FQDN'                       = $data.fqdn
+                    'LoadBalancer Sku'           = $data.networkProfile.loadBalancerSku;                
                     'HTTP Application Routing'   = if ($data.addonProfiles.httpapplicationrouting.enabled) { $true }else { $false };
                     'Node Pool Name'             = $2.name;
                     'Pool Profile Type'          = $2.type;
@@ -54,7 +49,6 @@ If ($Task -eq 'Processing')
                     'Virtual Network'            = if($2.vnetSubnetID){$2.vnetSubnetID.split('/')[8]}else{$false}
                     'VNET Subnet'                = if($2.vnetSubnetID){$2.vnetSubnetID.split('/')[10]}else{$false}
                     'Orchestrator Version'       = $2.orchestratorVersion;
-                    'Enable Node Public IP'      = $2.enableNodePublicIP;
                     'Resource U'                 = $ResUCount;
                 }
                 $tmp += $obj
@@ -93,11 +87,6 @@ Else
         $Exc.Add('Container Insights')
         $Exc.Add('Outbound Type')
         $Exc.Add('LoadBalancer Sku')
-        $Exc.Add('Docker Pod Cidr')
-        $Exc.Add('Service Cidr')
-        $Exc.Add('Docker Bridge Cidr')   
-        $Exc.Add('Network DNS Service IP')
-        $Exc.Add('FQDN')
         $Exc.Add('HTTP Application Routing')
         $Exc.Add('Node Pool Name')
         $Exc.Add('Pool Profile Type')
@@ -114,7 +103,6 @@ Else
         $Exc.Add('Virtual Network')
         $Exc.Add('VNET Subnet')
         $Exc.Add('Orchestrator Version')
-        $Exc.Add('Enable Node Public IP')
 
         $ExcelVar = $SmaResources.AKS 
 
