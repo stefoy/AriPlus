@@ -31,13 +31,6 @@ If ($Task -eq 'Processing') {
                     'Autoscale Max Capacity'= $MaxCap;
                     'SKU Name'              = $data.sku.tier;
                     'Current Instances'     = $data.sku.capacity;
-                    'Backend'               = [string]$data.backendAddressPools.name;
-                    'Frontend'              = [string]$data.frontendIPConfigurations.name;
-                    'Frontend Ports'        = [string]$data.frontendports.properties.port;
-                    'Gateways'              = [string]$data.gatewayIPConfigurations.name;
-                    'HTTP Listeners'        = [string]$data.httpListeners.name;
-                    'Request Routing Rules' = [string]$data.RequestRoutingRules.Name;
-                    'Resource U'            = $ResUCount;
                 }
                 $tmp += $obj
                 if ($ResUCount -eq 1) { $ResUCount = 0 }             
@@ -52,11 +45,6 @@ Else {
         $Style = New-ExcelStyle -HorizontalAlignment Center -AutoSize -NumberFormat 0
 
         $condtxt = @()
-        $condtxt += New-ConditionalText FALSE -Range F:F
-        $condtxt += New-ConditionalText FALSO -Range F:F
-        $condtxt += New-ConditionalText Default -Range G:G
-        $condtxt += New-ConditionalText 'Autoscale Disabled' -Range H:H
-        $condtxt += New-ConditionalText 'Autoscale Disabled' -Range I:I
 
         $Exc = New-Object System.Collections.Generic.List[System.Object]
         $Exc.Add('Subscription')
@@ -70,12 +58,6 @@ Else {
         $Exc.Add('Autoscale Max Capacity')
         $Exc.Add('SKU Name')
         $Exc.Add('Current Instances')
-        $Exc.Add('Backend')
-        $Exc.Add('Frontend')
-        $Exc.Add('Frontend Ports')
-        $Exc.Add('Gateways')
-        $Exc.Add('HTTP Listeners')
-        $Exc.Add('Request Routing Rules')
 
         $ExcelVar = $SmaResources.APPGW 
 
