@@ -25,9 +25,6 @@ If ($Task -eq 'Processing')
                     'Location'                                 = $1.LOCATION;
                     'SKU Name'                                 = $1.sku.name;
                     'SKU Tier'                                 = $1.sku.tier;
-                    'Private Endpoint State for Backup'        = $data.privateEndpointStateForBackup;
-                    'Private Endpoint State for Site Recovery' = $data.privateEndpointStateForSiteRecovery;
-                    'Resource U'                               = $ResUCount;
                 }
                 $tmp += $obj
                 if ($ResUCount -eq 1) { $ResUCount = 0 }              
@@ -57,8 +54,6 @@ Else
         $Exc.Add('Location')
         $Exc.Add('SKU Name')
         $Exc.Add('SKU Tier')
-        $Exc.Add('Private Endpoint State for Backup')
-        $Exc.Add('Private Endpoint State for Site Recovery')
 
         $ExcelVar = $SmaResources.RecoveryVault
 
