@@ -24,19 +24,8 @@ If ($Task -eq 'Processing') {
                     'SKU'                               = $data.sku.name;
                     'AvailabilityStrategy'             = $data.availability.strategy;
                     'Zone'                              = $data.availability.zone;
-                    'ExpressRouteCircuit'             = $ER;
                     'Encryption'                        = $data.encryption.status;
-                    'ExternalCloudLinks'              = [string]$externalCloud;
-                    'IdentitySources'                  = [string]$identitySources;
-                    'Internet'                          = $data.internet;
                     'ClusterSize'                      = $data.managementCluster.clusterSize;
-                    'ManagementNetwork'                = $data.managementNetwork;
-                    'NetworkBlock'                     = $data.networkBlock;
-                    'ProvisioningNetwork'              = $data.provisioningNetwork;
-                    'vMotionNetwork'                   = $data.vmotionNetwork;
-                    'HCXCloudManager'                 = $data.endpoints.hcxCloudManager;
-                    'NSXTManager'                      = $data.endpoints.nsxtManager;
-                    'VCSA'                              = $data.endpoints.vcsa;
                 }
                 $tmp += $obj
                 if ($ResUCount -eq 1) { $ResUCount = 0 } 
@@ -59,19 +48,8 @@ Else {
         $Exc.Add('SKU')
         $Exc.Add('AvailabilityStrategy')
         $Exc.Add('Zone')
-        $Exc.Add('ExpressRouteCircuit')
         $Exc.Add('Encryption')
-        $Exc.Add('ExternalCloudLinks')
-        $Exc.Add('IdentitySources')
-        $Exc.Add('Internet')
         $Exc.Add('ClusterSize')
-        $Exc.Add('ManagementNetwork')
-        $Exc.Add('NetworkBlock')
-        $Exc.Add('ProvisioningNetwork')
-        $Exc.Add('vMotionNetwork')
-        $Exc.Add('HCXCloudManager')
-        $Exc.Add('NSXTManager')
-        $Exc.Add('VCSA')    
 
         $ExcelVar = $SmaResources.VMWare 
 
