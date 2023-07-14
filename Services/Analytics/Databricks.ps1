@@ -26,16 +26,10 @@ If ($Task -eq 'Processing') {
                     'Name'                      = $1.NAME;
                     'Location'                  = $1.LOCATION;
                     'PricingTier'              = $sku.name;
-                    'ManagedResource Group'    = $data.managedResourceGroupId.split('/')[4];
+                    'ManagedResourceGroup'    = $data.managedResourceGroupId.split('/')[4];
                     'StorageAccount'           = $data.parameters.storageAccountName.value;
                     'StorageAccountSKU'       = $data.parameters.storageAccountSkuName.value;
-                    'InfrastructureEncryption' = $data.parameters.requireInfrastructureEncryption.value;
-                    'PrepareEncryption'        = $data.parameters.prepareEncryption.value;
-                    'EnablePublicIP'          = $PIP;
                     'CustomVirtualNetwork'    = $VNET;
-                    'CustomPrivateSubnet'     = $data.parameters.customPrivateSubnetName.value;
-                    'CustomPublicSubnet'      = $data.parameters.customPublicSubnetName.value;
-                    'URL'                       = $data.workspaceUrl;
                     'CreatedTime'              = $timecreated;
                     'ResourceU'                = $ResUCount;
                 }
@@ -56,13 +50,7 @@ Else {
         $Style = New-ExcelStyle -HorizontalAlignment Center -AutoSize -NumberFormat 0
 
         $condtxt = @()
-        
-        $condtxt += New-ConditionalText FALSE -Range J:J
-        $condtxt += New-ConditionalText FALSO -Range J:J
-        $condtxt += New-ConditionalText Disabled -Range L:L
-        $condtxt += New-ConditionalText Enabled -Range O:O
-        $condtxt += New-ConditionalText TLSEnforcementDisabled -Range R:R
-        $condtxt += New-ConditionalText Disabled -Range W:W
+
 
 
         $Exc = New-Object System.Collections.Generic.List[System.Object]
@@ -74,13 +62,7 @@ Else {
         $Exc.Add('ManagedResourceGroup')
         $Exc.Add('StorageAccount')
         $Exc.Add('StorageAccountSKU')
-        $Exc.Add('InfrastructureEncryption')
-        $Exc.Add('PrepareEncryption')
-        $Exc.Add('EnablePublicIP')
         $Exc.Add('CustomVirtualNetwork')
-        $Exc.Add('CustomPrivateSubnet')
-        $Exc.Add('CustomPublicSubnet')
-        $Exc.Add('URL')
         $Exc.Add('CreatedTime')  
 
         $ExcelVar = $SmaResources.Databricks
