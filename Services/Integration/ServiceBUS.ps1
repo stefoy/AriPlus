@@ -29,11 +29,9 @@ If ($Task -eq 'Processing')
                     'Location'             = $1.LOCATION;
                     'SKU'                  = $sku.name;
                     'Status'               = $data.status;
-                    'Geo-Replication'      = $data.zoneRedundant;
+                    'Geo-Rep'      = $data.zoneRedundant;
                     'Throughput Units'     = $1.sku.capacity;
-                    'Endpoint'             = $data.serviceBusEndpoint;
                     'Created Time'         = $timecreated;      
-                    'Resource U'           = $ResUCount;
                 }
                 $tmp += $obj
                 if ($ResUCount -eq 1) { $ResUCount = 0 }              
@@ -66,7 +64,6 @@ Else
         $Exc.Add('Status')
         $Exc.Add('Geo-Rep')
         $Exc.Add('Throughput Units')
-        $Exc.Add('Endpoint')
         $Exc.Add('Created Time')
 
         $ExcelVar = $SmaResources.ServiceBUS  
