@@ -34,10 +34,6 @@ If ($Task -eq 'Processing')
                         'Command'             = [string]$2.properties.command;
                         'Request CPU'         = $2.properties.resources.requests.cpu;
                         'Request Memory (GB)' = $2.properties.resources.requests.memoryInGB;
-                        'IP'                  = $data.ipAddress.ip;
-                        'Protocol'            = [string]$2.properties.ports.protocol;
-                        'Port'                = [string]$2.properties.ports.port;
-                        'Resource U'          = $ResUCount;
                         'Total'               = $Total;
                     }
                     $tmp += $obj
@@ -73,9 +69,6 @@ Else
         $Exc.Add('Command')
         $Exc.Add('Request CPU')
         $Exc.Add('Request Memory (GB)')
-        $Exc.Add('IP')
-        $Exc.Add('Protocol')
-        $Exc.Add('Port')
 
         $ExcelVar = $SmaResources.CONTAINER 
             
