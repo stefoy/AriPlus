@@ -25,18 +25,8 @@ If ($Task -eq 'Processing')
                     'Name'                 = $1.NAME;
                     'Location'             = $1.LOCATION;
                     'SKU'                  = $1.sku.name;
-                    'Gateway URL'          = $data.gatewayUrl;
                     'Virtual Network Type' = $data.virtualNetworkType;
                     'Virtual Network'      = $NetType;
-                    'Http2'                = $data.customProperties."Microsoft.WindowsAzure.ApiManagement.Gateway.Protocols.Server.Http2";
-                    'Backend SSL 3.0'      = $data.customProperties."Microsoft.WindowsAzure.ApiManagement.Gateway.Security.Backend.Protocols.Ssl30";
-                    'Backend TLS 1.0'      = $data.customProperties."Microsoft.WindowsAzure.ApiManagement.Gateway.Security.Backend.Protocols.Tls10";
-                    'Backend TLS 1.1'      = $data.customProperties."Microsoft.WindowsAzure.ApiManagement.Gateway.Security.Backend.Protocols.Tls11";
-                    'Triple DES'           = $data.customProperties."Microsoft.WindowsAzure.ApiManagement.Gateway.Security.Ciphers.TripleDes168";
-                    'Client SSL 3.0'       = $data.customProperties."Microsoft.WindowsAzure.ApiManagement.Gateway.Security.Protocols.Ssl30";
-                    'Client TLS 1.0'       = $data.customProperties."Microsoft.WindowsAzure.ApiManagement.Gateway.Security.Protocols.Tls10";
-                    'Client TLS 1.1'       = $data.customProperties."Microsoft.WindowsAzure.ApiManagement.Gateway.Security.Protocols.Tls11";
-                    'Public IP'            = [string]$data.publicIPAddresses;
                 }
                 $tmp += $obj
                 if ($ResUCount -eq 1) { $ResUCount = 0 }             
@@ -65,18 +55,8 @@ Else
         $Exc.Add('Name')
         $Exc.Add('Location')
         $Exc.Add('SKU')
-        $Exc.Add('Gateway URL')
         $Exc.Add('Virtual Network Type')
         $Exc.Add('Virtual Network')
-        $Exc.Add('Http2')
-        $Exc.Add('Backend SSL 3.0')
-        $Exc.Add('Backend TLS 1.0')
-        $Exc.Add('Backend TLS 1.1')
-        $Exc.Add('Triple DES')
-        $Exc.Add('Client SSL 3.0')
-        $Exc.Add('Client TLS 1.0')
-        $Exc.Add('Client TLS 1.1')
-        $Exc.Add('Public IP')
 
         $ExcelVar = $SmaResources.APIM 
 
