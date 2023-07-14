@@ -45,15 +45,12 @@ If ($Task -eq 'Processing') {
                         'maxSessionLimit'    = $data.maxSessionLimit;
                         'PreferredAppGroup' = $data.preferredAppGroupType;
                         'AVDAgentVersion'  = $2.properties.agentVersion;
-                        'LastAssignedUser' = $2.properties.assignedUser;
                         'AllowNewSession'  = $2.properties.allowNewSession;
                         'UpdateStatus'      = $2.properties.updateState;
                         'Hostname'           = $vmsessionhosts.name;
-                        'Domain'             = $domain;
                         'VMSize'            = $vmsessionhosts.properties.hardwareProfile.vmsize;
                         'OSType'            = $vmsessionhosts.properties.storageProfile.osdisk.ostype;
                         'VMDiskType'       = $vmsessionhosts.properties.storageProfile.osdisk.managedDisk.storageAccountType;
-                        'Sessions'           = $2.properties.sessions;
                         'HostStatus'        = $2.properties.status;
                         'OSVersion'         = $2.properties.osVersion;
                         'ResourceU'         = $ResUCount;
@@ -88,15 +85,12 @@ Else {
         $Exc.Add('maxSessionLimit')
         $Exc.Add('PreferredAppGroup')
         $Exc.Add('AVDAgentVersion')  
-        $Exc.Add('LastAssignedUser') 
         $Exc.Add('AllowNewSession')
         $Exc.Add('UpdateStatus')      
         $Exc.Add('Hostname')           
-        $Exc.Add('Domain')             
         $Exc.Add('VMSize')            
         $Exc.Add('OSType')           
         $Exc.Add('VMDiskType')
-        $Exc.Add('Sessions')       
         $Exc.Add('HostStatus')        
         $Exc.Add('OSVersion')
 
