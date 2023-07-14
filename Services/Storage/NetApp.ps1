@@ -33,13 +33,6 @@ If ($Task -eq 'Processing') {
                     'Quota (TB)'                        = [string]$Quota;
                     'Protocol'                          = [string]$data.protocolTypes;
                     'Max Throughput MiB/s'              = [string]$data.throughputMibps;
-                    'Export Policy Count'               = [string]$ExportPolicy;
-                    'Network Features'                  = $data.networkFeatures;
-                    'Security Style'                    = $data.securityStyle;
-                    'SMB Encryption'                    = $data.smbEncryption;
-                    'UNIX Permissions'                  = $data.unixPermissions;
-                    'Cool Access'                       = $data.coolAccess;
-                    'VMWare Solution'                   = $data.avsDataStore;
                     'LDAP'                              = $data.ldapEnabled;
                     'VNET Name'                         = [string]$VNET;
                     'Subnet Name'                       = [string]$Subnet;                            
@@ -71,13 +64,6 @@ Else {
         $Exc.Add('Quota (TB)')
         $Exc.Add('Protocol')
         $Exc.Add('Max Throughput MiB/s')
-        $Exc.Add('Export Policy Count')
-        $Exc.Add('Network Features')
-        $Exc.Add('Security Style')
-        $Exc.Add('SMB Encryption')
-        $Exc.Add('UNIX Permissions')
-        $Exc.Add('Cool Access')
-        $Exc.Add('VMWare Solution')
         $Exc.Add('LDAP')
         $Exc.Add('VNET Name')
         $Exc.Add('Subnet Name')
