@@ -24,13 +24,9 @@ If ($Task -eq 'Processing') {
                         'Name'                     = $1.NAME;
                         'SKU'                      = $1.SKU.Name;
                         'Location'                 = $1.LOCATION;
-                        'Zones'                    = [string]$1.Zones;
-                        'Type'                     = $data.publicIPAllocationMethod;
-                        'Version'                  = $data.publicIPAddressVersion;
                         'Use'                      = $Use;
                         'Associated Resource'      = $data.ipConfiguration.id.split('/')[8];
                         'Associated Resource Type' = $data.ipConfiguration.id.split('/')[7];
-                        'Resource U'               = $ResUCount;
                     }
                     $tmp += $obj
                     if ($ResUCount -eq 1) { $ResUCount = 0 } 
@@ -44,12 +40,9 @@ If ($Task -eq 'Processing') {
                             'Name'                     = $1.NAME;
                             'SKU'                      = $1.SKU.Name;
                             'Location'                 = $1.LOCATION;
-                            'Type'                     = $data.publicIPAllocationMethod;
-                            'Version'                  = $data.publicIPAddressVersion;
                             'Use'                      = $Use;
                             'Associated Resource'      = $null;
                             'Associated Resource Type' = $null;
-                            'Resource U'               = $ResUCount;
                         }
                         $tmp += $obj
                         if ($ResUCount -eq 1) { $ResUCount = 0 } 
@@ -74,7 +67,6 @@ Else {
         $Exc.Add('Name')
         $Exc.Add('SKU')
         $Exc.Add('Location')
-        $Exc.Add('Type')
         $Exc.Add('Version')
         $Exc.Add('Use')
         $Exc.Add('Associated Resource')
