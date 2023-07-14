@@ -25,11 +25,6 @@ if ($Task -eq 'Processing') {
                         'SkuName'               = $1.sku.Name;
                         'SkuCapacity'           = $1.sku.capacity;
                         'SkuTier'               = $1.sku.tier;
-                        'Admin Login'           = $data.adminitrators.login;
-                        'AzureADOnlyAuthentication'           = $data.adminitrators.azureADOnlyAuthentication;
-                        'Private Endpoint'      = $pvtep.id;
-                        'FQDN'                  = $data.fullyQualifiedDomainName;
-                        'Public Network Access' = $data.publicDataEndpointEnabled;
                         'licenseType'           = $data.licenseType;
                         'managedInstanceCreateMode'               = $data.managedInstanceCreateMode;
                         'Resource U'            = $ResUCount;
@@ -49,12 +44,6 @@ else {
         $Style = New-ExcelStyle -HorizontalAlignment Center -AutoSize -NumberFormat 0
 
         $condtxt = @()
-        $condtxt += New-ConditionalText FALSE -Range J:J
-        $condtxt += New-ConditionalText FALSO -Range J:J
-        $condtxt += New-ConditionalText FAUX -Range J:J
-        $condtxt += New-ConditionalText NONE -Range J:J
-        $condtxt += New-ConditionalText Enabled -Range L:L
-        $condtxt += New-ConditionalText VRAI -Range L:L
 
         $Exc = New-Object System.Collections.Generic.List[System.Object]
         $Exc.Add('Subscription')
@@ -64,11 +53,6 @@ else {
         $Exc.Add('SkuName')
         $Exc.Add('SkuCapacity')
         $Exc.Add('SkuTier')
-        $Exc.Add('Admin Login')
-        $Exc.Add('ActiveDirectoryOnlyAuthentication')
-        $Exc.Add('Private Endpoint')
-        $Exc.Add('FQDN')
-        $Exc.Add('Public Network Access')
         $Exc.Add('licenseType')
         $Exc.Add('managedInstanceCreateMode')
         $Exc.Add('Zone Redundant')
