@@ -35,8 +35,6 @@ If ($Task -eq 'Processing') {
                                     'Location'              = $1.LOCATION;
                                     'SKU'                   = $1.sku.name;
                                     'Idle Timeout (Min)'    = $data.idleTimeoutInMinutes;
-                                    'Public IP'             = $t_pip_addresses;
-                                    'Public Prefixes'       = $t_pip_prefixes;
                                     'VNET'                  = [string]$2.id.split("/")[8];
                                     'Subnet'                = [string]$2.id.split("/")[10];
                                     'Resource U'            = $ResUCount;
@@ -61,8 +59,6 @@ Else {
         $Exc.Add('Location')
         $Exc.Add('SKU')
         $Exc.Add('Idle Timeout (Min)')
-        $Exc.Add('Public IP')
-        $Exc.Add('Public Prefixes')
         $Exc.Add('VNET')
         $Exc.Add('Subnet')
 
