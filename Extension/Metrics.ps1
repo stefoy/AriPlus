@@ -120,8 +120,22 @@ If ($Task -eq 'Processing')
         {
             $subscription = $Subscriptions | Where-Object { $_.id -eq $vmss.subscriptionId }
             
-            $metricDefs.Add([PSCustomObject]@{ MetricName = 'Percentage CPU'; StartTime = $metricStartTime;  EndTime = $metricEndTime; Interval = '1h';  Aggregation = 'Maximum'; Measure = 'Average'; Id = $vmss.Id; SubName = $subscription.Name; ResourceGroup = $vmss.ResourceGroup; Name = $vmss.Name; Location = $vmss.Location; Service = 'Virtual Machines Scale Sets' })
+            $metricDefs.Add([PSCustomObject]@{ MetricName = 'Percentage CPU'; StartTime = $metricTimeOneDay;  EndTime = $metricEndTime; Interval = '1h';  Aggregation = 'Maximum'; Measure = 'Average'; Id = $vmss.Id; SubName = $subscription.Name; ResourceGroup = $vmss.ResourceGroup; Name = $vmss.Name; Location = $vmss.Location; Service = 'Virtual Machines Scale Sets' })
             $metricDefs.Add([PSCustomObject]@{ MetricName = 'Available Memory Bytes'; StartTime = $metricStartTime;  EndTime = $metricEndTime; Interval = '1h';  Aggregation = 'Minimum'; Measure = 'Average'; Id = $vmss.Id; SubName = $subscription.Name; ResourceGroup = $vmss.ResourceGroup; Name = $vmss.Name; Location = $vmss.Location; Service = 'Virtual Machines Scale Sets' })
+        }
+    }
+
+    # Define CosmosDB Metrics
+
+    $cosmosDbs = $Resources | Where-Object { $_.TYPE -eq 'microsoft.documentdb/databaseaccounts' }
+    
+    if($cosmosDbs)
+    {
+        foreach ($cosmosDb in $cosmosDbs) 
+        {
+            $subscription = $Subscriptions | Where-Object { $_.id -eq $cosmosDb.subscriptionId }
+            
+            $metricDefs.Add([PSCustomObject]@{ MetricName = 'TotalRequestUnits'; StartTime = $metricStartTime;  EndTime = $metricEndTime; Interval = '1m';  Aggregation = 'Total'; Measure = 'Sum'; Id = $cosmosDb.Id; SubName = $subscription.Name; ResourceGroup = $cosmosDb.ResourceGroup; Name = $cosmosDb.Name; Location = $cosmosDb.Location; Service = 'CosmosDB' })
         }
     }
 
