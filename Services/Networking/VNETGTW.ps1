@@ -1,4 +1,4 @@
-﻿param($SCPath, $Sub, $Resources, $Task ,$File, $SmaResources, $TableStyle)
+﻿param($SCPath, $Sub, $Resources, $Task ,$File, $SmaResources, $TableStyle, $Metrics)
 If ($Task -eq 'Processing') {
 
     $VNETGTW = $Resources | Where-Object { $_.TYPE -eq 'microsoft.network/virtualnetworkgateways' }

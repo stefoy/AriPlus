@@ -204,6 +204,7 @@ If ($Task -eq 'Processing')
 }
 else 
 {
+    $TableName = ('Metrics_' + $Metrics.Count)
     $Style = New-ExcelStyle -HorizontalAlignment Center -AutoSize -NumberFormat '0'
     
     $Metrics | 
@@ -217,5 +218,5 @@ else
         'MetricAggregate',
         'MetricTimeGrain',
         'MetricValue',
-        'MetricCount' | Export-Excel -Path $File -WorksheetName 'Metrics' -AutoSize -MaxAutoSizeRows 100 -TableName 'Metrics' -TableStyle $tableStyle -Style $Style -Numberformat '0' -MoveToEnd 
+        'MetricCount' | Export-Excel -Path $File -WorksheetName 'Metrics' -AutoSize -MaxAutoSizeRows 100 -TableName $TableName -TableStyle $tableStyle -Style $Style -Numberformat '0' -MoveToEnd 
 }

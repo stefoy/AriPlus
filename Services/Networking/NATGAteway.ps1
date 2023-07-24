@@ -1,4 +1,4 @@
-﻿param($SCPath, $Sub, $Resources, $Task ,$File, $SmaResources, $TableStyle)
+﻿param($SCPath, $Sub, $Resources, $Task ,$File, $SmaResources, $TableStyle, $Metrics)
 If ($Task -eq 'Processing') {
 
     $NATGAT = $Resources | Where-Object { $_.TYPE -eq 'microsoft.network/natgateways' }

@@ -3,13 +3,14 @@
 if ($Task -eq 'Processing') {
 
     $SQLDB = $Resources | Where-Object { $_.TYPE -eq 'microsoft.sql/servers/databases' -and $_.name -ne 'master' }
+    $sqlMetrics = $Metrics | Where-Object { $_.Service -eq 'SQL Database' }
 
     if($SQLDB)
         {
             $tmp = @()
 
-            foreach ($1 in $SQLDB) {
-                $ResUCount = 1
+            foreach ($1 in $SQLDB) 
+            {
                 $sub1 = $SUB | Where-Object { $_.id -eq $1.subscriptionId }
                 $data = $1.PROPERTIES
                 $DBServer = [string]$1.id.split("/")[8]
@@ -17,29 +18,50 @@ if ($Task -eq 'Processing') {
                 if (![string]::IsNullOrEmpty($data.elasticPoolId)) { $PoolId = $data.elasticPoolId.Split("/")[10] } else { $PoolId = "None"}
                 if ($1.kind.Contains("vcore")) { $SqlType = "vcore" } else { $SqlType = "dtu"}
 
+                $sqlDbMetrics = $sqlMetrics | Where-Object { $_.Id -eq $1.id }
+                $sqlAllocatedStorage = $sqlDbMetrics | Where-Object { $_.Metric -eq 'allocated_data_storage' }
+                $sqlStorage = $sqlDbMetrics | Where-Object { $_.Metric -eq 'storage' }
+                $sqlPhysicalReadPercent = $sqlDbMetrics | Where-Object { $_.Metric -eq 'physical_data_read_percent' }
+                $sqlLogWritePercent = $sqlDbMetrics | Where-Object { $_.Metric -eq 'log_write_percent' }
+
+                if ($SqlType -eq 'vcore') 
+                {
+                    $sqlDtuLimit = $sqlDbMetrics | Where-Object { $_.Metric -eq 'cpu_limit' }
+                    $sqlDtuUsed = $sqlDbMetrics | Where-Object { $_.Metric -eq 'cpu_used' }
+                }
+                else 
+                {
+                    $sqlDtuLimit = $sqlDbMetrics | Where-Object { $_.Metric -eq 'dtu_limit' }
+                    $sqlDtuUsed = $sqlDbMetrics | Where-Object { $_.Metric -eq 'dtu_used' }
+                }  
+
                 $obj = @{
                     'ID'                         = $1.id;
                     'Subscription'               = $sub1.Name;
-                    'Resource Group'             = $1.RESOURCEGROUP;
+                    'ResourceGroup'              = $1.RESOURCEGROUP;
                     'Name'                       = $1.NAME;
                     'Location'                   = $1.LOCATION;
-                    'Storage Account Type'       = $data.storageAccountType;
-                    'Database Server'            = $DBServer;
-                    'Default Secondary Location' = $data.defaultSecondaryLocation;
+                    'StorageAccountType'         = $data.storageAccountType;
+                    'DatabaseServer'             = $DBServer;
+                    'SecondaryLocation'          = $data.defaultSecondaryLocation;
                     'Status'                     = $data.status;
                     'Type'                       = $SqlType;
                     'Capacity'                   = $data.currentSku.capacity;
                     'Tier'                       = $data.requestedServiceObjectiveName;
-                    'Zone Redundant'             = $data.zoneRedundant;
-                    'Catalog Collation'          = $data.catalogCollation;
-                    'Read Replica Count'         = $data.readReplicaCount;
-                    'Data Max Size (GB)'         = (($data.maxSizeBytes / 1024) / 1024) / 1024;
-                    'Resource U'                 = $ResUCount;
-                    'ElasticPool ID'             = $PoolId;
+                    'ZoneRedundant'              = $data.zoneRedundant;
+                    'CatalogCollation'           = $data.catalogCollation;
+                    'ReadReplicaCount'           = $data.readReplicaCount;
+                    'DataMaxSizeGB'              = (($data.maxSizeBytes / 1024) / 1024) / 1024;
+                    'ElasticPoolID'              = $PoolId;
+                    'DtuLimit'                   = if ($null -ne $sqlDtuLimit.MetricValue) { $sqlDtuLimit.MetricValue } else { '0' }
+                    'DtuUsed'                    = if ($null -ne $sqlDtuUsed.MetricValue) { $sqlDtuUsed.MetricValue } else { '0' }
+                    'AllocatedDataStorage'       = if ($null -ne $sqlAllocatedStorage.MetricValue) { $sqlAllocatedStorage.MetricValue } else { '0' }
+                    'Storage'                    = if ($null -ne $sqlStorage.MetricValue) { $sqlStorage.MetricValue } else { '0' }
+                    'ReadPercent'                = if ($null -ne $sqlPhysicalReadPercent.MetricValue) { $sqlPhysicalReadPercent.MetricValue } else { '0' }
+                    'WritePercent'               = if ($null -ne $sqlLogWritePercent.MetricValue) { $sqlLogWritePercent.MetricValue } else { '0' }
                 }
 
-                $tmp += $obj
-                if ($ResUCount -eq 1) { $ResUCount = 0 }           
+                $tmp += $obj 
             }
 
             $tmp
@@ -56,21 +78,27 @@ else {
         
         $Exc = New-Object System.Collections.Generic.List[System.Object]
         $Exc.Add('Subscription')
-        $Exc.Add('Resource Group')
+        $Exc.Add('ResourceGroup')
         $Exc.Add('Name')
         $Exc.Add('Location')
-        $Exc.Add('Storage Account Type')
-        $Exc.Add('Database Server')
-        $Exc.Add('Default Secondary Location')
+        $Exc.Add('StorageAccountType')
+        $Exc.Add('DatabaseServer')
+        $Exc.Add('SecondaryLocation')
         $Exc.Add('Status')
         $Exc.Add('Type')
         $Exc.Add('Tier')
         $Exc.Add('Capacity')     
-        $Exc.Add('Data Max Size (GB)')
-        $Exc.Add('Zone Redundant')
-        $Exc.Add('Catalog Collation')
-        $Exc.Add('Read Replica Count')
-        $Exc.Add('ElasticPool ID')
+        $Exc.Add('DataMaxSizeGB')
+        $Exc.Add('ZoneRedundant')
+        $Exc.Add('CatalogCollation')
+        $Exc.Add('ReadReplicaCount')
+        $Exc.Add('ElasticPoolID')
+        $Exc.Add('DtuLimit')
+        $Exc.Add('DtuUsed')
+        $Exc.Add('AllocatedDataStorage')
+        $Exc.Add('Storage')
+        $Exc.Add('ReadPercent')
+        $Exc.Add('WritePercent')
 
         $ExcelVar = $SmaResources.SQLDB 
 

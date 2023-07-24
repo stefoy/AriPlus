@@ -1,11 +1,10 @@
-﻿param($SCPath, $Sub, $Resources, $Task ,$File, $SmaResources, $TableStyle)
+﻿param($SCPath, $Sub, $Resources, $Task ,$File, $SmaResources, $TableStyle, $Metrics)
 
 If ($Task -eq 'Processing')
 {
-    $virtualMachines =  $Resources | Where-Object {$_.TYPE -eq 'microsoft.compute/virtualmachines'}
-    $nic = $Resources | Where-Object {$_.TYPE -eq 'microsoft.network/networkinterfaces'}
-    $vmexp = $Resources | Where-Object {$_.TYPE -eq 'microsoft.compute/virtualmachines/extensions'}
-    $disk = $Resources | Where-Object {$_.TYPE -eq 'microsoft.compute/disks'}        
+    $virtualMachines =  $Resources | Where-Object { $_.TYPE -eq 'microsoft.compute/virtualmachines' } 
+    $virtualMachineMetrics = $Metrics | Where-Object { $_.Service -eq 'Virtual Machines' }
+
     $vmsizemap = @{}
 
     foreach($location in ($virtualMachines | Select-Object -ExpandProperty location -Unique))
@@ -23,24 +22,14 @@ If ($Task -eq 'Processing')
     {    
         $tmp = @()
 
-        foreach ($1 in $virtualMachines) 
+        foreach ($vm in $virtualMachines) 
         {
-            $ResUCount = 1
-            $sub1 = $SUB | Where-Object { $_.id -eq $1.subscriptionId }
-            $data = $1.PROPERTIES 
+            $sub1 = $SUB | Where-Object { $_.id -eq $vm.subscriptionId }
+            $data = $vm.PROPERTIES 
             $timecreated = $data.timeCreated
             $timecreated = [datetime]$timecreated
             $timecreated = $timecreated.ToString("yyyy-MM-dd HH:mm")
-            $AVSET = ''
-            $dataSize = ''
-            $StorAcc = ''
 
-            $ext = @()
-            $AzDiag = ''
-            $Azinsights = ''
-
-            $Lic = $data.licenseType
-            
             switch ($data.licenseType) 
             {
                 'Windows_Server' { $Lic = 'AHUB for Windows' }
@@ -51,93 +40,36 @@ If ($Task -eq 'Processing')
 
             $Lic = if($Lic) { $Lic } else { 'License Included' }
 
-            $ext = ($vmexp | Where-Object { ($_.id -split "/")[8] -eq $1.name }).properties.Publisher
-            if ($null -ne $ext) 
-            {
-                $ext = foreach ($ex in $ext) 
-                    {
-                        if ($ex | Where-Object { $_ -eq 'Microsoft.Azure.Performance.Diagnostics' }) { $AzDiag = $true }
-                        if ($ex | Where-Object { $_ -eq 'Microsoft.EnterpriseCloud.Monitoring' }) { $Azinsights = $true }
-                        $ex + ', '
-                    }
-                $ext = [string]$ext
-                $ext = $ext.Substring(0, $ext.Length - 2)
+            $vmMetrics = $virtualMachineMetrics | Where-Object { $_.Id -eq $vm.id }
+            $cpuUtilisationMetric = $vmMetrics | Where-Object { $_.Metric -eq 'Percentage CPU' }
+            $memoryAvilableMetric = $vmMetrics | Where-Object { $_.Metric -eq 'Available Memory Bytes' }
+            $memoryTotalGb = $vmsizemap[$data.hardwareProfile.vmSize].RAM
+
+            $obj = @{
+                'ID'                            = $vm.id;
+                'Subscription'                  = $sub1.Name;
+                'ResourceGroup'                 = $vm.RESOURCEGROUP;
+                'Name'                          = $vm.NAME;
+                'Location'                      = $vm.LOCATION;
+                'AvailabilitySet'               = if ($null -ne $data.availabilitySet) { 'true' } else { 'false' }    
+                'Size'                          = $data.hardwareProfile.vmSize;
+                'CPU'                           = $vmsizemap[$data.hardwareProfile.vmSize].CPU;
+                'Memory'                        = $vmsizemap[$data.hardwareProfile.vmSize].RAM;
+                'ImageReference'                = $data.storageProfile.imageReference.publisher;
+                'ImageVersion'                  = $data.storageProfile.imageReference.exactVersion;
+                'HybridBenefit'                 = $Lic;
+                'OS'                            = $data.storageProfile.osDisk.osType;
+                'OSName'                        = $data.extended.instanceView.osname;
+                'OSVersion'                     = $data.extended.instanceView.osversion;
+                'PowerState'                    = $data.extended.instanceView.powerState.displayStatus;
+                'CPUAvgPercent'                 = if ($null -ne $cpuUtilisationMetric.MetricValue) { $cpuUtilisationMetric.MetricValue } else { '0' }
+                'MemoryAvgPercent'              = if ($null -ne $memoryAvilableMetric.MetricValue) { $memoryTotalGb - ($memoryAvilableMetric.MetricValue / (1024 * 1024 * 1024)) } else { '0' }
+                'CreatedTime'                   = $timecreated;
             }
 
-            if ($null -ne $data.availabilitySet) { $AVSET = 'True' }else { $AVSET = 'False' }
-            if ($data.diagnosticsProfile.bootDiagnostics.enabled -eq $true) { $bootdg = $true }else { $bootdg = $false }
-
-            if($data.storageProfile.osDisk.managedDisk.id) 
-            {
-                $OSDisk = ($disk | Where-Object {$_.id -eq $data.storageProfile.osDisk.managedDisk.id} | Select-Object -Unique).sku.name
-                $OSDiskSize = ($disk | Where-Object {$_.id -eq $data.storageProfile.osDisk.managedDisk.id} | Select-Object -Unique).Properties.diskSizeGB
-            }
-            else
-            {
-                $OSDisk = if($data.storageProfile.osDisk.vhd.uri){'Custom VHD'}else{''}
-                $OSDiskSize = $data.storageProfile.osDisk.diskSizeGB
-            }
-
-            $StorAcc = if ($data.storageProfile.dataDisks.managedDisk.id.count -ge 2) 
-                        { 
-                            ($data.storageProfile.dataDisks.managedDisk.id.count.ToString() + ' Disks found.') 
-                        }
-                        else 
-                        { 
-                            ($disk | Where-Object {$_.id -eq $data.storageProfile.dataDisks.managedDisk.id} | Select-Object -Unique).sku.name
-                        }
-            $dataSize = if ($data.storageProfile.dataDisks.managedDisk.storageAccountType.count -ge 2) 
-                        { 
-                            (($disk | Where-Object {$_.id -in $data.storageProfile.dataDisks.managedDisk.id}).properties.diskSizeGB | Measure-Object -Sum).Sum
-                        }
-                        else 
-                        { 
-                            ($disk | Where-Object {$_.id -eq $data.storageProfile.dataDisks.managedDisk.id}).properties.diskSizeGB
-                        }                    
-
-            $VMNICS = if(![string]::IsNullOrEmpty($data.networkProfile.networkInterfaces.id)){$data.networkProfile.networkInterfaces.id}else{'0'}
-  
-            foreach ($2 in $VMNICS) 
-            {
-                $vmnic = $nic | Where-Object { $_.ID -eq $2 } | Select-Object -Unique
-                $networkSecurityGroup = if($vmnic.properties.networkSecurityGroup.id){$vmnic.properties.networkSecurityGroup.id.split('/')[8]}else{'None'}
-                $virtualNetwork = $vmnic.properties.ipConfigurations.properties.subnet.id.split('/')[8]
-                $subnet = $vmnic.properties.ipConfigurations.properties.subnet.id.split('/')[10]
-
-                $obj = @{
-                    'ID'                            = $1.id;
-                    'Subscription'                  = $sub1.Name;
-                    'ResourceGroup'                 = $1.RESOURCEGROUP;
-                    'Name'                          = $1.NAME;
-                    'Location'                      = $1.LOCATION;
-                    'AvailabilitySet'               = $AVSET;
-                    'Size'                          = $data.hardwareProfile.vmSize;
-                    'vCPUs'                         = $vmsizemap[$data.hardwareProfile.vmSize].CPU;
-                    'RAM'                           = $vmsizemap[$data.hardwareProfile.vmSize].RAM;
-                    'ImageReference'                = $data.storageProfile.imageReference.publisher;
-                    'ImageVersion'                  = $data.storageProfile.imageReference.exactVersion;
-                    'HybridBenefit'                 = $Lic;
-                    'OSType'                        = $data.storageProfile.osDisk.osType;
-                    'OSName'                        = $data.extended.instanceView.osname;
-                    'OSVersion'                     = $data.extended.instanceView.osversion;
-                    'OSDiskStorageType'             = $OSDisk;
-                    'OSDiskSize'                    = $OSDiskSize;
-                    'DataDiskStorageType'           = $StorAcc;
-                    'DataDiskSize'                  = $dataSize;
-                    'PowerState'                    = $data.extended.instanceView.powerState.displayStatus;
-                    'VirtualNetwork'                = $virtualNetwork;
-                    'NSG'                           = $networkSecurityGroup;
-                    'CreatedTime'                   = $timecreated;
-                    'ResourceU'                     = $ResUCount;
-                }
-
-                $tmp += $obj
-                if ($ResUCount -eq 1) { $ResUCount = 0 } 
-
-                Remove-Variable vmnic, networkSecurityGroup, virtualNetwork, Subnet                        
-            }
+            $tmp += $obj
         }
-                
+              
         $tmp
     }            
 }
@@ -147,37 +79,31 @@ else
     {
         $TableName = ('VMTable_'+($SmaResources.VirtualMachines.id | Select-Object -Unique).count)
         $Style = New-ExcelStyle -HorizontalAlignment Center -AutoSize -NumberFormat '0' -VerticalAlignment Center
-        $StyleExt = New-ExcelStyle -HorizontalAlignment Left -Range AK:AK -Width 60 -WrapText 
 
         $Exc = New-Object System.Collections.Generic.List[System.Object]
         $Exc.Add('Subscription')
         $Exc.Add('ResourceGroup')
         $Exc.Add('Name')
         $Exc.Add('Size')
-        $Exc.Add('vCPUs')
-        $Exc.Add('RAM')
+        $Exc.Add('CPU')
+        $Exc.Add('Memory')
         $Exc.Add('Location')
-        $Exc.Add('OSType')
+        $Exc.Add('OS')
         $Exc.Add('OSName')
         $Exc.Add('OSVersion')
         $Exc.Add('ImageReference')
         $Exc.Add('ImageVersion')
         $Exc.Add('HybridBenefit')
-        $Exc.Add('OSDiskStorageType')
-        $Exc.Add('OSDiskSize')
-        $Exc.Add('DataDiskStorageType')
-        $Exc.Add('DataDiskSize')
         $Exc.Add('PowerState')
         $Exc.Add('AvailabilitySet')
-        $Exc.Add('VirtualNetwork')
-        $Exc.Add('NSG')
+        $Exc.Add('CPUAvgPercent')
+        $Exc.Add('MemoryAvgPercent')
         $Exc.Add('CreatedTime')     
-        $Exc.Add('ResourceU')
 
         $ExcelVar = $SmaResources.VirtualMachines
                     
         $ExcelVar | 
         ForEach-Object { [PSCustomObject]$_ } | Select-Object -Unique $Exc | 
-        Export-Excel -Path $File -WorksheetName 'Virtual Machines' -TableName $TableName -MaxAutoSizeRows 100 -TableStyle $tableStyle -Style $Style, $StyleExt
+        Export-Excel -Path $File -WorksheetName 'Virtual Machines' -TableName $TableName -MaxAutoSizeRows 100 -TableStyle $tableStyle -Style $Style
     }             
 }

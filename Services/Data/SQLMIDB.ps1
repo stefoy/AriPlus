@@ -1,4 +1,4 @@
-param($SCPath, $Sub, $Resources, $Task ,$File, $SmaResources, $TableStyle)
+param($SCPath, $Sub, $Resources, $Task ,$File, $SmaResources, $TableStyle, $Metrics)
 
 if ($Task -eq 'Processing') {
 

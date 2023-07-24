@@ -1,4 +1,4 @@
-﻿param($SCPath, $Sub, $Resources, $Task ,$File, $SmaResources, $TableStyle)
+﻿param($SCPath, $Sub, $Resources, $Task ,$File, $SmaResources, $TableStyle, $Metrics)
 
 If ($Task -eq 'Processing')
 {
@@ -10,16 +10,8 @@ If ($Task -eq 'Processing')
 
         foreach ($1 in $AppSvc) 
         {
-            $ResUCount = 1
             $sub1 = $SUB | Where-Object { $_.id -eq $1.subscriptionId }
             $data = $1.PROPERTIES
-            if([string]::IsNullOrEmpty($data.siteConfig.ftpsState)){$FTPS = $false}else{$FTPS = $data.siteConfig.ftpsState}
-            if([string]::IsNullOrEmpty($data.Properties.SiteConfig.acrUseManagedIdentityCreds)){$MGMID = $false}else{$MGMID = $true}
-
-            if (![string]::IsNullOrEmpty($data.virtualNetworkSubnetId)) { $VNET = $data.virtualNetworkSubnetId.split("/")[8] } else { $VNET = "None"}
-            if (![string]::IsNullOrEmpty($data.virtualNetworkSubnetId)) { $SUBNET = $data.virtualNetworkSubnetId.split("/")[10] } else { $SUBNET = "None"}
-            # $VNET = $data.virtualNetworkSubnetId.split("/")[8]
-            # $SUBNET = $data.virtualNetworkSubnetId.split("/")[10]
 
             $obj = @{
                 'ID'                            = $1.id;
@@ -31,19 +23,19 @@ If ($Task -eq 'Processing')
                 'Enabled'                       = $data.enabled;
                 'State'                         = $data.state;
                 'SKU'                           = $data.sku;
-                'RepositorySiteName'            = $data.repositorySiteName;
                 'AvailabilityState'             = $data.availabilityState;
-                'Stack'                         = $data.SiteConfig.linuxFxVersion;
-                'VirtualNetwork'                = $VNET;
-                'Subnet'                        = $SUBNET;
-                'DefaultHostname'               = $data.defaultHostName;                        
+                'Linux'                         = $data.SiteConfig.linuxFxVersion;
+                'Windows'                       = $data.SiteConfig.windowsFxVersion;
+                'NetVersion'                    = $data.SiteConfig.netFrameworkVersion;
+                'PHPVersion'                    = $data.SiteConfig.phpVersion;
+                'PowerShellVersion'             = $data.SiteConfig.powerShellVersion;
+                'NodeVersion'                   = $data.SiteConfig.nodeVersion;
+                'PythonVersion'                 = $data.SiteConfig.pythonVersion;
+                'JavaVersion'                   = $data.SiteConfig.javaVersion;                  
                 'ContainerSize'                 = $data.containerSize;
-                'ResourceU'                     = $ResUCount;
-                'ExctendedProperties'   = $1;
             }
 
             $tmp += $obj
-            if ($ResUCount -eq 1) { $ResUCount = 0 } 
         }
         
         $tmp
@@ -66,12 +58,16 @@ Else
         $Exc.Add('Enabled')
         $Exc.Add('State')
         $Exc.Add('SKU')
-        $Exc.Add('RepositorySiteName')
         $Exc.Add('AvailabilityState')
-        $Exc.Add('Stack')
-        $Exc.Add('VirtualNetwork')
-        $Exc.Add('Subnet')
-        $Exc.Add('DefaultHostname')                      
+        $Exc.Add('Linux')
+        $Exc.Add('Windows')
+        $Exc.Add('NetVersion')
+        $Exc.Add('PHPVersion')
+        $Exc.Add('PowerShellVersion')
+        $Exc.Add('NodeVersion')
+        $Exc.Add('PythonVersion')
+        $Exc.Add('JavaVersion')
+        $Exc.Add('Stack')               
         $Exc.Add('ContainerSize')
         
         $ExcelVar = $SmaResources.AppServices 

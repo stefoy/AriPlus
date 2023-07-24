@@ -28,8 +28,8 @@ function Variables
 
     if ($Online.IsPresent) { $Global:RunOnline = $true }else { $Global:RunOnline = $false }
 
-    $Global:Repo = 'https://github.com/stefoy/ARI/tree/main/Modules'
-    $Global:RawRepo = 'https://raw.githubusercontent.com/stefoy/ARI/main'
+    $Global:Repo = 'https://api.github.com/repos/stefoy/AriPlus/git/trees/main?recursive=1'
+    $Global:RawRepo = 'https://raw.githubusercontent.com/stefoy/AriPlus/main'
 
     $Global:TableStyle = "Medium15"
 
@@ -285,34 +285,101 @@ Function RunInventorySetup()
     function ResourceInventoryLoop()
     {
         Write-Progress -activity 'Azure Inventory' -Status "4% Complete." -PercentComplete 4 -CurrentOperation "Starting Resources extraction jobs.."        
-    
-        $GraphQuery = "resources | where strlen(properties.definition.actions) < 123000 | summarize count()"
-        $EnvSize = az graph query -q  $GraphQuery --output json --only-show-errors | ConvertFrom-Json
-        $EnvSizeCount = $EnvSize.Data.'count_'
-        
-        Write-Host ("Resources Output: {0} Resources Identified" -f $EnvSizeCount) -BackgroundColor Black -ForegroundColor Green
-        
-        if ($EnvSizeCount -ge 1) 
+
+        if(![string]::IsNullOrEmpty($ResourceGroup) -and [string]::IsNullOrEmpty($SubscriptionID))
         {
-            $Loop = $EnvSizeCount / 1000
-            $Loop = [math]::Ceiling($Loop)
-            $Looper = 0
-            $Limit = 0
-        
-            while ($Looper -lt $Loop) 
-            {
-                $GraphQuery = "resources | where strlen(properties.definition.actions) < 123000 | project id,name,type,tenantId,kind,location,resourceGroup,subscriptionId,managedBy,sku,plan,properties,identity,zones,extendedLocation | order by id asc"
-                $Resource = (az graph query -q $GraphQuery --skip $Limit --first 1000 --output json --only-show-errors).tolower() | ConvertFrom-Json
-        
-                $Global:Resources += $Resource.Data
-                Start-Sleep 2
-                $Looper++
-                Write-Progress -Id 1 -activity "Running Resource Inventory Job" -Status "$Looper / $Loop of Inventory Jobs" -PercentComplete (($Looper / $Loop) * 100)
-                $Limit = $Limit + 1000
-            }
+            Write-Debug ('Resource Group Name present, but missing Subscription ID.')
+            Write-Host ''
+            Write-Host 'If Using the -ResourceGroup Parameter, the Subscription ID must be informed'
+            Write-Host ''
+            Exit
         }
-        
-        Write-Progress -Id 1 -activity "Running Resource Inventory Job" -Status "$Looper / $Loop of Inventory Jobs" -Completed
+
+        if(![string]::IsNullOrEmpty($ResourceGroup) -and ![string]::IsNullOrEmpty($SubscriptionID))
+        {
+            Write-Debug ('Extracting Resources from Subscription: '+$SubscriptionID+'. And from Resource Group: '+$ResourceGroup)
+
+            $Subscri = $SubscriptionID
+
+            $GraphQuery = "resources | where resourceGroup == '$ResourceGroup' and strlen(properties.definition.actions) < 123000 | summarize count()"
+            $EnvSize = az graph query -q $GraphQuery --subscriptions $Subscri --output json --only-show-errors | ConvertFrom-Json
+            $EnvSizeNum = $EnvSize.data.'count_'
+
+            if ($EnvSizeNum -ge 1) {
+                $Loop = $EnvSizeNum / 1000
+                $Loop = [math]::ceiling($Loop)
+                $Looper = 0
+                $Limit = 0
+
+                while ($Looper -lt $Loop) {
+                    $GraphQuery = "resources | where resourceGroup == '$ResourceGroup' and strlen(properties.definition.actions) < 123000 | project id,name,type,tenantId,kind,location,resourceGroup,subscriptionId,managedBy,sku,plan,properties,identity,zones,extendedLocation$($GraphQueryTags) | order by id asc"
+                    $Resource = (az graph query -q $GraphQuery --subscriptions $Subscri --skip $Limit --first 1000 --output json --only-show-errors).tolower() | ConvertFrom-Json
+
+                    $Global:Resources += $Resource.data
+                    Start-Sleep 2
+                    $Looper ++
+                    Write-Progress -Id 1 -activity "Running Resource Inventory Job" -Status "$Looper / $Loop of Inventory Jobs" -PercentComplete (($Looper / $Loop) * 100)
+                    $Limit = $Limit + 1000
+                }
+            }
+            Write-Progress -Id 1 -activity "Running Resource Inventory Job" -Status "$Looper / $Loop of Inventory Jobs" -Completed
+        }
+        elseif([string]::IsNullOrEmpty($ResourceGroup) -and ![string]::IsNullOrEmpty($SubscriptionID))
+        {
+            Write-Debug ('Extracting Resources from Subscription: '+$SubscriptionID+'.')
+            $GraphQuery = "resources | where strlen(properties.definition.actions) < 123000 | summarize count()"
+            $EnvSize = az graph query -q $GraphQuery  --output json --subscriptions $SubscriptionID --only-show-errors | ConvertFrom-Json
+            $EnvSizeNum = $EnvSize.data.'count_'
+
+            if ($EnvSizeNum -ge 1) {
+                $Loop = $EnvSizeNum / 1000
+                $Loop = [math]::ceiling($Loop)
+                $Looper = 0
+                $Limit = 0
+
+                while ($Looper -lt $Loop) {
+                    $GraphQuery = "resources | where strlen(properties.definition.actions) < 123000 | project id,name,type,tenantId,kind,location,resourceGroup,subscriptionId,managedBy,sku,plan,properties,identity,zones,extendedLocation$($GraphQueryTags) | order by id asc"
+                    $Resource = (az graph query -q $GraphQuery --subscriptions $SubscriptionID --skip $Limit --first 1000 --output json --only-show-errors).tolower() | ConvertFrom-Json
+
+                    $Global:Resources += $Resource.data
+                    Start-Sleep 2
+                    $Looper ++
+                    Write-Progress -Id 1 -activity "Running Resource Inventory Job" -Status "$Looper / $Loop of Inventory Jobs" -PercentComplete (($Looper / $Loop) * 100)
+                    $Limit = $Limit + 1000
+                }
+            }
+            Write-Progress -Id 1 -activity "Running Resource Inventory Job" -Status "$Looper / $Loop of Inventory Jobs" -Completed
+        } 
+        else 
+        {
+            $GraphQuery = "resources | where strlen(properties.definition.actions) < 123000 | summarize count()"
+            $EnvSize = az graph query -q  $GraphQuery --output json --only-show-errors | ConvertFrom-Json
+            $EnvSizeCount = $EnvSize.Data.'count_'
+            
+            Write-Host ("Resources Output: {0} Resources Identified" -f $EnvSizeCount) -BackgroundColor Black -ForegroundColor Green
+            
+            if ($EnvSizeCount -ge 1) 
+            {
+                $Loop = $EnvSizeCount / 1000
+                $Loop = [math]::Ceiling($Loop)
+                $Looper = 0
+                $Limit = 0
+            
+                while ($Looper -lt $Loop) 
+                {
+                    $GraphQuery = "resources | where strlen(properties.definition.actions) < 123000 | project id,name,type,tenantId,kind,location,resourceGroup,subscriptionId,managedBy,sku,plan,properties,identity,zones,extendedLocation | order by id asc"
+                    $Resource = (az graph query -q $GraphQuery --skip $Limit --first 1000 --output json --only-show-errors).tolower() | ConvertFrom-Json
+                    
+                    $Global:Resources += $Resource.Data
+                    Start-Sleep 2
+                    $Looper++
+                    Write-Progress -Id 1 -activity "Running Resource Inventory Job" -Status "$Looper / $Loop of Inventory Jobs" -PercentComplete (($Looper / $Loop) * 100)
+                    $Limit = $Limit + 1000
+                }
+            }
+            
+            Write-Progress -Id 1 -activity "Running Resource Inventory Job" -Status "$Looper / $Loop of Inventory Jobs" -Completed
+        }
     }
     
     function ResourceInventoryAvd()
@@ -380,17 +447,28 @@ function ExecuteInventoryProcessing()
             {
                 Write-Debug ('Looking for the following file: '+$RawRepo + '/Extension/Metrics.ps1')
                 $ModuSeq = (New-Object System.Net.WebClient).DownloadString($RawRepo + '/Extension/Metrics.ps1')
-            }
-            else 
-            {
+
+                Write-Debug(($PSScriptRoot + '\Extension\Metrics.ps1'))
+
                 if($PSScriptRoot -like '*\*')
                 {
-                    $MetricPath = Get-ChildItem -Path ($PSScriptRoot + '\Extension\Metrics.ps1') -Recurse
+                    New-Item -Path ($PSScriptRoot + '\Extension\') -ItemType Directory
+                    $ModuSeq | Out-File ($PSScriptRoot + '\Extension\Metrics.ps1') 
                 }
                 else
                 {
-                    $MetricPath = Get-ChildItem -Path ($PSScriptRoot + '/Extension/Metrics.ps1') -Recurse
+                    New-Item -Path ($PSScriptRoot + '/Extension/') -ItemType Directory
+                    $ModuSeq | Out-File ($PSScriptRoot + '/Extension/Metrics.ps1')
                 }
+            }
+
+            if($PSScriptRoot -like '*\*')
+            {
+                $MetricPath = Get-ChildItem -Path ($PSScriptRoot + '\Extension\Metrics.ps1') -Recurse
+            }
+            else
+            {
+                $MetricPath = Get-ChildItem -Path ($PSScriptRoot + '/Extension/Metrics.ps1') -Recurse
             }
 
             $Global:AzMetrics = & $MetricPath -Subscriptions $Subscriptions -Resources $Resources -Task "Processing" -File $file -Metrics $null -TableStyle $null -ConcurrencyLimit $ConcurrencyLimit
@@ -406,21 +484,13 @@ function ExecuteInventoryProcessing()
 
             $Global:AzMetrics | ConvertTo-Json -depth 100 -compress | Out-File $Global:MetricsJsonFile
     
-            If ($RunOnline -eq $true) 
+            if($PSScriptRoot -like '*\*')
             {
-                Write-Debug ('Looking for the following file: '+$RawRepo + '/Extension/Metrics.ps1')
-                $ModuSeq = (New-Object System.Net.WebClient).DownloadString($RawRepo + '/Extension/Metrics.ps1')
+                $MetricPath = Get-ChildItem -Path ($PSScriptRoot + '\Extension\Metrics.ps1') -Recurse
             }
-            else 
+            else
             {
-                if($PSScriptRoot -like '*\*')
-                {
-                    $MetricPath = Get-ChildItem -Path ($PSScriptRoot + '\Extension\Metrics.ps1') -Recurse
-                }
-                else
-                {
-                    $MetricPath = Get-ChildItem -Path ($PSScriptRoot + '/Extension/Metrics.ps1') -Recurse
-                }
+                $MetricPath = Get-ChildItem -Path ($PSScriptRoot + '/Extension/Metrics.ps1') -Recurse
             }
 
             $ProcessResults = & $MetricPath -Subscriptions $null -Resources $null -Task "Reporting" -File $file -Metrics $Global:AzMetrics -TableStyle $Global:TableStyle
@@ -433,7 +503,40 @@ function ExecuteInventoryProcessing()
 
         Write-Debug ('Starting Service Processing Jobs.')
 
-        if($($args[1]) -like '*\*')
+        If ($RunOnline -eq $true) 
+        {
+            Write-Debug ('Running Online Checking for Services Modules at: ' + $RawRepo)
+
+            $OnlineRepo = Invoke-WebRequest -Uri $Repo
+            $RepoContent = $OnlineRepo | ConvertFrom-Json
+            $ModuleUrls = ($RepoContent.tree | Where-Object {$_.path -like '*.ps1' -and $_.path -notlike 'Extension/*' -and $_.path -ne 'ResourceInventory.ps1'}).path
+
+            if($PSScriptRoot -like '*\*')
+            {
+                New-Item -Path ($PSScriptRoot + '\Services\') -ItemType Directory
+            }
+            else
+            {
+                New-Item -Path ($PSScriptRoot + '/Services/') -ItemType Directory
+            }
+
+            foreach ($moduleUrl in $moduleUrls)
+            {
+                $ModuleContent = (New-Object System.Net.WebClient).DownloadString($RawRepo + '/' + $moduleUrl)
+                $ModuleFileName = [System.IO.Path]::GetFileName($moduleUrl)
+
+                if($PSScriptRoot -like '*\*')
+                {
+                    $ModuleContent | Out-File ($PSScriptRoot + '\Services\' + $ModuleFileName) 
+                }
+                else
+                {
+                    $ModuleContent | Out-File ($PSScriptRoot + '/Services/' + $ModuleFileName) 
+                }
+            }
+        }
+
+        if($PSScriptRoot -like '*\*')
         {
             $Modules = Get-ChildItem -Path ($PSScriptRoot +  '\Services\*.ps1') -Recurse
         }
@@ -450,16 +553,12 @@ function ExecuteInventoryProcessing()
             $ModName = $Module.Name.Substring(0, $Module.Name.length - ".ps1".length)
             
             Write-Host ("Service Processing: {0} {1}" -f $Module, $ModName) -ForegroundColor Green
-            $result = & $Module -SCPath $SCPath -Sub $Subscriptions -Resources ($Resource | ConvertFrom-Json) -Task "Processing" -File $file -SmaResources $null -TableStyle $null 
+            $result = & $Module -SCPath $SCPath -Sub $Subscriptions -Resources ($Resource | ConvertFrom-Json) -Task "Processing" -File $file -SmaResources $null -TableStyle $null -Metrics $Global:AzMetrics
             $Global:SmaResources | Add-Member -MemberType NoteProperty -Name $ModName -Value NotSet
             $Global:SmaResources.$ModName = $result
 
             $result = $null
-            #$([System.GC]::GetTotalMemory($false))
             [System.GC]::Collect()
-            #$([System.GC]::GetTotalMemory($true))
-
-            #$Global:SmaResources = & $Module -SCPath $SCPath -Sub $Subscriptions -Resources ($Resource | ConvertFrom-Json) -Task "Processing" -File $file -SmaResources $null -TableStyle $null 
         }
     }
 
@@ -469,7 +568,6 @@ function ExecuteInventoryProcessing()
         $DataActive = ('Azure Resource Inventory Reporting (' + ($resources.count) + ') Resources')
         Write-Progress -activity $DataActive -Status "Processing Inventory" -PercentComplete 50
 
-        $ResourceJobs = 'Compute', 'Analytics', 'Containers', 'Data', 'Infrastructure', 'Integration', 'Networking', 'Storage'
         $Services = @()
 
         if($PSScriptRoot -like '*\*')
@@ -493,7 +591,7 @@ function ExecuteInventoryProcessing()
 
             Write-Debug "Running Services: '$Service'"
             
-            $ProcessResults = & $Service.FullName -SCPath $PSScriptRoot -Sub $null -Resources $null -Task "Reporting" -File $file -SmaResources $Global:SmaResources -TableStyle $Global:TableStyle
+            $ProcessResults = & $Service.FullName -SCPath $PSScriptRoot -Sub $null -Resources $null -Task "Reporting" -File $file -SmaResources $Global:SmaResources -TableStyle $Global:TableStyle -Metrics $null
 
             $ReportCounter++
         }
@@ -504,12 +602,52 @@ function ExecuteInventoryProcessing()
         Write-Debug ('Resource Reporting Phase Done.')
     }
 
+    function ProcessSummary()
+    {
+        Write-Debug ('Creating Summary Report')
+
+        if (!$SkipMetrics.IsPresent) 
+        {
+            Write-Debug ('Starting Summary Report Processing Job.')
+
+            If ($RunOnline -eq $true) 
+            {
+                Write-Debug ('Looking for the following file: '+$RawRepo + '/Extension/Summary.ps1')
+                $ModuSeq = (New-Object System.Net.WebClient).DownloadString($RawRepo + '/Extension/Summary.ps1')
+
+                Write-Debug(($PSScriptRoot + '\Extension\Summary.ps1'))
+
+                if($PSScriptRoot -like '*\*')
+                {
+                    New-Item -Path ($PSScriptRoot + '\Extension\') -ItemType Directory
+                    $ModuSeq | Out-File ($PSScriptRoot + '\Extension\Summary.ps1') 
+                }
+                else
+                {
+                    New-Item -Path ($PSScriptRoot + '/Extension/') -ItemType Directory
+                    $ModuSeq | Out-File ($PSScriptRoot + '/Extension/Summary.ps1')
+                }
+            }
+
+            if($PSScriptRoot -like '*\*')
+            {
+                $MetricPath = Get-ChildItem -Path ($PSScriptRoot + '\Extension\Summary.ps1') -Recurse
+            }
+            else
+            {
+                $MetricPath = Get-ChildItem -Path ($PSScriptRoot + '/Extension/Summary.ps1') -Recurse
+            }
+
+            $ChartsRun = & $MetricPath -File $file -TableStyle $TableStyle -PlatOS $PlatformOS -Subscriptions $Subscriptions -Resources $Resources -ExtractionRunTime $Runtime -ReportingRunTime $ReportingRunTime -RunLite $false
+        }
+    }
 
     InitializeInventoryProcessing
     CreateMetricsJob
     CreateResourceJobs   
     ProcessMetricsResult
     ProcessResourceResult
+    ProcessSummary
 }
 
 
@@ -522,5 +660,7 @@ $Global:ReportingRunTime = Measure-Command -Expression {
     ExecuteInventoryProcessing
 }
 
-Write-Host ("Execution Time: {0}" -f $Runtime)
-Write-Host ("Reporting Time: {0}" -f $ReportingRunTime)
+Write-Host ("Execution Time: {0}" -f $Runtime) -ForegroundColor Cyan
+Write-Host ("Reporting Time: {0}" -f $ReportingRunTime) -ForegroundColor Cyan
+Write-Host ("Excel Report: {0}" -f $Global:File) -ForegroundColor Cyan
+Write-Host ("MetricS JSON: {0}" -f $Global:MetricsJsonFile) -ForegroundColor Cyan

@@ -12,28 +12,24 @@ if ($Task -eq 'Processing') {
                 $ResUCount = 1
                 $sub1 = $SUB | Where-Object { $_.id -eq $1.subscriptionId }
                 $data = $1.PROPERTIES
-                
-                $metricStartTime = (Get-Date).AddDays(-1)
-                $metricEndTime = (Get-Date)
 
-                
                 $obj = @{
                     'ID'                         = $1.id;
                     'Subscription'               = $sub1.Name;
-                    'Resource Group'             = $1.RESOURCEGROUP;
+                    'ResourceGroup'             = $1.RESOURCEGROUP;
                     'Name'                       = $1.NAME;
                     'Location'                   = $1.LOCATION;
                     'Capacity'                   = $1.sku.Capacity;
                     'Sku'                        = $1.sku.name;
                     'Size'                       = $1.sku.size;
                     'Tier'                       = $1.sku.tier;
-                    'Replica Count'              = $data.highAvailabilityReplicaCount;
+                    'ReplicaCount'              = $data.highAvailabilityReplicaCount;
                     'License'                    = $data.licenseType;
-                    'Min Capacity'               = $data.minCapacity;
-                    'Max Size (GB)'              = (($data.maxSizeBytes / 1024) / 1024) / 1024;
-                    'DB Max Capacity'            = $data.perDatabaseSettings.maxCapacity;
-                    'DB Min Capacity'            = $data.perDatabaseSettings.minCapacity;
-                    'Zone Redundant'             = $data.zoneRedundant;
+                    'MinCapacity'               = $data.minCapacity;
+                    'MaxSizeGB'              = (($data.maxSizeBytes / 1024) / 1024) / 1024;
+                    'DBMaxCapacity'            = $data.perDatabaseSettings.maxCapacity;
+                    'DBMinCapacity'            = $data.perDatabaseSettings.minCapacity;
+                    'ZoneRedundant'             = $data.zoneRedundant;
                 }
                 
                 $tmp += $obj
@@ -50,20 +46,20 @@ else {
         
         $Exc = New-Object System.Collections.Generic.List[System.Object]
         $Exc.Add('Subscription')
-        $Exc.Add('Resource Group')
+        $Exc.Add('ResourceGroup')
         $Exc.Add('Name')
         $Exc.Add('Location')
         $Exc.Add('Capacity')
         $Exc.Add('Sku')
         $Exc.Add('Size')
         $Exc.Add('Tier')
-        $Exc.Add('Replica Count')
+        $Exc.Add('ReplicaCount')
         $Exc.Add('License')
-        $Exc.Add('Min Capacity')
-        $Exc.Add('Max Size (GB)')
-        $Exc.Add('DB Min Capacity')
-        $Exc.Add('DB Max Capacity')
-        $Exc.Add('Zone Redundant')        
+        $Exc.Add('MinCapacity')
+        $Exc.Add('MaxSizeGB')
+        $Exc.Add('DBMinCapacity')
+        $Exc.Add('DBMaxCapacity')
+        $Exc.Add('ZoneRedundant')        
 
         $ExcelVar = $SmaResources.SQLPOOL 
 
