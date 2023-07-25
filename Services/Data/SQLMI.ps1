@@ -5,10 +5,6 @@ if ($Task -eq 'Processing')
     $SQLSERVERMI = $Resources | Where-Object { $_.TYPE -eq 'microsoft.sql/managedInstances' }
     $SQLSERVERMIDB = $Resources | Where-Object { $_.TYPE -eq 'microsoft.sql/managedinstances/databases' }
 
-    "id": "/subscriptions/20d7082a-0fc7-4468-82bd-542694d5042b/resourceGroups/Test1/providers/Microsoft.Sql/managedInstances/testinstance1",
-    "id": "/subscriptions/00000000-1111-2222-3333-444444444444/resourceGroups/Test1/providers/Microsoft.Sql/managedInstances/testcl/databases/testdb1",
-
-
     if($SQLSERVERMI)
     {
         $tmp = @()
