@@ -113,24 +113,27 @@ Function RunInventorySetup()
     
         $Global:PlatformOS = 'PowerShell Desktop'
         $cloudShell = try{Get-CloudDrive}catch{}
+
+        $Global:CurrentDateTime = (get-date -Format "yyyyMMddHHmm")
+        $Global:FolderName = $Global:ReportName + $CurrentDateTime
         
         if ($cloudShell) 
         {
             Write-Host 'Identified Environment as Azure CloudShell' -ForegroundColor Green
             $Global:PlatformOS = 'Azure CloudShell'
-            $defaultOutputDir = "$HOME/AriPlusReports/" + $Global:FolderName + "/"
+            $defaultOutputDir = "$HOME/AriPlusReports/" + $Global:FolderName
         }
         elseif ($PSVersionTable.Platform -eq 'Unix') 
         {
             Write-Host 'Identified Environment as PowerShell Unix.' -ForegroundColor Green
             $Global:PlatformOS = 'PowerShell Unix'
-            $defaultOutputDir = "$HOME/AriPlusReports/" + $Global:FolderName + "/"
+            $defaultOutputDir = "$HOME/AriPlusReports/" + $Global:FolderName
         }
         else 
         {
             Write-Host 'Identified Environment as PowerShell Desktop.' -ForegroundColor Green
             $Global:PlatformOS= 'PowerShell Desktop'
-            $defaultOutputDir = "C:\AriPlusReports\" + $Global:FolderName + "\"
+            $defaultOutputDir = "C:\AriPlusReports\" + $Global:FolderName
         }
     
         if ($OutputDirectory) 
@@ -424,14 +427,12 @@ Function RunInventorySetup()
 function ExecuteInventoryProcessing()
 {
     function InitializeInventoryProcessing()
-    {
-        $CurrentDateTime = (get-date -Format "yyyyMMddHHmm")
+    {   
         $Global:File = ($DefaultPath + $Global:ReportName + $CurrentDateTime + ".xlsx")
         $Global:AllResourceFile = ($DefaultPath + "Full_" + $Global:ReportName + $CurrentDateTime + ".json")
         $Global:JsonFile = ($DefaultPath + "Inventory_"+ $Global:ReportName + "_"+  $CurrentDateTime + ".json")
         $Global:MetricsJsonFile = ($DefaultPath + "Metrics_"+ $Global:ReportName + "_"+  $CurrentDateTime + ".json")
-        $Global:FolderName = $Global:ReportName + $CurrentDateTime
-        
+                
         Write-Debug ('Report Excel File: {0}' -f $File)
         Write-Progress -activity 'Inventory' -Status "21% Complete." -PercentComplete 21 -CurrentOperation "Starting to process extraction data.."
     }
