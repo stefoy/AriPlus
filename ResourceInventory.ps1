@@ -428,6 +428,7 @@ function ExecuteInventoryProcessing()
 {
     function InitializeInventoryProcessing()
     {   
+        $Global:ZipOutputFile = ($DefaultPath + $Global:ReportName + $CurrentDateTime + ".zip")
         $Global:File = ($DefaultPath + $Global:ReportName + $CurrentDateTime + ".xlsx")
         $Global:AllResourceFile = ($DefaultPath + "Full_" + $Global:ReportName + $CurrentDateTime + ".json")
         $Global:JsonFile = ($DefaultPath + "Inventory_"+ $Global:ReportName + "_"+  $CurrentDateTime + ".json")
@@ -662,7 +663,14 @@ $Global:ReportingRunTime = Measure-Command -Expression {
     ExecuteInventoryProcessing
 }
 
+Write-Host ("Compressing Resources Output: {0}" -f $Global:ZipOutputFile) -ForegroundColor Cyan
+Compress-Archive -Path "*.xlsx" -Force -DestinationPath $Global:ZipOutputFile -CompressionLevel Optimal
+Compress-Archive -Path "*.json" -Update -DestinationPath $Global:ZipOutputFile -CompressionLevel Optimal
+
 Write-Host ("Execution Time: {0}" -f $Runtime) -ForegroundColor Cyan
 Write-Host ("Reporting Time: {0}" -f $ReportingRunTime) -ForegroundColor Cyan
-Write-Host ("Excel Report: {0}" -f $Global:File) -ForegroundColor Cyan
-Write-Host ("MetricS JSON: {0}" -f $Global:MetricsJsonFile) -ForegroundColor Cyan
+Write-Host ("Reporting Data File: {0}" -f $Global:ZipOutputFile) -ForegroundColor Cyan
+
+
+
+
