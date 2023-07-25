@@ -664,13 +664,15 @@ $Global:ReportingRunTime = Measure-Command -Expression {
 }
 
 Write-Host ("Compressing Resources Output: {0}" -f $Global:ZipOutputFile) -ForegroundColor Cyan
-Compress-Archive -Path "*.xlsx" -Force -DestinationPath $Global:ZipOutputFile -CompressionLevel Optimal
-Compress-Archive -Path "*.json" -Update -DestinationPath $Global:ZipOutputFile -CompressionLevel Optimal
+
+$compressionOutput = @{
+  Path = $DefaultPath + "*.xlsx", $DefaultPath + "*.json"
+  CompressionLevel = "Optimal"
+  DestinationPath = "C:\Archives\Draft.zip"
+}
+
+Compress-Archive @compressionOutput
 
 Write-Host ("Execution Time: {0}" -f $Runtime) -ForegroundColor Cyan
 Write-Host ("Reporting Time: {0}" -f $ReportingRunTime) -ForegroundColor Cyan
 Write-Host ("Reporting Data File: {0}" -f $Global:ZipOutputFile) -ForegroundColor Cyan
-
-
-
-
