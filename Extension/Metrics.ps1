@@ -160,21 +160,23 @@ If ($Task -eq 'Processing')
 
         $metricQueryResultsCount = ($metricQueryResults.Where({$_ -ne $null}).Count)
 
-        switch ($_.Measure)
-        {
-            'Average'   { $metricQueryResults = ($metricQueryResults | Measure-Object -Average).Average }
-            'Maximum'   { $metricQueryResults = ($metricQueryResults | Measure-Object -Maximum).Maximum }
-            'Sum'       { $metricQueryResults = ($metricQueryResults | Measure-Object -Sum).Sum }
-            'Minimum'   { $metricQueryResults = ($metricQueryResults | Measure-Object -Minimum).Minimum }
-            'Largest'   { $metricQueryResults = ($metricQueryResults | Sort-Object -Descending)[0] }
-        }
-
         if($metricQueryResultsCount -eq 0)
         {
             $metricQueryResults = 0
             $metricQueryResultsCount = 0
         }
-
+        else
+        {
+            switch ($_.Measure)
+            {
+                'Average'   { $metricQueryResults = ($metricQueryResults | Measure-Object -Average).Average }
+                'Maximum'   { $metricQueryResults = ($metricQueryResults | Measure-Object -Maximum).Maximum }
+                'Sum'       { $metricQueryResults = ($metricQueryResults | Measure-Object -Sum).Sum }
+                'Minimum'   { $metricQueryResults = ($metricQueryResults | Measure-Object -Minimum).Minimum }
+                'Largest'   { $metricQueryResults = ($metricQueryResults | Sort-Object -Descending)[0] }
+            }
+        }
+        
         $obj = @{
             'ID'                   = $_.Id;
             'Subscription'         = $_.SubName;
