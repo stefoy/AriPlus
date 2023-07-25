@@ -121,19 +121,19 @@ Function RunInventorySetup()
         {
             Write-Host 'Identified Environment as Azure CloudShell' -ForegroundColor Green
             $Global:PlatformOS = 'Azure CloudShell'
-            $defaultOutputDir = "$HOME/AriPlusReports/" + $Global:FolderName
+            $defaultOutputDir = "$HOME/AriPlusReports/" + $Global:FolderName + "/"
         }
         elseif ($PSVersionTable.Platform -eq 'Unix') 
         {
             Write-Host 'Identified Environment as PowerShell Unix.' -ForegroundColor Green
             $Global:PlatformOS = 'PowerShell Unix'
-            $defaultOutputDir = "$HOME/AriPlusReports/" + $Global:FolderName
+            $defaultOutputDir = "$HOME/AriPlusReports/" + $Global:FolderName + "/"
         }
         else 
         {
             Write-Host 'Identified Environment as PowerShell Desktop.' -ForegroundColor Green
             $Global:PlatformOS= 'PowerShell Desktop'
-            $defaultOutputDir = "C:\AriPlusReports\" + $Global:FolderName
+            $defaultOutputDir = "C:\AriPlusReports\" + $Global:FolderName + "\"
         }
     
         if ($OutputDirectory) 
