@@ -118,19 +118,19 @@ Function RunInventorySetup()
         {
             Write-Host 'Identified Environment as Azure CloudShell' -ForegroundColor Green
             $Global:PlatformOS = 'Azure CloudShell'
-            $defaultOutputDir = "$HOME/AzureResourceInventory/"
+            $defaultOutputDir = "$HOME/AriPlus/Reports/"
         }
         elseif ($PSVersionTable.Platform -eq 'Unix') 
         {
             Write-Host 'Identified Environment as PowerShell Unix.' -ForegroundColor Green
             $Global:PlatformOS = 'PowerShell Unix'
-            $defaultOutputDir = "$HOME/AzureResourceInventory/"
+            $defaultOutputDir = "$HOME/AriPlus/Reports/"
         }
         else 
         {
             Write-Host 'Identified Environment as PowerShell Desktop.' -ForegroundColor Green
             $Global:PlatformOS= 'PowerShell Desktop'
-            $defaultOutputDir = "C:\AzureResourceInventory\"
+            $defaultOutputDir = "C:\AriPlus\Reports\"
         }
     
         if ($OutputDirectory) 
@@ -256,7 +256,7 @@ Function RunInventorySetup()
             {
                 Write-Host "You are trying to use Service Principal Authentication Method in a wrong way." -ForegroundColor Red
                 Write-Host "It's Mandatory to specify Application ID, Secret and Tenant ID in Azure Resource Inventory" -ForegroundColor Red
-                Write-Host ".\AzureResourceInventory.ps1 -appid <SP AppID> -secret <SP Secret> -tenant <TenantID>" -ForegroundColor Red
+                Write-Host ".\ResourceInventory.ps1 -appid <SP AppID> -secret <SP Secret> -tenant <TenantID>" -ForegroundColor Red
                 Exit
             }
     
