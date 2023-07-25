@@ -13,27 +13,28 @@ if ($Task -eq 'Processing') {
                 $sub1 = $SUB | Where-Object { $_.id -eq $1.subscriptionId }
                 $data = $1.PROPERTIES
 
-                $pvteps = if(!($1.privateEndpointConnections)) {[pscustomobject]@{id = 'NONE'}} else {$1.privateEndpointConnections | Select-Object @{Name="id";Expression={$_.id.split("/")[8]}}}
-
-                foreach ($pvtep in $pvteps) {
                     $obj = @{
-                        'ID'                    = $1.id;
-                        'Subscription'          = $sub1.Name;
-                        'Resource Group'        = $1.RESOURCEGROUP;
-                        'Name'                  = $1.NAME;
-                        'Location'              = $1.LOCATION;
-                        'SkuName'               = $1.sku.Name;
-                        'SkuCapacity'           = $1.sku.capacity;
-                        'SkuTier'               = $1.sku.tier;
-                        'licenseType'           = $data.licenseType;
-                        'managedInstanceCreateMode'               = $data.managedInstanceCreateMode;
-                        'Resource U'            = $ResUCount;
-                        'Zone Redundant'        = $data.zoneRedundant;
+                        'ID'                            = $1.id;
+                        'Subscription'                  = $sub1.Name;
+                        'ResourceGroup'                 = $1.RESOURCEGROUP;
+                        'Name'                          = $1.NAME;
+                        'Location'                      = $1.LOCATION;
+                        'SkuName'                       = $1.sku.Name;
+                        'SkuCapacity'                   = $1.sku.capacity;
+                        'SkuTier'                       = $1.sku.tier;
+                        'SkuFamily'                     = $1.sku.family;
+                        'InstancePoolName'              = $data.instancePoolId;
+                        'vCores'                        = $data.vCores;
+                        'StorageGB'                     = $data.storageSizeInGB;
+                        'StorageAccountType'            = $data.storageAccountType;
+                        'LicenseType'                   = $data.licenseType;
+                        'State'                         = $data.state;
+                        'ManagedInstanceCreateMode'     = $data.managedInstanceCreateMode;
+                        'ZoneRedundant'                 = $data.zoneRedundant;
                     }
-                    $tmp += $obj
-                    if ($ResUCount -eq 1) { $ResUCount = 0 } 
-                }          
+                    $tmp += $obj        
             }
+            
             $tmp
         }
 }
@@ -47,15 +48,22 @@ else {
 
         $Exc = New-Object System.Collections.Generic.List[System.Object]
         $Exc.Add('Subscription')
-        $Exc.Add('Resource Group')
+        $Exc.Add('ResourceGroup')
         $Exc.Add('Name')
         $Exc.Add('Location')
         $Exc.Add('SkuName')
         $Exc.Add('SkuCapacity')
         $Exc.Add('SkuTier')
-        $Exc.Add('licenseType')
-        $Exc.Add('managedInstanceCreateMode')
-        $Exc.Add('Zone Redundant')
+        $Exc.Add('SkuFamily')
+        $Exc.Add('LicenseType')
+        $Exc.Add('InstancePoolName')
+        $Exc.Add('vCores')
+        $Exc.Add('StorageGB')
+        $Exc.Add('StorageAccountType')
+        $Exc.Add('State')
+        $Exc.Add('vCores')
+        $Exc.Add('ManagedInstanceCreateMode')
+        $Exc.Add('ZoneRedundant')
 
         $ExcelVar = $SmaResources.SQLMI
 
