@@ -118,19 +118,19 @@ Function RunInventorySetup()
         {
             Write-Host 'Identified Environment as Azure CloudShell' -ForegroundColor Green
             $Global:PlatformOS = 'Azure CloudShell'
-            $defaultOutputDir = "$HOME/AriPlus/Reports/"
+            $defaultOutputDir = "$HOME/AriPlusReports/" + $Global:FolderName + "/"
         }
         elseif ($PSVersionTable.Platform -eq 'Unix') 
         {
             Write-Host 'Identified Environment as PowerShell Unix.' -ForegroundColor Green
             $Global:PlatformOS = 'PowerShell Unix'
-            $defaultOutputDir = "$HOME/AriPlus/Reports/"
+            $defaultOutputDir = "$HOME/AriPlusReports/" + $Global:FolderName + "/"
         }
         else 
         {
             Write-Host 'Identified Environment as PowerShell Desktop.' -ForegroundColor Green
             $Global:PlatformOS= 'PowerShell Desktop'
-            $defaultOutputDir = "C:\AriPlus\Reports\"
+            $defaultOutputDir = "C:\AriPlusReports\" + $Global:FolderName + "\"
         }
     
         if ($OutputDirectory) 
@@ -430,9 +430,10 @@ function ExecuteInventoryProcessing()
         $Global:AllResourceFile = ($DefaultPath + "Full_" + $Global:ReportName + $CurrentDateTime + ".json")
         $Global:JsonFile = ($DefaultPath + "Inventory_"+ $Global:ReportName + "_"+  $CurrentDateTime + ".json")
         $Global:MetricsJsonFile = ($DefaultPath + "Metrics_"+ $Global:ReportName + "_"+  $CurrentDateTime + ".json")
-
+        $Global:FolderName = $Global:ReportName + $CurrentDateTime
+        
         Write-Debug ('Report Excel File: {0}' -f $File)
-        Write-Progress -activity 'Azure Inventory' -Status "21% Complete." -PercentComplete 21 -CurrentOperation "Starting to process extraction data.."
+        Write-Progress -activity 'Inventory' -Status "21% Complete." -PercentComplete 21 -CurrentOperation "Starting to process extraction data.."
     }
 
     function CreateMetricsJob()
