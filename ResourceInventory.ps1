@@ -668,7 +668,7 @@ Write-Host ("Compressing Resources Output: {0}" -f $Global:ZipOutputFile) -Foreg
 $compressionOutput = @{
   Path = $DefaultPath + "*.xlsx", $DefaultPath + "*.json"
   CompressionLevel = "Optimal"
-  DestinationPath = "C:\Archives\Draft.zip"
+  DestinationPath = $Global:ZipOutputFile
 }
 
 Compress-Archive @compressionOutput
