@@ -428,11 +428,11 @@ function ExecuteInventoryProcessing()
 {
     function InitializeInventoryProcessing()
     {   
-        $Global:ZipOutputFile = ($DefaultPath + $Global:ReportName + $CurrentDateTime + ".zip")
-        $Global:File = ($DefaultPath + $Global:ReportName + $CurrentDateTime + ".xlsx")
-        $Global:AllResourceFile = ($DefaultPath + "Full_" + $Global:ReportName + $CurrentDateTime + ".json")
-        $Global:JsonFile = ($DefaultPath + "Inventory_"+ $Global:ReportName + "_"+  $CurrentDateTime + ".json")
-        $Global:MetricsJsonFile = ($DefaultPath + "Metrics_"+ $Global:ReportName + "_"+  $CurrentDateTime + ".json")
+        $Global:ZipOutputFile = ($DefaultPath + $Global:ReportName + "_" + $CurrentDateTime + ".zip")
+        $Global:File = ($DefaultPath + $Global:ReportName + "_" + $CurrentDateTime + ".xlsx")
+        $Global:AllResourceFile = ($DefaultPath + "Full_" + $Global:ReportName + "_" + $CurrentDateTime + ".json")
+        $Global:JsonFile = ($DefaultPath + "Inventory_"+ $Global:ReportName + "_" + $CurrentDateTime + ".json")
+        $Global:MetricsJsonFile = ($DefaultPath + "Metrics_"+ $Global:ReportName + "_" + $CurrentDateTime + ".json")
                 
         Write-Debug ('Report Excel File: {0}' -f $File)
         Write-Progress -activity 'Inventory' -Status "21% Complete." -PercentComplete 21 -CurrentOperation "Starting to process extraction data.."
@@ -663,7 +663,8 @@ $Global:ReportingRunTime = Measure-Command -Expression {
     ExecuteInventoryProcessing
 }
 
-Write-Host ("Compressing Resources Output: {0}" -f $Global:ZipOutputFile) -ForegroundColor Cyan
+Write-Host ("Compressing Resources Output: {0}" -f $Global:ZipOutputFile) -ForegroundColor Yellow
+Write-Host ("Compressing Resources Output: {0}" -f $DefaultPath + "*.xlsx") -ForegroundColor Yellow
 
 $compressionOutput = @{
   Path = $DefaultPath + "*.xlsx", $DefaultPath + "*.json"
