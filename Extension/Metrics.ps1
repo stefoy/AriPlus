@@ -169,7 +169,8 @@ If ($Task -eq 'Processing')
         else
         {
             $metricMaxValue = 0
-            
+            $metricMaxValue = ($metricQueryResults | Measure-Object -Maximum).Maximum
+
             switch ($_.Measure)
             {
                 'Average'   { $metricQueryResults = ($metricQueryResults | Measure-Object -Average).Average }
@@ -178,8 +179,6 @@ If ($Task -eq 'Processing')
                 'Minimum'   { $metricQueryResults = ($metricQueryResults | Measure-Object -Minimum).Minimum }
                 'Largest'   { $metricQueryResults = ($metricQueryResults | Sort-Object -Descending)[0] }
             }
-
-            $metricMaxValue = $metricQueryResults = ($metricQueryResults | Measure-Object -Maximum).Maximum
         }
         
         $obj = @{
