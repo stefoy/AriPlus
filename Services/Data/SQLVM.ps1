@@ -22,14 +22,13 @@ If ($Task -eq 'Processing') {
                     'Name'                    = $1.NAME;
                     'Location'                = $1.LOCATION;
                     'Zone'                    = if ($null -ne $1.ZONES) { $1.ZONES } else { 'None' }
-                    'SQL Server License Type' = $data.sqlServerLicenseType;
-                    'SQL Image'               = $data.sqlImageOffer;
-                    'SQL Management'          = $data.sqlManagement;
-                    'SQL Image Sku'           = $data.sqlImageSku;
-                    'Resource U'              = $ResUCount;
+                    'SQLServerLicenseType' = $data.sqlServerLicenseType;
+                    'SQLImage'               = $data.sqlImageOffer;
+                    'SQLManagement'          = $data.sqlManagement;
+                    'SQLImagSku'           = $data.sqlImageSku;
                 }
-                $tmp += $obj
-                if ($ResUCount -eq 1) { $ResUCount = 0 }             
+                
+                $tmp += $obj      
             }
             $tmp
         }
