@@ -21,7 +21,7 @@ If ($Task -eq 'Processing') {
                     'Resource Group'          = $1.RESOURCEGROUP;
                     'Name'                    = $1.NAME;
                     'Location'                = $1.LOCATION;
-                    'Zone'                    = $1.ZONES;
+                    'Zone'                    = if ($null -ne $1.ZONES) { $1.ZONES } else { 'None' }
                     'SQL Server License Type' = $data.sqlServerLicenseType;
                     'SQL Image'               = $data.sqlImageOffer;
                     'SQL Management'          = $data.sqlManagement;
@@ -46,14 +46,14 @@ Else {
         
         $Exc = New-Object System.Collections.Generic.List[System.Object]
         $Exc.Add('Subscription')
-        $Exc.Add('Resource Group')
+        $Exc.Add('ResourceGroup')
         $Exc.Add('Name')
         $Exc.Add('Location')
         $Exc.Add('Zone')
-        $Exc.Add('SQL Server License Type')
-        $Exc.Add('SQL Image')
-        $Exc.Add('SQL Management')
-        $Exc.Add('SQL Image Sku')
+        $Exc.Add('SQLServerLicenseType')
+        $Exc.Add('SQLImage')
+        $Exc.Add('SQLManagement')
+        $Exc.Add('SQLImageSku')
 
         $ExcelVar = $SmaResources.SQLVM 
 
