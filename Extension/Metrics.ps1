@@ -77,12 +77,14 @@ If ($Task -eq 'Processing')
             if ($sqlDb.kind.Contains("vcore")) 
             {
                 $metricDefs.Add([PSCustomObject]@{ MetricName = 'cpu_limit'; StartTime = $metricTimeSevenDay;  EndTime = $metricEndTime; Interval = '24h';  Aggregation = 'Maximum'; Measure = 'Largest'; Id = $sqlDb.Id; SubName = $subscription.Name; ResourceGroup = $sqlDb.ResourceGroup; Name = $sqlDb.Name; Location = $sqlDb.Location; Service = 'SQL Database' })
-                $metricDefs.Add([PSCustomObject]@{ MetricName = 'cpu_used'; StartTime = $metricTimeSevenDay;  EndTime = $metricEndTime; Interval = '1h';  Aggregation = 'Maximum'; Measure = 'Average'; Id = $sqlDb.Id; SubName = $subscription.Name; ResourceGroup = $sqlDb.ResourceGroup; Name = $sqlDb.Name; Location = $sqlDb.Location; Service = 'SQL Database' })             
+                $metricDefs.Add([PSCustomObject]@{ MetricName = 'cpu_used'; StartTime = $metricTimeSevenDay;  EndTime = $metricEndTime; Interval = '5m';  Aggregation = 'Maximum'; Measure = 'Average'; Id = $sqlDb.Id; SubName = $subscription.Name; ResourceGroup = $sqlDb.ResourceGroup; Name = $sqlDb.Name; Location = $sqlDb.Location; Service = 'SQL Database' })             
+                $metricDefs.Add([PSCustomObject]@{ MetricName = 'cpu_used'; StartTime = $metricTimeSevenDay;  EndTime = $metricEndTime; Interval = '1h';  Aggregation = 'Maximum'; Measure = 'Largest'; Id = $sqlDb.Id; SubName = $subscription.Name; ResourceGroup = $sqlDb.ResourceGroup; Name = $sqlDb.Name; Location = $sqlDb.Location; Service = 'SQL Database' })             
             }
             else 
             {
                 $metricDefs.Add([PSCustomObject]@{ MetricName = 'dtu_limit'; StartTime = $metricTimeSevenDay;  EndTime = $metricEndTime; Interval = '24h';  Aggregation = 'Maximum'; Measure = 'Largest'; Id = $sqlDb.Id; SubName = $subscription.Name; ResourceGroup = $sqlDb.ResourceGroup; Name = $sqlDb.Name; Location = $sqlDb.Location; Service = 'SQL Database' })
-                $metricDefs.Add([PSCustomObject]@{ MetricName = 'dtu_used'; StartTime = $metricTimeSevenDay;  EndTime = $metricEndTime; Interval = '1h';  Aggregation = 'Maximum'; Measure = 'Average'; Id = $sqlDb.Id; SubName = $subscription.Name; ResourceGroup = $sqlDb.ResourceGroup; Name = $sqlDb.Name; Location = $sqlDb.Location; Service = 'SQL Database' })
+                $metricDefs.Add([PSCustomObject]@{ MetricName = 'dtu_used'; StartTime = $metricTimeSevenDay;  EndTime = $metricEndTime; Interval = '5m';  Aggregation = 'Maximum'; Measure = 'Average'; Id = $sqlDb.Id; SubName = $subscription.Name; ResourceGroup = $sqlDb.ResourceGroup; Name = $sqlDb.Name; Location = $sqlDb.Location; Service = 'SQL Database' })
+                $metricDefs.Add([PSCustomObject]@{ MetricName = 'dtu_used'; StartTime = $metricTimeSevenDay;  EndTime = $metricEndTime; Interval = '1h';  Aggregation = 'Maximum'; Measure = 'Largest'; Id = $sqlDb.Id; SubName = $subscription.Name; ResourceGroup = $sqlDb.ResourceGroup; Name = $sqlDb.Name; Location = $sqlDb.Location; Service = 'SQL Database' })
             }
             
             $metricDefs.Add([PSCustomObject]@{ MetricName = 'allocated_data_storage'; StartTime = $metricTimeOneDay;  EndTime = $metricEndTime; Interval = '24h';  Aggregation = 'Average'; Measure = 'Largest'; Id = $sqlDb.Id; SubName = $subscription.Name; ResourceGroup = $sqlDb.ResourceGroup; Name = $sqlDb.Name; Location = $sqlDb.Location; Service = 'SQL Database' })
@@ -195,6 +197,7 @@ If ($Task -eq 'Processing')
             'Metric'               = $_.MetricName;
             'MetricAggregate'      = $_.Aggregation;
             'MetricTimeGrain'      = $_.Interval;
+            'MetricMeasure'        = $_.Measure;
             'MetricValue'          = $metricQueryResults;
             'MatricMaxValue'       = $metricMaxValue;
             'MetricCount'          = $metricQueryResultsCount;
@@ -227,6 +230,7 @@ else
         'Service',
         'Metric',
         'MetricAggregate',
+        'MetricMeasure',
         'MetricTimeGrain',
         'MetricValue',
         'MetricCount' | Export-Excel -Path $File -WorksheetName 'Metrics' -AutoSize -MaxAutoSizeRows 100 -TableName $TableName -TableStyle $tableStyle -Style $Style -Numberformat '0' -MoveToEnd 
