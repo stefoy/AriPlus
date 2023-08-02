@@ -622,12 +622,10 @@ function ExecuteInventoryProcessing()
 
                 if($PSScriptRoot -like '*\*')
                 {
-                    New-Item -Path ($PSScriptRoot + '\Extension\') -ItemType Directory
                     $ModuSeq | Out-File ($PSScriptRoot + '\Extension\Summary.ps1') 
                 }
                 else
                 {
-                    New-Item -Path ($PSScriptRoot + '/Extension/') -ItemType Directory
                     $ModuSeq | Out-File ($PSScriptRoot + '/Extension/Summary.ps1')
                 }
             }
