@@ -136,7 +136,7 @@ If ($Task -eq 'Processing')
             $subscription = $Subscriptions | Where-Object { $_.id -eq $cosmosDb.subscriptionId }
 
             $metricDefs.Add([PSCustomObject]@{ MetricName = 'TotalRequests'; StartTime = $metricTimeOneDay;  EndTime = $metricEndTime; Interval = '1m';  Aggregation = 'Count'; Measure = 'Largest'; Id = $cosmosDb.Id; SubName = $subscription.Name; ResourceGroup = $cosmosDb.ResourceGroup; Name = $cosmosDb.Name; Location = $cosmosDb.Location; Service = 'CosmosDB' })
-            $metricDefs.Add([PSCustomObject]@{ MetricName = 'TotalRequestUnits'; StartTime = $metricTimeOneDay;  EndTime = $metricEndTime; Interval = '1m';  Aggregation = 'Total'; Measure = 'Largest'; Id = $cosmosDb.Id; SubName = $subscription.Name; ResourceGroup = $cosmosDb.ResourceGroup; Name = $cosmosDb.Name; Location = $cosmosDb.Location; Service = 'CosmosDB' })
+            $metricDefs.Add([PSCustomObject]@{ MetricName = 'TotalRequestUnits'; StartTime = $metricTimeOneDay;  EndTime = $metricEndTime; Interval = '1m';  Aggregation = 'Total'; Measure = 'Sum'; Id = $cosmosDb.Id; SubName = $subscription.Name; ResourceGroup = $cosmosDb.ResourceGroup; Name = $cosmosDb.Name; Location = $cosmosDb.Location; Service = 'CosmosDB' })
             $metricDefs.Add([PSCustomObject]@{ MetricName = 'DataUsage'; StartTime = $metricTimeOneDay;  EndTime = $metricEndTime; Interval = '1h';  Aggregation = 'Total'; Measure = 'Largest'; Id = $cosmosDb.Id; SubName = $subscription.Name; ResourceGroup = $cosmosDb.ResourceGroup; Name = $cosmosDb.Name; Location = $cosmosDb.Location; Service = 'CosmosDB' })
             $metricDefs.Add([PSCustomObject]@{ MetricName = 'ProvisionedThroughput'; StartTime = $metricTimeOneDay;  EndTime = $metricEndTime; Interval = '1h';  Aggregation = 'Maximum'; Measure = 'Largest'; Id = $cosmosDb.Id; SubName = $subscription.Name; ResourceGroup = $cosmosDb.ResourceGroup; Name = $cosmosDb.Name; Location = $cosmosDb.Location; Service = 'CosmosDB' })
         }
@@ -196,7 +196,7 @@ If ($Task -eq 'Processing')
             'MetricAggregate'      = $_.Aggregation;
             'MetricTimeGrain'      = $_.Interval;
             'MetricValue'          = $metricQueryResults;
-            'MatricMaxCalue'       = $metricMaxValue;
+            'MatricMaxValue'       = $metricMaxValue;
             'MetricCount'          = $metricQueryResultsCount;
         }
         
