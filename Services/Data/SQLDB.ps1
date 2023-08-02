@@ -1,4 +1,4 @@
-﻿param($SCPath, $Sub, $Resources, $Task , $File, $SmaResources, $TableStyle) 
+param($SCPath, $Sub, $Resources, $Task , $File, $SmaResources, $TableStyle, $Metrics) 
 
 if ($Task -eq 'Processing') {
 
@@ -27,12 +27,12 @@ if ($Task -eq 'Processing') {
                 if ($SqlType -eq 'vcore') 
                 {
                     $sqlDtuLimit = $sqlDbMetrics | Where-Object { $_.Metric -eq 'cpu_limit' }
-                    $sqlDtuUsed = $sqlDbMetrics | Where-Object { $_.Metric -eq 'cpu_used' }
+                    $sqlDtuUsed = $sqlDbMetrics | Where-Object { ($_.Metric -eq 'cpu_used') -and ($_.MetricMeasure -eq 'Average') }
                 }
                 else 
                 {
                     $sqlDtuLimit = $sqlDbMetrics | Where-Object { $_.Metric -eq 'dtu_limit' }
-                    $sqlDtuUsed = $sqlDbMetrics | Where-Object { $_.Metric -eq 'dtu_used' }
+                    $sqlDtuUsed = $sqlDbMetrics | Where-Object { ($_.Metric -eq 'dtu_used') -and ($_.MetricMeasure -eq 'Average') }
                 }  
 
                 $obj = @{
@@ -107,3 +107,4 @@ else {
 
     }
 }
+
