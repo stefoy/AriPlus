@@ -74,7 +74,6 @@ else {
 
         $Style = @()
         $Style += New-ExcelStyle -HorizontalAlignment Center -AutoSize -NumberFormat 0
-        $Style += New-ExcelStyle -HorizontalAlignment Center -AutoSize -NumberFormat '0.0000' -Range Q:Z
         
         $Exc = New-Object System.Collections.Generic.List[System.Object]
         $Exc.Add('Subscription')
