@@ -134,8 +134,11 @@ If ($Task -eq 'Processing')
         foreach ($cosmosDb in $cosmosDbs) 
         {
             $subscription = $Subscriptions | Where-Object { $_.id -eq $cosmosDb.subscriptionId }
-            
-            $metricDefs.Add([PSCustomObject]@{ MetricName = 'TotalRequestUnits'; StartTime = $metricStartTime;  EndTime = $metricEndTime; Interval = '1m';  Aggregation = 'Total'; Measure = 'Sum'; Id = $cosmosDb.Id; SubName = $subscription.Name; ResourceGroup = $cosmosDb.ResourceGroup; Name = $cosmosDb.Name; Location = $cosmosDb.Location; Service = 'CosmosDB' })
+
+            $metricDefs.Add([PSCustomObject]@{ MetricName = 'TotalRequests'; StartTime = $metricTimeOneDay;  EndTime = $metricEndTime; Interval = '1m';  Aggregation = 'Count'; Measure = 'Largest'; Id = $cosmosDb.Id; SubName = $subscription.Name; ResourceGroup = $cosmosDb.ResourceGroup; Name = $cosmosDb.Name; Location = $cosmosDb.Location; Service = 'CosmosDB' })
+            $metricDefs.Add([PSCustomObject]@{ MetricName = 'TotalRequestUnits'; StartTime = $metricTimeOneDay;  EndTime = $metricEndTime; Interval = '1m';  Aggregation = 'Total'; Measure = 'Largest'; Id = $cosmosDb.Id; SubName = $subscription.Name; ResourceGroup = $cosmosDb.ResourceGroup; Name = $cosmosDb.Name; Location = $cosmosDb.Location; Service = 'CosmosDB' })
+            $metricDefs.Add([PSCustomObject]@{ MetricName = 'DataUsage'; StartTime = $metricTimeOneDay;  EndTime = $metricEndTime; Interval = '1h';  Aggregation = 'Total'; Measure = 'Largest'; Id = $cosmosDb.Id; SubName = $subscription.Name; ResourceGroup = $cosmosDb.ResourceGroup; Name = $cosmosDb.Name; Location = $cosmosDb.Location; Service = 'CosmosDB' })
+            $metricDefs.Add([PSCustomObject]@{ MetricName = 'ProvisionedThroughput'; StartTime = $metricTimeOneDay;  EndTime = $metricEndTime; Interval = '1h';  Aggregation = 'Maximum'; Measure = 'Largest'; Id = $cosmosDb.Id; SubName = $subscription.Name; ResourceGroup = $cosmosDb.ResourceGroup; Name = $cosmosDb.Name; Location = $cosmosDb.Location; Service = 'CosmosDB' })
         }
     }
 
@@ -154,6 +157,7 @@ If ($Task -eq 'Processing')
         {
             'Average'   { $metricQueryResults = $metricQuery.value.timeseries.data.average }
             'Maximum'   { $metricQueryResults = $metricQuery.value.timeseries.data.maximum }
+            'Count'     { $metricQueryResults = $metricQuery.value.timeseries.data.count }
             'Total'     { $metricQueryResults = $metricQuery.value.timeseries.data.total }
             'Minimum'   { $metricQueryResults = $metricQuery.value.timeseries.data.minimum }
         }
