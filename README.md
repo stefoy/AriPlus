@@ -26,5 +26,8 @@ This script uses Concurrency to to execute commands in parallel when gathering m
 
   -ConcurrencyLimit <value> 
 
-* Run "ResourceInventory.ps1". In Azure CloudShell you're already authenticated. In PowerShell Desktop you will be redirected to  Azure sign-in page. 
+  -Online options will download the latest modules from Github so you only need to download ResourceInventory.ps1
+
+* Download "ResourceInventory.ps1" or Clone the repositroy in Azure CloudShell or Desktop version of Powershell 7
+* Run "ResourceInventory.ps1 - Online". In Azure CloudShell you're already authenticated. In PowerShell Desktop you will be redirected to  Azure sign-in page. 
 
