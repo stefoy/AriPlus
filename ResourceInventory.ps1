@@ -1,5 +1,6 @@
 param ($TenantID,
-        $Appid, 
+        $Appid,
+        $SubscriptionID,
         $Secret, 
         $ResourceGroup, 
         [switch]$Online, 
