@@ -47,7 +47,7 @@ if ($Task -eq 'Processing')
             $vmssMetrics = $scaleSetMetrics | Where-Object { $_.Id -eq $vm.id }
             $cpuUtilisationMetric = $vmssMetrics | Where-Object { $_.Metric -eq 'Percentage CPU' }
             $memoryAvilableMetric = $vmssMetrics | Where-Object { $_.Metric -eq 'Available Memory Bytes' }
-            $memoryTotalGb = $vmsizemap[$data.hardwareProfile.vmSize].RAM
+            $memoryTotalGb = $vmsizemap[$1.sku.name].RAM
 
 
             $obj = @{
@@ -61,8 +61,8 @@ if ($Task -eq 'Processing')
                 'VMSize'                        = $1.sku.name;
                 'Instances'                     = $1.sku.capacity;
                 'AutoscaleEnabled'              = $AutoSc;
-                'vCPUs'                         = $vmsizemap[$data.hardwareProfile.vmSize].CPU;
-                'RAM'                           = $vmsizemap[$data.hardwareProfile.vmSize].RAM;
+                'vCPUs'                         = $vmsizemap[$1.sku.name].CPU;
+                'RAM'                           = $vmsizemap[$1.sku.name].RAM;
                 'VMOS'                          = $OS;
                 'OSImage'                       = $data.virtualMachineProfile.storageProfile.imageReference.offer;
                 'ImageVersion'                  = $data.virtualMachineProfile.storageProfile.imageReference.sku;                            
