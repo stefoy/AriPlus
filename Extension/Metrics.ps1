@@ -247,5 +247,6 @@ else
         'MetricMeasure',
         'MetricTimeGrain',
         'MetricValue',
-        'MetricCount' | Export-Excel -Path $File -WorksheetName 'Metrics' -AutoSize -MaxAutoSizeRows 100 -TableName $TableName -TableStyle $tableStyle -Style $Style -Numberformat '0' -MoveToEnd 
+        'MetricCount',
+        'MetricSeries'| Export-Excel -Path $File -WorksheetName 'Metrics' -AutoSize -MaxAutoSizeRows 100 -TableName $TableName -TableStyle $tableStyle -Style $Style -Numberformat '0' -MoveToEnd 
 }
