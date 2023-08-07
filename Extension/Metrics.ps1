@@ -179,17 +179,8 @@ If ($Task -eq 'Processing')
             $metricMaxValue = 0
             $metricMaxValue = ($metricQueryResults | Measure-Object -Maximum).Maximum
             
-            $metricTimeSeries = 0
+            $metricTimeSeries = $metricQueryResults
             
-            switch ($_.Aggregation)
-            {
-                'Average'   { $metricTimeSeries = $metricQueryResults.Average }
-                'Maximum'   { $metricTimeSeries = $metricQueryResults.Maximum }
-                'Sum'       { $metricTimeSeries = 0 }
-                'Minimum'   { $metricTimeSeries = $metricQueryResults.Minimum }
-                'Largest'   { $metricTimeSeries = 0 }
-            }
-
             switch ($_.Measure)
             {
                 'Average'   { $metricQueryResults = ($metricQueryResults | Measure-Object -Average).Average }
