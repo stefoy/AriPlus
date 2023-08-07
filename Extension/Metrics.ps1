@@ -214,7 +214,7 @@ If ($Task -eq 'Processing')
             'MetricValue'          = $metricQueryResults;
             'MatricMaxValue'       = $metricMaxValue;
             'MetricCount'          = $metricQueryResultsCount;
-            'MetricSeries'         = $metricTimeSeries
+            'MetricSeries'         = $metricTimeSeries;
         }
         
         ($using:tmp).Add($obj)
