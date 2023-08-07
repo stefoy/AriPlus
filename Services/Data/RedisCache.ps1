@@ -16,7 +16,6 @@ If ($Task -eq 'Processing') {
                 $ResUCount = 1
                 $sub1 = $SUB | Where-Object { $_.id -eq $1.subscriptionId }
                 $data = $1.PROPERTIES
-                $PvtEndP = $data.privateEndpointConnections.properties.privateEndpoint.id.split('/')[8]
                 if ($1.ZONES) { $Zones = $1.ZONES }else { $Zones = 'Not Configured' }
                 if ([string]::IsNullOrEmpty($data.minimumTlsVersion)){$MinTLS = 'Default'}Else{$MinTLS = "TLS $($data.minimumTlsVersion)"}
                 
