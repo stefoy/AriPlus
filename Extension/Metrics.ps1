@@ -156,6 +156,7 @@ If ($Task -eq 'Processing')
         $metricQuery = (az monitor metrics list --resource $_.Id --metric $_.MetricName --start-time $_.StartTime  --end-time $_.EndTime --interval $_.Interval --aggregation $_.Aggregation | ConvertFrom-Json)
         
         $metricQueryResults = 0
+        $metricTimeSeries = 0
 
         switch ($_.Aggregation)
         {
@@ -238,6 +239,5 @@ else
         'MetricMeasure',
         'MetricTimeGrain',
         'MetricValue',
-        'MetricCount',
-        'MetricSeries'| Export-Excel -Path $File -WorksheetName 'Metrics' -AutoSize -MaxAutoSizeRows 100 -TableName $TableName -TableStyle $tableStyle -Style $Style -Numberformat '0' -MoveToEnd 
+        'MetricCount'| Export-Excel -Path $File -WorksheetName 'Metrics' -AutoSize -MaxAutoSizeRows 100 -TableName $TableName -TableStyle $tableStyle -Style $Style -Numberformat '0' -MoveToEnd 
 }
