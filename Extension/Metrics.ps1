@@ -179,7 +179,7 @@ If ($Task -eq 'Processing')
 
             if ($_.Series -eq 'true')
             {
-                $metricTimeSeries = $metricQueryResults
+                $metricTimeSeries = $metricQueryResults.Where({$_ -ne $null})
             }
             
             switch ($_.Measure)
