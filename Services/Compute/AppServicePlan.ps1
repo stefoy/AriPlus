@@ -11,7 +11,6 @@ if ($Task -eq 'Processing')
 
         foreach ($1 in $APPSvcPlan) 
         {
-            $ResUCount = 1
             Remove-Variable AutoScale -ErrorAction SilentlyContinue
             $sub1 = $SUB | Where-Object { $_.id -eq $1.subscriptionId }
             $data = $1.PROPERTIES
@@ -29,7 +28,7 @@ if ($Task -eq 'Processing')
                 'Size'                  = $sku.name;
                 'PricingTier'           = ($sku.tier+'('+$sku.name+': '+$data.currentNumberOfWorkers+')');
                 'ComputeMode'           = $data.computeMode;
-                'IntancesSize'          = $data.currentWorkerSize;
+                'IntanceSize'          = $data.currentWorkerSize;
                 'CurrentInstances'      = $data.currentNumberOfWorkers;
                 'AutoscaleEnabled'      = $AutoSc;
                 'MaxInstances'          = $data.maximumNumberOfWorkers;                                                            
@@ -37,11 +36,9 @@ if ($Task -eq 'Processing')
                 'AppsType'              = $data.kind;
                 'Apps'                  = $data.numberOfSites;                    
                 'ZoneRedundant'         = $data.zoneRedundant;
-                'ResourceU'             = $ResUCount;
             }
 
-            $tmp += $obj
-            if ($ResUCount -eq 1) { $ResUCount = 0 }              
+            $tmp += $obj    
         }
 
         $tmp
@@ -60,9 +57,11 @@ else
         $Exc.Add('ResourceGroup')
         $Exc.Add('Name')
         $Exc.Add('Location')
+        $Exc.Add('Tier')
+        $Exc.Add('Size')
         $Exc.Add('PricingTier')
         $Exc.Add('ComputeMode')
-        $Exc.Add('IntancesSize')
+        $Exc.Add('IntanceSize')
         $Exc.Add('CurrentInstances')
         $Exc.Add('AutoscaleEnabled')
         $Exc.Add('MaxInstances')
