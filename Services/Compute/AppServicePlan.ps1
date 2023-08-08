@@ -28,8 +28,9 @@ if ($Task -eq 'Processing')
                 'Size'                  = $sku.name;
                 'PricingTier'           = ($sku.tier+'('+$sku.name+': '+$data.currentNumberOfWorkers+')');
                 'ComputeMode'           = $data.computeMode;
-                'IntanceSize'          = $data.currentWorkerSize;
+                'IntanceSize'           = $data.currentWorkerSize;
                 'CurrentInstances'      = $data.currentNumberOfWorkers;
+                'Spot'                  = $data.isSpot
                 'AutoscaleEnabled'      = $AutoSc;
                 'MaxInstances'          = $data.maximumNumberOfWorkers;                                                            
                 'AppPlanOS'             = if ($data.reserved -eq 'true') { 'Linux' } else { 'Windows' };
@@ -63,6 +64,7 @@ else
         $Exc.Add('ComputeMode')
         $Exc.Add('IntanceSize')
         $Exc.Add('CurrentInstances')
+        $Exc.Add('Spot')
         $Exc.Add('AutoscaleEnabled')
         $Exc.Add('MaxInstances')
         $Exc.Add('AppPlanOS')
