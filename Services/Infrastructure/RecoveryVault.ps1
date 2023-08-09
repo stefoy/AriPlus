@@ -20,11 +20,11 @@ If ($Task -eq 'Processing')
                 $obj = @{
                     'ID'                                       = $1.id;
                     'Subscription'                             = $sub1.Name;
-                    'Resource Group'                           = $1.RESOURCEGROUP;
+                    'ResourceGroup'                           = $1.RESOURCEGROUP;
                     'Name'                                     = $1.NAME;
                     'Location'                                 = $1.LOCATION;
-                    'SKU Name'                                 = $1.sku.name;
-                    'SKU Tier'                                 = $1.sku.tier;
+                    'SKUName'                                 = $1.sku.name;
+                    'SKUTier'                                 = $1.sku.tier;
                 }
                 $tmp += $obj
                 if ($ResUCount -eq 1) { $ResUCount = 0 }              
@@ -49,11 +49,11 @@ Else
 
         $Exc = New-Object System.Collections.Generic.List[System.Object]
         $Exc.Add('Subscription')
-        $Exc.Add('Resource Group')
+        $Exc.Add('ResourceGroup')
         $Exc.Add('Name')
         $Exc.Add('Location')
-        $Exc.Add('SKU Name')
-        $Exc.Add('SKU Tier')
+        $Exc.Add('SKUName')
+        $Exc.Add('SKUTier')
 
         $ExcelVar = $SmaResources.RecoveryVault
 
