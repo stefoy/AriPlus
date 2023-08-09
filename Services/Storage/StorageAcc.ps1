@@ -18,28 +18,24 @@ If ($Task -eq 'Processing') {
                 $timecreated = $data.creationTime
                 $timecreated = [datetime]$timecreated
                 $timecreated = $timecreated.ToString("yyyy-MM-dd HH:mm")
-                $TLSv = if ($data.minimumTlsVersion -eq 'TLS1_2') { "TLS 1.2" }elseif ($data.minimumTlsVersion -eq 'TLS1_1') { "TLS 1.1" }else { "TLS 1.0" }
-                $PvtEnd = [string]$data.privateEndpointConnections.count
                 
                 $obj = @{
                     'ID'                                    = $1.id;
                     'Subscription'                          = $sub1.Name;
-                    'Resource Group'                        = $1.RESOURCEGROUP;
+                    'ResourceGroup'                        = $1.RESOURCEGROUP;
                     'Name'                                  = $1.NAME;
                     'Location'                              = $1.LOCATION;
                     'Zone'                                  = $1.ZONES;
                     'SKU'                                   = $1.sku.name;
                     'Tier'                                  = $1.sku.tier;
-                    'Minimum TLS Version'                   = $TLSv;
-                    'Access Tier'                           = $data.accessTier;
-                    'Primary Location'                      = $data.primaryLocation;
-                    'Status Of Primary'                     = $data.statusOfPrimary;
-                    'Secondary Location'                    = $data.secondaryLocation;
-                    'Hierarchical namespace'                = $data.isHnsEnabled;
-                    'Created Time'                          = $timecreated;   
+                    'AccessTier'                           = $data.accessTier;
+                    'PrimaryLocation'                      = $data.primaryLocation;
+                    'StatusOfPrimary'                     = $data.statusOfPrimary;
+                    'SecondaryLocation'                    = $data.secondaryLocation;
+                    'HierarchicalNamespace'                = $data.isHnsEnabled;
+                    'CreatedTime'                          = $timecreated;   
                 }
                 $tmp += $obj
-                if ($ResUCount -eq 1) { $ResUCount = 0 }
             }
             $tmp
         }
@@ -59,19 +55,18 @@ Else {
 
         $Exc = New-Object System.Collections.Generic.List[System.Object]
         $Exc.Add('Subscription')
-        $Exc.Add('Resource Group')
+        $Exc.Add('ResourceGroup')
         $Exc.Add('Name')
         $Exc.Add('Location')
         $Exc.Add('Zone')
         $Exc.Add('SKU')
         $Exc.Add('Tier')
-        $Exc.Add('Minimum TLS Version')
-        $Exc.Add('Access Tier')
-        $Exc.Add('Primary Location')
-        $Exc.Add('Status Of Primary')
-        $Exc.Add('Secondary Location')
-        $Exc.Add('Hierarchical namespace')
-        $Exc.Add('Created Time')
+        $Exc.Add('AccessTier')
+        $Exc.Add('PrimaryLocation')
+        $Exc.Add('StatusOfPrimary')
+        $Exc.Add('SecondaryLocation')
+        $Exc.Add('HierarchicalNamespace')
+        $Exc.Add('CreatedTime')
 
         $ExcelVar = $SmaResources.StorageAcc
 
