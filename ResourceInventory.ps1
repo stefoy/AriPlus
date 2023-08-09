@@ -474,8 +474,10 @@ function ExecuteInventoryProcessing()
             {
                 $MetricPath = Get-ChildItem -Path ($PSScriptRoot + '/Extension/Metrics.ps1') -Recurse
             }
-
-            $Global:AzMetrics = & $MetricPath -Subscriptions $Subscriptions -Resources $Resources -Task "Processing" -File $file -Metrics $null -TableStyle $null -ConcurrencyLimit $ConcurrencyLimit
+            
+            $Global:AzMetrics = New-Object PSObject
+            $Global:AzMetrics | Add-Member -MemberType NoteProperty -Name Metrics -Value NotSet
+            $Global:AzMetrics.Metrics = & $MetricPath -Subscriptions $Subscriptions -Resources $Resources -Task "Processing" -File $file -Metrics $null -TableStyle $null -ConcurrencyLimit $ConcurrencyLimit
         }
     }
 
