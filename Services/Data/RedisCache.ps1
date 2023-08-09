@@ -15,7 +15,6 @@ If ($Task -eq 'Processing') {
             foreach ($1 in $RedisCache) {
                 $sub1 = $SUB | Where-Object { $_.id -eq $1.subscriptionId }
                 $data = $1.PROPERTIES
-                if ([string]::IsNullOrEmpty($data.minimumTlsVersion)){$MinTLS = 'Default'}Else{$MinTLS = "TLS $($data.minimumTlsVersion)"}
                 
                 $obj = @{
                     'ID'                    = $1.id;
@@ -27,10 +26,10 @@ If ($Task -eq 'Processing') {
                     'Sku'                   = $data.sku.name;
                     'Capacity'              = $data.sku.capacity;
                     'Family'                = $data.sku.family;
-                    'MaxFragMemReserved' = $data.redisConfiguration.'maxfragmentationmemory-reserved';
-                    'MaxMemReserved'      = $data.redisConfiguration.'maxmemory-reserved';
-                    'MaxMemoryDelta'      = $data.redisConfiguration.'maxmemory-delta';
-                    'MaxClients'           = $data.redisConfiguration.'maxclients';
+                    'MaxFragMemReserved'    = $data.redisConfiguration.'maxfragmentationmemory-reserved';
+                    'MaxMemReserved'        = $data.redisConfiguration.'maxmemory-reserved';
+                    'MaxMemoryDelta'        = $data.redisConfiguration.'maxmemory-delta';
+                    'MaxClients'            = $data.redisConfiguration.'maxclients';
                 }
                 $tmp += $obj
             }
