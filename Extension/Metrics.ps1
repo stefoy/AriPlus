@@ -224,10 +224,10 @@ If ($Task -eq 'Processing')
 }
 else 
 {
-    $TableName = ('Metrics_' + $Metrics.Count)
+    $TableName = ('Metrics_' + $Metrics.Metrics.Count)
     $Style = New-ExcelStyle -HorizontalAlignment Center -AutoSize -NumberFormat '0'
     
-    $Metrics | 
+    $Metrics.Metrics | 
         ForEach-Object { [PSCustomObject]$_ } | 
         Select-Object 'Subscription',
         'ResourceGroup',
