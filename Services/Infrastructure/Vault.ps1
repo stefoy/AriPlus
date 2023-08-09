@@ -18,26 +18,21 @@ If ($Task -eq 'Processing')
                 $data = $1.PROPERTIES
                 if([string]::IsNullOrEmpty($Data.enableSoftDelete)){$Soft = $false}else{$Soft = $Data.enableSoftDelete}
                 
-                Foreach($2 in $data.accessPolicies)
-                    {
                         $obj = @{
                             'ID'                         = $1.id;
                             'Subscription'               = $sub1.Name;
-                            'Resource Group'             = $1.RESOURCEGROUP;
+                            'ResourceGroup'             = $1.RESOURCEGROUP;
                             'Name'                       = $1.NAME;
                             'Location'                   = $1.LOCATION;
-                            'SKU Family'                 = $data.sku.family;
+                            'SKUFamily'                 = $data.sku.family;
                             'SKU'                        = $data.sku.name;
                             'Enable RBAC'                = $data.enableRbacAuthorization;
-                            'Enable Soft Delete'         = $Soft;
-                            'Enable for Disk Encryption' = $data.enabledForDiskEncryption;
-                            'Enable for Template Deploy' = $data.enabledForTemplateDeployment;
-                            'Soft Delete Retention Days' = $data.softDeleteRetentionInDays;
-                            'Resource U'                 = $ResUCount;
+                            'EnableSoftDelete'         = $Soft;
+                            'EnableEncryption' = $data.enabledForDiskEncryption;
+                            'EnableTemplateDeploy' = $data.enabledForTemplateDeployment;
+                            'SoftDeleteRetentionDays' = $data.softDeleteRetentionInDays;
                         }
-                        $tmp += $obj
-                        if ($ResUCount -eq 1) { $ResUCount = 0 } 
-                    }               
+                        $tmp += $obj           
             }
             $tmp
         }
@@ -61,16 +56,16 @@ Else
 
         $Exc = New-Object System.Collections.Generic.List[System.Object]
         $Exc.Add('Subscription')
-        $Exc.Add('Resource Group')
+        $Exc.Add('ResourceGroup')
         $Exc.Add('Name')
         $Exc.Add('Location')
-        $Exc.Add('SKU Family')
+        $Exc.Add('SKUFamily')
         $Exc.Add('SKU')
-        $Exc.Add('Enable RBAC')
-        $Exc.Add('Enable Soft Delete')
-        $Exc.Add('Enable for Disk Encryption')
-        $Exc.Add('Enable for Template Deploy')
-        $Exc.Add('Soft Delete Retention Days')
+        $Exc.Add('EnableRBAC')
+        $Exc.Add('EnableSoftDelete')
+        $Exc.Add('EnableEncryption')
+        $Exc.Add('EnableTemplateDeploy')
+        $Exc.Add('SoftDeleteRetentionDays')
 
         $ExcelVar = $SmaResources.Vault 
 
