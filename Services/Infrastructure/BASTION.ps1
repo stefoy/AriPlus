@@ -16,18 +16,15 @@ If ($Task -eq 'Processing')
                 $ResUCount = 1
                 $sub1 = $SUB | Where-Object { $_.Id -eq $1.subscriptionId }
                 $data = $1.PROPERTIES
-                $BastVNET = $data.ipConfigurations.properties.subnet.id.split("/")[8]
-                $BastPIP = $data.ipConfigurations.properties.publicIPAddress.id.split("/")[8]
                 
                 $obj = @{
                     'ID'              = $1.id;
                     'Subscription'    = $sub1.Name;
-                    'Resource Group'  = $1.RESOURCEGROUP;
+                    'ResourceGroup'  = $1.RESOURCEGROUP;
                     'Name'            = $1.NAME;
                     'Location'        = $1.LOCATION;
                     'SKU'             = $1.sku.name;
-                    'Virtual Network' = $BastVNET;
-                    'Scale Units'     = $data.scaleUnits;
+                    'ScaleUnits'     = $data.scaleUnits;
                 }
                 $tmp += $obj
                 if ($ResUCount -eq 1) { $ResUCount = 0 }             
@@ -50,12 +47,11 @@ Else
 
         $Exc = New-Object System.Collections.Generic.List[System.Object]
         $Exc.Add('Subscription')
-        $Exc.Add('Resource Group')
+        $Exc.Add('ResourceGroup')
         $Exc.Add('Name')
         $Exc.Add('Location')
         $Exc.Add('SKU')
-        $Exc.Add('Virtual Network')
-        $Exc.Add('Scale Units')
+        $Exc.Add('ScaleUnits')
 
         $ExcelVar = $SmaResources.BASTION  
 
