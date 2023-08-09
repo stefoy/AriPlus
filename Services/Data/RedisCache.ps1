@@ -13,10 +13,8 @@ If ($Task -eq 'Processing') {
             $tmp = @()
 
             foreach ($1 in $RedisCache) {
-                $ResUCount = 1
                 $sub1 = $SUB | Where-Object { $_.id -eq $1.subscriptionId }
                 $data = $1.PROPERTIES
-                if ($1.ZONES) { $Zones = $1.ZONES }else { $Zones = 'Not Configured' }
                 if ([string]::IsNullOrEmpty($data.minimumTlsVersion)){$MinTLS = 'Default'}Else{$MinTLS = "TLS $($data.minimumTlsVersion)"}
                 
                 $obj = @{
@@ -25,20 +23,16 @@ If ($Task -eq 'Processing') {
                     'ResourceGroup'         = $1.RESOURCEGROUP;
                     'Name'                  = $1.NAME;
                     'Location'              = $1.LOCATION;
-                    'Zone'                  = $Zones;
                     'Version'               = $data.redisVersion;
-                    'Minimum TLS Version'   = $MinTLS;
                     'Sku'                   = $data.sku.name;
                     'Capacity'              = $data.sku.capacity;
                     'Family'                = $data.sku.family;
-                    'Max Frag Mem Reserved' = $data.redisConfiguration.'maxfragmentationmemory-reserved';
-                    'Max Mem Reserved'      = $data.redisConfiguration.'maxmemory-reserved';
-                    'Max Memory Delta'      = $data.redisConfiguration.'maxmemory-delta';
-                    'Max Clients'           = $data.redisConfiguration.'maxclients';
-                    'Resource U'            = $ResUCount;
+                    'MaxFragMemReserved' = $data.redisConfiguration.'maxfragmentationmemory-reserved';
+                    'MaxMemReserved'      = $data.redisConfiguration.'maxmemory-reserved';
+                    'MaxMemoryDelta'      = $data.redisConfiguration.'maxmemory-delta';
+                    'MaxClients'           = $data.redisConfiguration.'maxclients';
                 }
                 $tmp += $obj
-                if ($ResUCount -eq 1) { $ResUCount = 0 }            
             }
             $tmp
         }
@@ -57,19 +51,17 @@ Else {
         
         $Exc = New-Object System.Collections.Generic.List[System.Object]
         $Exc.Add('Subscription')
-        $Exc.Add('Resource Group')
+        $Exc.Add('ResourceGroup')
         $Exc.Add('Name')                    
         $Exc.Add('Location')           
-        $Exc.Add('Zone')                    
         $Exc.Add('Version')                               
-        $Exc.Add('Minimum TLS Version')         
         $Exc.Add('Sku')                     
         $Exc.Add('Capacity')
         $Exc.Add('Family')                  
-        $Exc.Add('Max Frag Mem Reserved')   
-        $Exc.Add('Max Mem Reserved')        
-        $Exc.Add('Max Memory Delta')        
-        $Exc.Add('Max Clients')
+        $Exc.Add('MaxFragMemReserved')   
+        $Exc.Add('MaxMemReserved')        
+        $Exc.Add('MaxMemoryDelta')        
+        $Exc.Add('MaxClients')
 
         $ExcelVar = $SmaResources.RedisCache
 
