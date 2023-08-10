@@ -3,7 +3,7 @@ param($SCPath, $Sub, $Resources, $Task , $File, $SmaResources, $TableStyle, $Met
 if ($Task -eq 'Processing') {
 
     $SQLDB = $Resources | Where-Object { $_.TYPE -eq 'microsoft.sql/servers/databases' -and $_.name -ne 'master' }
-    $sqlMetrics = $Metrics | Where-Object { $_.Service -eq 'SQL Database' }
+    $sqlMetrics = $Metrics.Metrics | Where-Object { $_.Service -eq 'SQL Database' }
 
     if($SQLDB)
         {
