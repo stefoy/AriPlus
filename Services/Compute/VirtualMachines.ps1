@@ -3,7 +3,7 @@
 If ($Task -eq 'Processing')
 {
     $virtualMachines =  $Resources | Where-Object { $_.TYPE -eq 'microsoft.compute/virtualmachines' } 
-    $virtualMachineMetrics = $Metrics | Where-Object { $_.Service -eq 'Virtual Machines' }
+    $virtualMachineMetrics = $Metrics.Metrics | Where-Object { $_.Service -eq 'Virtual Machines' }
 
     $vmsizemap = @{}
 
