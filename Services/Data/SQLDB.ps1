@@ -51,7 +51,7 @@ if ($Task -eq 'Processing') {
                     'ZoneRedundant'              = $data.zoneRedundant;
                     'License'                    = if ($null -ne $data.licenseType) { $data.licenseType } else { 'None' }
                     'CatalogCollation'           = $data.catalogCollation;
-                    'ReadReplicaCount'           = $data.readReplicaCount;
+                    'ReadReplicaCount'           = if ($null -ne $data.readReplicaCount) { $data.readReplicaCount } else { '0' }
                     'DataMaxSizeGB'              = (($data.maxSizeBytes / 1024) / 1024) / 1024;
                     'ElasticPoolID'              = $PoolId;
                     'DtuLimit'                   = if ($null -ne $sqlDtuLimit.MetricValue) { $sqlDtuLimit.MetricValue } else { '0' }
