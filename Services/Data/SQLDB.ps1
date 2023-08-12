@@ -45,9 +45,10 @@ if ($Task -eq 'Processing') {
                     'DatabaseServer'             = $DBServer;
                     'SecondaryLocation'          = $data.defaultSecondaryLocation;
                     'Status'                     = $data.status;
+                    'Tier'                       = $data.currentSku.Tier;
                     'Type'                       = $SqlType;
                     'Capacity'                   = $data.currentSku.capacity;
-                    'Tier'                       = $data.requestedServiceObjectiveName;
+                    'Sku'                        = $data.requestedServiceObjectiveName;
                     'ZoneRedundant'              = $data.zoneRedundant;
                     'License'                    = if ($null -ne $data.licenseType) { $data.licenseType } else { 'None' }
                     'CatalogCollation'           = $data.catalogCollation;
@@ -87,6 +88,7 @@ else {
         $Exc.Add('Status')
         $Exc.Add('Type')
         $Exc.Add('Tier')
+        $Exc.Add('Sku')
         $Exc.Add('License')
         $Exc.Add('Capacity')     
         $Exc.Add('DataMaxSizeGB')
