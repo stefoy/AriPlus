@@ -27,7 +27,7 @@ If ($Task -eq 'Processing') {
                     'BackupRetentionDays'     = $data.storageProfile.backupRetentionDays;
                     'GeoRedundantBackup'      = $data.storageProfile.geoRedundantBackup;
                     'AutoGrow'                 = $data.storageProfile.storageAutogrow;
-                    'Storage MB'                = $data.storageProfile.storageMB;
+                    'StorageMB'                = $data.storageProfile.storageMB;
                     'State'                     = $data.userVisibleState;
                     'ReplicaCapacity'          = $data.replicaCapacity;
                 }
