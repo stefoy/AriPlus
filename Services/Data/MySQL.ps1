@@ -9,33 +9,29 @@ If ($Task -eq 'Processing') {
             $tmp = @()
 
             foreach ($1 in $MySQL) {
-                $ResUCount = 1
                 $sub1 = $SUB | Where-Object { $_.id -eq $1.subscriptionId }
                 $data = $1.PROPERTIES
-                if(!$data.privateEndpointConnections){$PVTENDP = $false}else{$PVTENDP = $data.privateEndpointConnections.Id.split("/")[8]}
                 $sku = $1.SKU
                 
                 $obj = @{
                     'ID'                        = $1.id;
                     'Subscription'              = $sub1.Name;
-                    'Resource Group'            = $1.RESOURCEGROUP;
+                    'ResourceGroup'            = $1.RESOURCEGROUP;
                     'Name'                      = $1.NAME;
                     'Location'                  = $1.LOCATION;
                     'SKU'                       = $sku.name;
-                    'SKU Family'                = $sku.family;
+                    'SKUFamily'                = $sku.family;
                     'Tier'                      = $sku.tier;
                     'Capacity'                  = $sku.capacity;
-                    'MySQL Version'             = "=$($data.version)";
-                    'Backup Retention Days'     = $data.storageProfile.backupRetentionDays;
-                    'Geo-Redundant Backup'      = $data.storageProfile.geoRedundantBackup;
-                    'Auto Grow'                 = $data.storageProfile.storageAutogrow;
+                    'MySQLVersion'             = "=$($data.version)";
+                    'BackupRetentionDays'     = $data.storageProfile.backupRetentionDays;
+                    'GeoRedundantBackup'      = $data.storageProfile.geoRedundantBackup;
+                    'AutoGrow'                 = $data.storageProfile.storageAutogrow;
                     'Storage MB'                = $data.storageProfile.storageMB;
-                    'Minimum TLS Version'       = "$($data.minimalTlsVersion -Replace '_', '.' -Replace 'tls', 'TLS ')";
                     'State'                     = $data.userVisibleState;
-                    'Replica Capacity'          = $data.replicaCapacity;
+                    'ReplicaCapacity'          = $data.replicaCapacity;
                 }
                 $tmp += $obj
-                if ($ResUCount -eq 1) { $ResUCount = 0 }        
             }
             $tmp
         }
@@ -51,30 +47,23 @@ Else {
         $Style = New-ExcelStyle -HorizontalAlignment Center -AutoSize -NumberFormat 0.0
 
         $condtxt = @()
-        $condtxt += New-ConditionalText FALSE -Range J:J
-        $condtxt += New-ConditionalText FALSO -Range J:J
-        $condtxt += New-ConditionalText Disabled -Range L:L
-        $condtxt += New-ConditionalText Enabled -Range O:O
-        $condtxt += New-ConditionalText TLSEnforcementDisabled -Range R:R
-        $condtxt += New-ConditionalText Disabled -Range W:W
-
+        
         $Exc = New-Object System.Collections.Generic.List[System.Object]
         $Exc.Add('Subscription')
-        $Exc.Add('Resource Group')
+        $Exc.Add('ResourceGroup')
         $Exc.Add('Name')
         $Exc.Add('Location')
         $Exc.Add('SKU')
-        $Exc.Add('SKU Family')
+        $Exc.Add('SKUFamily')
         $Exc.Add('Tier')
         $Exc.Add('Capacity')
-        $Exc.Add('MySQL Version')
-        $Exc.Add('Backup Retention Days')
-        $Exc.Add('Geo-Redundant Backup')
-        $Exc.Add('Auto Grow')
-        $Exc.Add('Storage MB')
-        $Exc.Add('Minimum TLS Version')
+        $Exc.Add('MySQLVersion')
+        $Exc.Add('BackupRetentionDays')
+        $Exc.Add('GeoRedundantBackup')
+        $Exc.Add('AutoGrow')
+        $Exc.Add('StorageMB')
         $Exc.Add('State')
-        $Exc.Add('Replica Capacity')
+        $Exc.Add('ReplicaCapacity')
 
         $ExcelVar = $SmaResources.MySQL
 
