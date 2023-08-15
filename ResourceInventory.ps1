@@ -456,12 +456,20 @@ function ExecuteInventoryProcessing()
 
                 if($PSScriptRoot -like '*\*')
                 {
-                    New-Item -Path ($PSScriptRoot + '\Extension\') -ItemType Directory
+                    if (!(Test-Path -Path ($PSScriptRoot + '\Extension\')))
+                    {
+                        New-Item -Path ($PSScriptRoot + '\Extension\') -ItemType Directory
+                    }
+                    
                     $ModuSeq | Out-File ($PSScriptRoot + '\Extension\Metrics.ps1') 
                 }
                 else
                 {
-                    New-Item -Path ($PSScriptRoot + '/Extension/') -ItemType Directory
+                    if (!(Test-Path -Path ($PSScriptRoot + '/Extension/')))
+                    {
+                        New-Item -Path ($PSScriptRoot + '/Extension/') -ItemType Directory
+                    }
+                    
                     $ModuSeq | Out-File ($PSScriptRoot + '/Extension/Metrics.ps1')
                 }
             }
@@ -519,11 +527,17 @@ function ExecuteInventoryProcessing()
 
             if($PSScriptRoot -like '*\*')
             {
-                New-Item -Path ($PSScriptRoot + '\Services\') -ItemType Directory
+                if (!(Test-Path -Path ($PSScriptRoot + '\Services\')))
+                {
+                    New-Item -Path ($PSScriptRoot + '\Services\') -ItemType Directory
+                }
             }
             else
             {
-                New-Item -Path ($PSScriptRoot + '/Services/') -ItemType Directory
+                if (!(Test-Path -Path ($PSScriptRoot + '/Services/')))
+                {
+                    New-Item -Path ($PSScriptRoot + '/Services/') -ItemType Directory
+                }
             }
 
             foreach ($moduleUrl in $moduleUrls)
