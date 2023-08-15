@@ -5,9 +5,9 @@ param ($TenantID,
         $ResourceGroup, 
         [switch]$Online, 
         [switch]$Debug, 
-        [switch]$SkipMetrics,
+        [switch]$SkipMetrics, 
+        [switch]$Help,
         [switch]$Consumption,
-        [switch]$Help, 
         [switch]$DeviceLogin,
         $ConcurrencyLimit = 2,
         $AzureEnvironment,
@@ -382,7 +382,7 @@ Function RunInventorySetup()
                     $Limit = $Limit + 1000
                 }
             }
-            
+
             Write-Progress -Id 1 -activity "Running Resource Inventory Job" -Status "$Looper / $Loop of Inventory Jobs" -Completed
         }
     }
@@ -661,12 +661,66 @@ function ExecuteInventoryProcessing()
         }
     }
 
+    function ProcessConsumption()
+    {
+        if ($Consumption.IsPresent)
+        {
+            $Global:ConsumptionData = New-Object PSObject
+            $Global:ConsumptionData | Add-Member -MemberType NoteProperty -Name Consumption -Value NotSet
+
+            Write-Host ("Gathering Consumption Data") -BackgroundColor Black -ForegroundColor Green
+
+            $Consumption = (az consumption usage list --include-meter-details --only-show-errors --output json --query "[].{id: instanceId, service: meterDetails.serviceName, meter: meterId, product: product, quantity: usageQuantity, cost: pretaxCost}") | ConvertFrom-Json
+
+            $tmpConsumption = [System.Collections.Generic.List[psobject]]::new()
+
+            $Consumption = $Consumption | Group-Object -Property id | ForEach-Object {
+                $Id = $_.Name
+                $Service = $_.Group[0].service
+                $GroupedByMeter = $_.Group | Group-Object -Property meter
+
+                $tmpMeters = [System.Collections.Generic.List[psobject]]::new()
+
+                $GroupedByMeter | ForEach-Object {
+                    $MeterId = $_.Name
+                    $TotalQuantity = ($_.Group | Measure-Object -Property quantity -Sum).Sum
+                    $TotalCost = ($_.Group | Measure-Object -Property cost -Sum).Sum
+
+                    $MeterObject = [PSCustomObject]@{
+                        MeterId = $MeterId
+                        Product = $_.Group[0].product
+                        Quantity = $TotalQuantity.ToString("0.#########")
+                        Cost = $TotalCost.ToString("0.#########")
+                    }
+
+                    $tmpMeters.Add($MeterObject)
+                }
+
+                $InstanceObject = [PSCustomObject]@{
+                    InstanceId = $Id
+                    Service = $Service
+                    Meters = $tmpMeters
+                }
+
+                $tmpConsumption.Add($InstanceObject)
+            }
+
+            $ConsumptionData.Consumption = $tmpConsumption
+
+            $ConsumptionFile = ($DefaultPath + "Consumption_" + $Global:ReportName + "_" + $CurrentDateTime + ".json")
+            $ConsumptionData | ConvertTo-Json -depth 100 -compress | Out-File $ConsumptionFile
+            
+            Write-Host ("Exported Consumption Data to {0}" -f $ConsumptionFile) -BackgroundColor Black -ForegroundColor Green
+        }
+    }
+
     InitializeInventoryProcessing
     CreateMetricsJob
     CreateResourceJobs   
     ProcessMetricsResult
     ProcessResourceResult
     ProcessSummary
+    ProcessConsumption
 }
 
 
