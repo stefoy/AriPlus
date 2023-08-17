@@ -13,24 +13,22 @@ If ($Task -eq 'Processing')
             $tmp = @()
 
             foreach ($1 in $APIM) {
-                $ResUCount = 1
                 $sub1 = $SUB | Where-Object { $_.id -eq $1.subscriptionId }
                 $data = $1.PROPERTIES
-                if ($data.virtualNetworkType -eq 'None') { $NetType = '' } else { $NetType = [string]$data.virtualNetworkConfiguration.subnetResourceId.split("/")[8] }
                 
                 $obj = @{
                     'ID'                   = $1.id;
                     'Subscription'         = $sub1.Name;
-                    'Resource Group'       = $1.RESOURCEGROUP;
+                    'ResourceGroup'        = $1.RESOURCEGROUP;
                     'Name'                 = $1.NAME;
                     'Location'             = $1.LOCATION;
+                    'Capacity'             = $1.sku.capacity;
                     'SKU'                  = $1.sku.name;
-                    'Virtual Network Type' = $data.virtualNetworkType;
-                    'Virtual Network'      = $NetType;
+                    'VirtualNetworkType'   = $data.virtualNetworkType;
                 }
-                $tmp += $obj
-                if ($ResUCount -eq 1) { $ResUCount = 0 }             
+                $tmp += $obj          
             }
+            
             $tmp
         }
 }
@@ -51,12 +49,12 @@ Else
 
         $Exc = New-Object System.Collections.Generic.List[System.Object]
         $Exc.Add('Subscription')
-        $Exc.Add('Resource Group')
+        $Exc.Add('ResourceGroup')
         $Exc.Add('Name')
         $Exc.Add('Location')
+        $Exc.Add('Capacity')
         $Exc.Add('SKU')
-        $Exc.Add('Virtual Network Type')
-        $Exc.Add('Virtual Network')
+        $Exc.Add('VirtualNetworkType')
 
         $ExcelVar = $SmaResources.APIM 
 
