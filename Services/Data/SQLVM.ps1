@@ -18,7 +18,7 @@ If ($Task -eq 'Processing') {
                 $obj = @{
                     'ID'                      = $1.id;
                     'Subscription'            = $sub1.Name;
-                    'Resource Group'          = $1.RESOURCEGROUP;
+                    'ResourceGroup'          = $1.RESOURCEGROUP;
                     'Name'                    = $1.NAME;
                     'Location'                = $1.LOCATION;
                     'Zone'                    = if ($null -ne $1.ZONES) { $1.ZONES } else { 'None' }
