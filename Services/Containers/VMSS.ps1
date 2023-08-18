@@ -61,6 +61,7 @@ if ($Task -eq 'Processing')
                 'VMSize'                        = $1.sku.name;
                 'Instances'                     = $1.sku.capacity;
                 'AutoscaleEnabled'              = $AutoSc;
+                'License'                       = $data.licenseType;
                 'vCPUs'                         = $vmsizemap[$1.sku.name].CPU;
                 'RAM'                           = $vmsizemap[$1.sku.name].RAM;
                 'VMOS'                          = $OS;
@@ -98,6 +99,7 @@ else
         $Exc.Add('VMSize')
         $Exc.Add('vCPUs')
         $Exc.Add('RAM')
+        $Exc.Add('License')
         $Exc.Add('Instances')
         $Exc.Add('AutoscaleEnabled')
         $Exc.Add('VMOS')
