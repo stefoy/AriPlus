@@ -144,7 +144,7 @@ if(!$RunLite)
     $Draw.SetSize(445, 240)
     $Draw.SetPosition(1, 0, 2, 5)
 
-    $txt = $Draw.RichText.Add('AriPlus Version 1.1' + "`n")
+    $txt = $Draw.RichText.Add('AriPlus Version 1.2' + "`n")
     $txt.Size = 14
     $txt.ComplexFont = $Font
     $txt.LatinFont = $Font
