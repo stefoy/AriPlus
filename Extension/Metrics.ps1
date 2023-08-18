@@ -218,7 +218,7 @@ If ($Task -eq 'Processing')
         $metricQueryResultsCount = $null
 
         #$([System.GC]::GetTotalMemory($false))
-        [System.GC]::Collect()
+        #[System.GC]::Collect()
         #$([System.GC]::GetTotalMemory($true))
     } -ThrottleLimit $ConcurrencyLimit
 
