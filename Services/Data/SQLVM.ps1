@@ -25,7 +25,7 @@ If ($Task -eq 'Processing') {
                     'SQLServerLicenseType' = $data.sqlServerLicenseType;
                     'SQLImage'               = $data.sqlImageOffer;
                     'SQLManagement'          = $data.sqlManagement;
-                    'SQLImagSku'           = $data.sqlImageSku;
+                    'SQLImageSku'           = $data.sqlImageSku;
                 }
                 
                 $tmp += $obj      
