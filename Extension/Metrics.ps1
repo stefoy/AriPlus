@@ -145,6 +145,21 @@ If ($Task -eq 'Processing')
         }
     }
 
+    # Define Container Registry Metrics
+
+    $containerRegistry = $Resources | Where-Object { $_.TYPE -eq 'microsoft.containerregistry/registries' }
+    
+    if($containerRegistry)
+    {
+        foreach ($registry in $containerRegistry) 
+        {
+            $subscription = $Subscriptions | Where-Object { $_.id -eq $registry.subscriptionId }
+
+            $metricDefs.Add([PSCustomObject]@{ MetricIndex = $metricCountId++; MetricName = 'StorageUsed'; StartTime = $metricTimeOneDay;  EndTime = $metricEndTime; Interval = '1h';  Aggregation = 'Average'; Measure = 'Largest'; Id = $registry.Id; SubName = $subscription.Name; ResourceGroup = $registry.ResourceGroup; Name = $registry.Name; Location = $registry.Location; Service = 'ContainerRegistry'; Series = 'false' })
+        }
+    }
+    
+
     $metricCount = $metricDefs.Count
 
     $metricDefs | ForEach-Object -Parallel {
