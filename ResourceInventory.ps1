@@ -719,7 +719,6 @@ function ExecuteInventoryProcessing()
     CreateResourceJobs   
     ProcessMetricsResult
     ProcessResourceResult
-    ProcessSummary
     ProcessConsumption
 }
 
@@ -732,6 +731,8 @@ $Global:Runtime = Measure-Command -Expression {
 $Global:ReportingRunTime = Measure-Command -Expression {
     ExecuteInventoryProcessing
 }
+
+ProcessSummary
 
 Write-Host ("Compressing Resources Output: {0}" -f $Global:ZipOutputFile) -ForegroundColor Yellow
 
