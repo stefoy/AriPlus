@@ -24,18 +24,13 @@ If ($Task -eq 'Processing')
                 $obj = @{
                     'ID'                        = $1.id;
                     'Subscription'              = $sub1.Name;
-                    'Resource Group'            = $1.RESOURCEGROUP;
+                    'ResourceGroup'             = $1.RESOURCEGROUP;
                     'Name'                      = $1.NAME;
                     'Location'                  = $1.LOCATION;
                     'SKU'                       = $1.sku.name;
+                    'State'                     = $data.provisioningState;
                     'Encryption'                = $data.encryption.status;
-                    'Zone Redundancy'           = $data.zoneredundancy;
-                    'Private Link'              = if($data.privateendpointconnections){'True'}else{'False'};
-                    'Soft Delete Policy'        = $data.policies.softdeletepolicy.status;
-                    'Trust Policy'              = $data.policies.trustpolicy.status;
-                    'Created Time'              = $timecreated;
-                    'Resource U'                = $ResUCount;
-                    'Total'                     = $Total;
+                    'CreatedTime'               = $timecreated;
                 }
                 $tmp += $obj
                 if ($ResUCount -eq 1) { $ResUCount = 0 }      
@@ -59,16 +54,13 @@ Else
 
         $Exc = New-Object System.Collections.Generic.List[System.Object]
         $Exc.Add('Subscription')
-        $Exc.Add('Resource Group')
+        $Exc.Add('ResourceGroup')
         $Exc.Add('Name')
         $Exc.Add('Location')
         $Exc.Add('SKU')
+        $Exc.Add('State')
         $Exc.Add('Encryption')
-        $Exc.Add('Zone Redundancy')
-        $Exc.Add('Private Link')
-        $Exc.Add('Soft Delete Policy')
-        $Exc.Add('Trust Policy')
-        $Exc.Add('Created Time')  
+        $Exc.Add('CreatedTime')  
 
         $ExcelVar = $SmaResources.REGISTRIES 
             
