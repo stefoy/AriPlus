@@ -50,7 +50,7 @@ if ($Task -eq 'Processing') {
                     'Capacity'                   = $data.currentSku.capacity;
                     'Sku'                        = $data.requestedServiceObjectiveName;
                     'ZoneRedundant'              = $data.zoneRedundant;
-                    'License'                    = if ($null -ne $data.licenseType) { $data.licenseType } else { 'None' }
+                    'License'                    = if ($null -ne $data.licenseType) { $data.licenseType } else { 'License Included' }
                     'CatalogCollation'           = $data.catalogCollation;
                     'ReadReplicaCount'           = if ($null -ne $data.readReplicaCount) { $data.readReplicaCount } else { '0' }
                     'DataMaxSizeGB'              = (($data.maxSizeBytes / 1024) / 1024) / 1024;
