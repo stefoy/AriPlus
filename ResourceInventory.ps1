@@ -189,17 +189,16 @@ Function RunInventorySetup()
                 Write-Debug ('Cleaning az account cache')
                 az account clear | Out-Null
                 Write-Debug ('Calling az login')
-            
-                if($DeviceLogin.IsPresent)
-                {
-                    az login --use-device-code
-                }
-                else 
-                {
-                    az login --only-show-errors | Out-Null
-                }
             }
-            
+            if($DeviceLogin.IsPresent)
+            {
+                az login --use-device-code
+            }
+            else 
+            {
+                az login --only-show-errors | Out-Null
+            }
+                      
             $Tenants = az account list --query [].homeTenantId -o tsv --only-show-errors | Sort-Object -Unique
             Write-Debug ('Checking number of Tenants')
             Write-Host ("")
@@ -245,32 +244,33 @@ Function RunInventorySetup()
         {
             if(!$DontClear.IsPresent)
             {
-                    az account clear | Out-Null
-                    
-                    if (!$Appid) 
-                    {
-                        if($DeviceLogin.IsPresent)
-                        {
-                            az login --use-device-code -t $TenantID
-                        }
-                        else 
-                        {
-                            az login -t $TenantID --only-show-errors | Out-Null
-                        }
-                    }
-                    elseif ($Appid -and $Secret -and $tenantid) 
-                    {
-                        Write-Host "Using Service Principal Authentication Method" -ForegroundColor Green
-                        az login --service-principal -u $appid -p $secret -t $TenantID | Out-Null
-                    }
-                    else
-                    {
-                        Write-Host "You are trying to use Service Principal Authentication Method in a wrong way." -ForegroundColor Red
-                        Write-Host "It's Mandatory to specify Application ID, Secret and Tenant ID in Azure Resource Inventory" -ForegroundColor Red
-                        Write-Host ".\ResourceInventory.ps1 -appid <SP AppID> -secret <SP Secret> -tenant <TenantID>" -ForegroundColor Red
-                        Exit
-                    }
+                az account clear | Out-Null           
             }
+
+            if (!$Appid) 
+            {
+                if($DeviceLogin.IsPresent)
+                {
+                    az login --use-device-code -t $TenantID
+                }
+                else 
+                {
+                    az login -t $TenantID --only-show-errors | Out-Null
+                }
+            }
+            elseif ($Appid -and $Secret -and $tenantid) 
+            {
+                Write-Host "Using Service Principal Authentication Method" -ForegroundColor Green
+                az login --service-principal -u $appid -p $secret -t $TenantID | Out-Null
+            }
+            else
+            {
+                Write-Host "You are trying to use Service Principal Authentication Method in a wrong way." -ForegroundColor Red
+                Write-Host "It's Mandatory to specify Application ID, Secret and Tenant ID in Azure Resource Inventory" -ForegroundColor Red
+                Write-Host ".\ResourceInventory.ps1 -appid <SP AppID> -secret <SP Secret> -tenant <TenantID>" -ForegroundColor Red
+                Exit
+            }
+            
             $Global:Subscriptions = @(az account list --output json --only-show-errors | ConvertFrom-Json)
             $Global:Subscriptions = @($Subscriptions | Where-Object { $_.tenantID -eq $TenantID })
         }
