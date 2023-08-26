@@ -184,16 +184,6 @@ if(!$RunLite)
     $txt.ComplexFont = $Font
     $txt.LatinFont = $Font
 
-    $txt = $Draw.RichText.Add('User Session: ')
-    $txt.Size = 11
-    $txt.ComplexFont = $Font
-    $txt.LatinFont = $Font
-
-    $txt = $Draw.RichText.Add($User + "`n")
-    $txt.Size = 12
-    $txt.ComplexFont = $Font
-    $txt.LatinFont = $Font
-
     $txt = $Draw.RichText.Add('Environment: ')
     $txt.Size = 11
     $txt.ComplexFont = $Font
