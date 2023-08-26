@@ -9,7 +9,6 @@ param ($TenantID,
         [switch]$Help,
         [switch]$Consumption,
         [switch]$DeviceLogin,
-        [switch]$DontClear,
         $ConcurrencyLimit = 2,
         $AzureEnvironment,
         $ReportName = 'ResourcesReport', 
@@ -183,13 +182,11 @@ Function RunInventorySetup()
         {
             Write-Host "Tenant ID not specified. Use -TenantID parameter if you want to specify directly." -ForegroundColor Yellow
             Write-Host "Authenticating Azure"
-
-            if(!$DontClear.IsPresent)
-            {
-                Write-Debug ('Cleaning az account cache')
-                az account clear | Out-Null
-                Write-Debug ('Calling az login')
-            }
+    
+            Write-Debug ('Cleaning az account cache')
+            az account clear | Out-Null
+            Write-Debug ('Calling az login')
+    
             if($DeviceLogin.IsPresent)
             {
                 az login --use-device-code
@@ -198,7 +195,7 @@ Function RunInventorySetup()
             {
                 az login --only-show-errors | Out-Null
             }
-                      
+    
             $Tenants = az account list --query [].homeTenantId -o tsv --only-show-errors | Sort-Object -Unique
             Write-Debug ('Checking number of Tenants')
             Write-Host ("")
@@ -242,11 +239,8 @@ Function RunInventorySetup()
         }
         else 
         {
-            if(!$DontClear.IsPresent)
-            {
-                az account clear | Out-Null           
-            }
-
+            az account clear | Out-Null
+    
             if (!$Appid) 
             {
                 if($DeviceLogin.IsPresent)
@@ -270,7 +264,7 @@ Function RunInventorySetup()
                 Write-Host ".\ResourceInventory.ps1 -appid <SP AppID> -secret <SP Secret> -tenant <TenantID>" -ForegroundColor Red
                 Exit
             }
-            
+    
             $Global:Subscriptions = @(az account list --output json --only-show-errors | ConvertFrom-Json)
             $Global:Subscriptions = @($Subscriptions | Where-Object { $_.tenantID -eq $TenantID })
         }
@@ -629,6 +623,76 @@ function ExecuteInventoryProcessing()
         Write-Debug ('Resource Reporting Phase Done.')
     }
 
+    function ProcessConsumption()
+    {
+        if ($Consumption.IsPresent)
+        {
+            $Global:ConsumptionData = New-Object PSObject
+            $Global:ConsumptionData | Add-Member -MemberType NoteProperty -Name Consumption -Value NotSet
+
+            Write-Host ("Gathering Consumption Data") -BackgroundColor Black -ForegroundColor Green
+
+            $tmpConsumption = [System.Collections.Generic.List[psobject]]::new()
+
+            foreach($resourceItem in $Global:Resources)
+            {
+                $ResourceIds = $resourceItem.Id
+
+                $Consumption = (az consumption usage list --include-meter-details --only-show-errors --output json --query "[?instanceId=='$ResourceIds'].{id: instanceId, service: meterDetails.serviceName, meter: meterId, product: product, quantity: usageQuantity, cost: pretaxCost}") | ConvertFrom-Json
+
+                Write-Host ("Gathering Consumption for {0}" -f $ResourceIds) -BackgroundColor Black -ForegroundColor Green
+
+                $Consumption = $Consumption | Group-Object -Property id | ForEach-Object {
+                    $Id = $_.Name
+                    $Service = $_.Group[0].service
+                    $GroupedByMeter = $_.Group | Group-Object -Property meter
+
+                    $tmpMeters = [System.Collections.Generic.List[psobject]]::new()
+
+                    $GroupedByMeter | ForEach-Object {
+                        $MeterId = $_.Name
+                        $TotalQuantity = ($_.Group | Measure-Object -Property quantity -Sum).Sum
+                        $TotalCost = ($_.Group | Measure-Object -Property cost -Sum).Sum
+
+                        $MeterObject = [PSCustomObject]@{
+                            MeterId = $MeterId
+                            Product = $_.Group[0].product
+                            Quantity = $TotalQuantity.ToString("0.#########")
+                            Cost = $TotalCost.ToString("0.#########")
+                        }
+
+                        $tmpMeters.Add($MeterObject)
+                    }
+
+                    $InstanceObject = [PSCustomObject]@{
+                        InstanceId = $Id
+                        Service = $Service
+                        Meters = $tmpMeters
+                    }
+
+                    $tmpConsumption.Add($InstanceObject)
+                }
+            }
+
+            $ConsumptionData.Consumption = $tmpConsumption
+
+            $ConsumptionFile = ($DefaultPath + "Consumption_" + $Global:ReportName + "_" + $CurrentDateTime + ".json")
+            $ConsumptionData | ConvertTo-Json -depth 100 -compress | Out-File $ConsumptionFile
+            
+            Write-Host ("Exported Consumption Data to {0}" -f $ConsumptionFile) -BackgroundColor Black -ForegroundColor Green
+        }
+    }
+
+    InitializeInventoryProcessing
+    CreateMetricsJob
+    CreateResourceJobs   
+    ProcessMetricsResult
+    ProcessResourceResult
+    ProcessConsumption
+}
+
+function FinalizeOutputs
+{
     function ProcessSummary()
     {
         Write-Debug ('Creating Summary Report')
@@ -667,77 +731,22 @@ function ExecuteInventoryProcessing()
         }
     }
 
-    function ProcessConsumption()
-    {
-        if ($Consumption.IsPresent)
-        {
-            $Global:ConsumptionData = New-Object PSObject
-            $Global:ConsumptionData | Add-Member -MemberType NoteProperty -Name Consumption -Value NotSet
-
-            Write-Host ("Gathering Consumption Data") -BackgroundColor Black -ForegroundColor Green
-
-            $Consumption = (az consumption usage list --include-meter-details --only-show-errors --output json --query "[].{id: instanceId, service: meterDetails.serviceName, meter: meterId, product: product, quantity: usageQuantity, cost: pretaxCost}") | ConvertFrom-Json
-
-            $tmpConsumption = [System.Collections.Generic.List[psobject]]::new()
-
-            $Consumption = $Consumption | Group-Object -Property id | ForEach-Object {
-                $Id = $_.Name
-                $Service = $_.Group[0].service
-                $GroupedByMeter = $_.Group | Group-Object -Property meter
-
-                $tmpMeters = [System.Collections.Generic.List[psobject]]::new()
-
-                $GroupedByMeter | ForEach-Object {
-                    $MeterId = $_.Name
-                    $TotalQuantity = ($_.Group | Measure-Object -Property quantity -Sum).Sum
-                    $TotalCost = ($_.Group | Measure-Object -Property cost -Sum).Sum
-
-                    $MeterObject = [PSCustomObject]@{
-                        MeterId = $MeterId
-                        Product = $_.Group[0].product
-                        Quantity = $TotalQuantity.ToString("0.#########")
-                        Cost = $TotalCost.ToString("0.#########")
-                    }
-
-                    $tmpMeters.Add($MeterObject)
-                }
-
-                $InstanceObject = [PSCustomObject]@{
-                    InstanceId = $Id
-                    Service = $Service
-                    Meters = $tmpMeters
-                }
-
-                $tmpConsumption.Add($InstanceObject)
-            }
-
-            $ConsumptionData.Consumption = $tmpConsumption
-
-            $ConsumptionFile = ($DefaultPath + "Consumption_" + $Global:ReportName + "_" + $CurrentDateTime + ".json")
-            $ConsumptionData | ConvertTo-Json -depth 100 -compress | Out-File $ConsumptionFile
-            
-            Write-Host ("Exported Consumption Data to {0}" -f $ConsumptionFile) -BackgroundColor Black -ForegroundColor Green
-        }
-    }
-
-    InitializeInventoryProcessing
-    CreateMetricsJob
-    CreateResourceJobs   
-    ProcessMetricsResult
-    ProcessResourceResult
-    ProcessConsumption
     ProcessSummary
 }
 
-
+# Setup and Inventory Gathering
 $Global:Runtime = Measure-Command -Expression {
     Variables
     RunInventorySetup
 }
 
+# Execution and processing of inventory
 $Global:ReportingRunTime = Measure-Command -Expression {
     ExecuteInventoryProcessing
 }
+
+# Prepare the summary and outputs
+FinalizeOutputs
 
 Write-Host ("Compressing Resources Output: {0}" -f $Global:ZipOutputFile) -ForegroundColor Yellow
 
