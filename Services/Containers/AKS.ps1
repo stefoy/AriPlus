@@ -12,47 +12,33 @@ If ($Task -eq 'Processing')
             $ResUCount = 1
             $sub1 = $SUB | Where-Object { $_.id -eq $1.subscriptionId }
             $data = $1.PROPERTIES
-            if([string]::IsNullOrEmpty($data.addonProfiles.omsagent.config.logAnalyticsWorkspaceResourceID)){$Insights = $false}else{$Insights = $data.addonProfiles.omsagent.config.logAnalyticsWorkspaceResourceID.split('/')[8]}
 
             foreach ($2 in $data.agentPoolProfiles) 
             {
                 $obj = @{
                     'ID'                         = $1.id;
                     'Subscription'               = $sub1.Name;
-                    'Resource Group'             = $1.RESOURCEGROUP;
+                    'ResourceGroup'             = $1.RESOURCEGROUP;
                     'Clusters'                   = $1.NAME;
                     'Location'                   = $1.LOCATION;
                     'Sku'                        = $1.sku.name;
-                    'Sku Tier'                   = $1.sku.tier;
-                    'Kubernetes Version'         = $data.kubernetesVersion;
-                    'Role-Based Access Control'  = $data.enableRBAC;
-                    'AAD Enabled'                = if ($data.aadProfile) { $true }else { $false };
-                    'Network Type'               = $data.networkProfile.networkPlugin;
-                    'Ingress Controller'         = $data.addonProfiles.ingressApplicationGateway.config.applicationGatewayName;                        
-                    'Private Cluster'            = $data.apiServerAccessProfile.enablePrivateCluster;
-                    'Container Insights'         = $Insights;                    
-                    'Outbound Type'              = $data.networkProfile.outboundType;
-                    'LoadBalancer Sku'           = $data.networkProfile.loadBalancerSku;                
-                    'HTTP Application Routing'   = if ($data.addonProfiles.httpapplicationrouting.enabled) { $true }else { $false };
-                    'Node Pool Name'             = $2.name;
-                    'Pool Profile Type'          = $2.type;
-                    'Pool Mode'                  = $2.mode;
-                    'Pool OS'                    = $2.osType;
-                    'Node Size'                  = $2.vmSize;
-                    'OS Disk Size (GB)'          = $2.osDiskSizeGB;
+                    'SkuTier'                   = $1.sku.tier;
+                    'KubernetesVersion'         = $data.kubernetesVersion;
+                    'LoadBalancerSku'           = $data.networkProfile.loadBalancerSku;                
+                    'NodePoolName'             = $2.name;
+                    'PoolProfileType'          = $2.type;
+                    'PoolMode'                  = $2.mode;
+                    'PoolOS'                    = $2.osType;
+                    'NodeSize'                  = $2.vmSize;
+                    'OSDiskSize'          = $2.osDiskSizeGB;
                     'Nodes'                      = $2.count;
-                    'Zones'                      = [string]$2.availabilityZones;
                     'Autoscale'                  = $2.enableAutoScaling;
-                    'Autoscale Max'              = $2.maxCount;
-                    'Autoscale Min'              = $2.minCount;
-                    'Max Pods Per Node'          = $2.maxPods;
-                    'Virtual Network'            = if($2.vnetSubnetID){$2.vnetSubnetID.split('/')[8]}else{$false}
-                    'VNET Subnet'                = if($2.vnetSubnetID){$2.vnetSubnetID.split('/')[10]}else{$false}
-                    'Orchestrator Version'       = $2.orchestratorVersion;
-                    'Resource U'                 = $ResUCount;
+                    'AutoscaleMax'              = $2.maxCount;
+                    'AutoscaleMin'              = $2.minCount;
+                    'MaxPodsPerNode'          = $2.maxPods;
+                    'OrchestratorVersion'       = $2.orchestratorVersion;
                 }
                 $tmp += $obj
-                if ($ResUCount -eq 1) { $ResUCount = 0 }               
             }
         }
         $tmp
@@ -73,36 +59,25 @@ Else
 
         $Exc = New-Object System.Collections.Generic.List[System.Object]
         $Exc.Add('Subscription')
-        $Exc.Add('Resource Group')
+        $Exc.Add('ResourceGroup')
         $Exc.Add('Clusters')
         $Exc.Add('Location')
         $Exc.Add('Sku')
-        $Exc.Add('Sku Tier')
-        $Exc.Add('Kubernetes Version')
-        $Exc.Add('Role-Based Access Control')
-        $Exc.Add('AAD Enabled')
-        $Exc.Add('Network Type')
-        $Exc.Add('Ingress Controller')
-        $Exc.Add('Private Cluster')
-        $Exc.Add('Container Insights')
-        $Exc.Add('Outbound Type')
-        $Exc.Add('LoadBalancer Sku')
-        $Exc.Add('HTTP Application Routing')
-        $Exc.Add('Node Pool Name')
-        $Exc.Add('Pool Profile Type')
-        $Exc.Add('Pool Mode')
-        $Exc.Add('Pool OS')
-        $Exc.Add('Node Size')
-        $Exc.Add('OS Disk Size (GB)')
+        $Exc.Add('SkuTier')
+        $Exc.Add('KubernetesVersion')
+        $Exc.Add('LoadBalancerSku')
+        $Exc.Add('NodePoolName')
+        $Exc.Add('PoolProfileType')
+        $Exc.Add('PoolMode')
+        $Exc.Add('PoolOS')
+        $Exc.Add('NodeSize')
+        $Exc.Add('OSDiskSize')
         $Exc.Add('Nodes')
-        $Exc.Add('Zones')
         $Exc.Add('Autoscale')
-        $Exc.Add('Autoscale Max')
-        $Exc.Add('Autoscale Min')
-        $Exc.Add('Max Pods Per Node')
-        $Exc.Add('Virtual Network')
-        $Exc.Add('VNET Subnet')
-        $Exc.Add('Orchestrator Version')
+        $Exc.Add('AutoscaleMax')
+        $Exc.Add('AutoscaleMin')
+        $Exc.Add('MaxPodsPerNode')
+        $Exc.Add('OrchestratorVersion')
 
         $ExcelVar = $SmaResources.AKS 
 
