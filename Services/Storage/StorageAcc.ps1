@@ -17,6 +17,8 @@ If ($Task -eq 'Processing') {
                 $timecreated = $data.creationTime
                 $timecreated = [datetime]$timecreated
                 $timecreated = $timecreated.ToString("yyyy-MM-dd HH:mm")
+
+                if([string]::IsNullOrEmpty($data.secondaryLocation)){ $secondaryLocation = "None" } else { $secondaryLocation = $data.secondaryLocation }
                 
                 $obj = @{
                     'ID'                                   = $1.id;
@@ -24,7 +26,6 @@ If ($Task -eq 'Processing') {
                     'ResourceGroup'                        = $1.RESOURCEGROUP;
                     'Name'                                 = $1.NAME;
                     'Location'                             = $1.LOCATION;
-                    'Zone'                                 = $1.ZONES;
                     'SKU'                                  = $1.sku.name;
                     'Tier'                                 = $1.sku.tier;
                     'Kind'                                 = $1.kind;
@@ -58,7 +59,6 @@ Else {
         $Exc.Add('ResourceGroup')
         $Exc.Add('Name')
         $Exc.Add('Location')
-        $Exc.Add('Zone')
         $Exc.Add('SKU')
         $Exc.Add('Tier')
         $Exc.Add('Kind')
