@@ -19,7 +19,7 @@ If ($Task -eq 'Processing') {
                 $timecreated = $timecreated.ToString("yyyy-MM-dd HH:mm")
 
                 if([string]::IsNullOrEmpty($data.secondaryLocation)){ $secondaryLocation = "None" } else { $secondaryLocation = $data.secondaryLocation }
-                if($data.isHnsEnabled){ $hnsEnabled = $true } else { $secondaryLocation = $hnsEnabled = $false }
+                if($data.isHnsEnabled){ $hnsEnabled = $true } else { $hnsEnabled = $false }
                 
                 $obj = @{
                     'ID'                                   = $1.id;
