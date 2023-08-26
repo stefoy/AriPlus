@@ -12,7 +12,6 @@ If ($Task -eq 'Processing') {
             $tmp = @()
 
             foreach ($1 in $storageacc) {
-                $ResUCount = 1
                 $sub1 = $SUB | Where-Object { $_.Id -eq $1.subscriptionId }
                 $data = $1.PROPERTIES
                 $timecreated = $data.creationTime
@@ -20,17 +19,18 @@ If ($Task -eq 'Processing') {
                 $timecreated = $timecreated.ToString("yyyy-MM-dd HH:mm")
                 
                 $obj = @{
-                    'ID'                                    = $1.id;
-                    'Subscription'                          = $sub1.Name;
+                    'ID'                                   = $1.id;
+                    'Subscription'                         = $sub1.Name;
                     'ResourceGroup'                        = $1.RESOURCEGROUP;
-                    'Name'                                  = $1.NAME;
-                    'Location'                              = $1.LOCATION;
-                    'Zone'                                  = $1.ZONES;
-                    'SKU'                                   = $1.sku.name;
-                    'Tier'                                  = $1.sku.tier;
+                    'Name'                                 = $1.NAME;
+                    'Location'                             = $1.LOCATION;
+                    'Zone'                                 = $1.ZONES;
+                    'SKU'                                  = $1.sku.name;
+                    'Tier'                                 = $1.sku.tier;
+                    'Kind'                                 = $1.kind;
                     'AccessTier'                           = $data.accessTier;
                     'PrimaryLocation'                      = $data.primaryLocation;
-                    'StatusOfPrimary'                     = $data.statusOfPrimary;
+                    'StatusOfPrimary'                      = $data.statusOfPrimary;
                     'SecondaryLocation'                    = $data.secondaryLocation;
                     'HierarchicalNamespace'                = $data.isHnsEnabled;
                     'CreatedTime'                          = $timecreated;   
@@ -61,6 +61,7 @@ Else {
         $Exc.Add('Zone')
         $Exc.Add('SKU')
         $Exc.Add('Tier')
+        $Exc.Add('Kind')
         $Exc.Add('AccessTier')
         $Exc.Add('PrimaryLocation')
         $Exc.Add('StatusOfPrimary')
