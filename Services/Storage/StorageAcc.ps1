@@ -18,7 +18,6 @@ If ($Task -eq 'Processing') {
                 $timecreated = [datetime]$timecreated
                 $timecreated = $timecreated.ToString("yyyy-MM-dd HH:mm")
 
-                if([string]::IsNullOrEmpty($data.secondaryLocation)){ $secondaryLocation = "None" } else { $secondaryLocation = $data.secondaryLocation }
                 if($data.isHnsEnabled){ $hnsEnabled = $true } else { $hnsEnabled = $false }
                 
                 $obj = @{
@@ -33,7 +32,6 @@ If ($Task -eq 'Processing') {
                     'AccessTier'                           = $data.accessTier;
                     'PrimaryLocation'                      = $data.primaryLocation;
                     'StatusOfPrimary'                      = $data.statusOfPrimary;
-                    'SecondaryLocation'                    = $secondaryLocation;
                     'HierarchicalNamespace'                = $hnsEnabled;
                     'CreatedTime'                          = $timecreated;   
                 }
@@ -66,7 +64,6 @@ Else {
         $Exc.Add('AccessTier')
         $Exc.Add('PrimaryLocation')
         $Exc.Add('StatusOfPrimary')
-        $Exc.Add('SecondaryLocation')
         $Exc.Add('HierarchicalNamespace')
         $Exc.Add('CreatedTime')
 
