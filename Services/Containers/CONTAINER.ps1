@@ -22,18 +22,19 @@ If ($Task -eq 'Processing')
                     $obj = @{
                         'ID'                  = $1.id;
                         'Subscription'        = $sub1.Name;
-                        'Resource Group'      = $1.RESOURCEGROUP;
-                        'Instance Name'       = $1.NAME;
+                        'ResourceGroup'       = $1.RESOURCEGROUP;
+                        'Name'                = $1.NAME;
                         'Location'            = $1.LOCATION;
-                        'Instance OS Type'    = $data.osType;
-                        'Container Name'      = $2.name;
-                        'Container State'     = $2.properties.instanceView.currentState.state;
-                        'Container Image'     = [string]$2.properties.image;
-                        'Restart Count'       = $2.properties.instanceView.restartCount;
-                        'Start Time'          = $2.properties.instanceView.currentState.startTime;
+                        'Sku'                 = $data.Sku;
+                        'InstanceOSType'    = $data.osType;
+                        'ContainerName'      = $2.name;
+                        'ContainerState'     = $2.properties.instanceView.currentState.state;
+                        'ContainerImage'     = [string]$2.properties.image;
+                        'RestartCount'       = $2.properties.instanceView.restartCount;
+                        'StartTime'          = $2.properties.instanceView.currentState.startTime;
                         'Command'             = [string]$2.properties.command;
-                        'Request CPU'         = $2.properties.resources.requests.cpu;
-                        'Request Memory (GB)' = $2.properties.resources.requests.memoryInGB;
+                        'RequestCPU'         = $2.properties.resources.requests.cpu;
+                        'RequestMemoryGB' = $2.properties.resources.requests.memoryInGB;
                         'Total'               = $Total;
                     }
                     $tmp += $obj
@@ -57,18 +58,19 @@ Else
 
         $Exc = New-Object System.Collections.Generic.List[System.Object]
         $Exc.Add('Subscription')
-        $Exc.Add('Resource Group')
-        $Exc.Add('Instance Name')
+        $Exc.Add('ResourceGroup')
+        $Exc.Add('Name')
         $Exc.Add('Location')
-        $Exc.Add('Instance OS Type')
-        $Exc.Add('Container Name')
-        $Exc.Add('Container State')
-        $Exc.Add('Container Image')
-        $Exc.Add('Restart Count')
-        $Exc.Add('Start Time')
+        $Exc.Add('Sku')
+        $Exc.Add('InstanceOSType')
+        $Exc.Add('ContainerName')
+        $Exc.Add('ContainerState')
+        $Exc.Add('ContainerImage')
+        $Exc.Add('RestartCount')
+        $Exc.Add('StartTime')
         $Exc.Add('Command')
-        $Exc.Add('Request CPU')
-        $Exc.Add('Request Memory (GB)')
+        $Exc.Add('RequestCPU')
+        $Exc.Add('RequestMemoryGB')
 
         $ExcelVar = $SmaResources.CONTAINER 
             
