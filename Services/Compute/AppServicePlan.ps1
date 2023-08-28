@@ -28,7 +28,7 @@ if ($Task -eq 'Processing')
                 'Size'                  = $sku.name;
                 'PricingTier'           = ($sku.tier+'('+$sku.name+': '+$data.currentNumberOfWorkers+')');
                 'ComputeMode'           = $data.computeMode;
-                'IntanceSize'           = $data.currentWorkerSize;
+                'InstanceSize'           = $data.currentWorkerSize;
                 'CurrentInstances'      = $data.currentNumberOfWorkers;
                 'Spot'                  = $data.isSpot
                 'AutoscaleEnabled'      = $AutoSc;
@@ -62,7 +62,7 @@ else
         $Exc.Add('Size')
         $Exc.Add('PricingTier')
         $Exc.Add('ComputeMode')
-        $Exc.Add('IntanceSize')
+        $Exc.Add('InstanceSize')
         $Exc.Add('CurrentInstances')
         $Exc.Add('Spot')
         $Exc.Add('AutoscaleEnabled')
