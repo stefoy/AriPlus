@@ -56,7 +56,6 @@ Example:
 ```powershell
 ./ResourceInventory.ps1 -Online -ConcurrencyLimit 8
 ```
-
 ---
 
 ## Parameters
@@ -79,13 +78,17 @@ The following table lists the parameters that can be used with the script:
 | `$ConcurrencyLimit` | Integer | Specifies the concurrency limit for parallel command execution. Default value is `6`.                            |
 
 ---
+## ⚠️ Warning Messages
+
+- **Important:** Azure Resource Inventory will not upgrade the current version of the Powershell modules.
+  
+- **Important:** If you're running the script inside Azure CloudShell, the final Excel will not have auto-fit columns, and you will see warnings during the script execution. This is an issue with the Import-Excel module but it does not affect the inventory which will remain accurate.
+
+---
 
 ## Acknowledgments
 
 Special thanks to Doug Finke, the author of the PowerShell ImportExcel Module. 
-
----
-
 © 2023 AriPlus Contributors. All rights reserved.
 
 ---
