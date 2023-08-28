@@ -435,7 +435,8 @@ function ExecuteInventoryProcessing()
         $Global:AllResourceFile = ($DefaultPath + "Full_" + $Global:ReportName + "_" + $CurrentDateTime + ".json")
         $Global:JsonFile = ($DefaultPath + "Inventory_"+ $Global:ReportName + "_" + $CurrentDateTime + ".json")
         $Global:MetricsJsonFile = ($DefaultPath + "Metrics_"+ $Global:ReportName + "_" + $CurrentDateTime + ".json")
-                
+        $Global:ConsumptionFile = ($DefaultPath + "Consumption_"+ $Global:ReportName + "_" + $CurrentDateTime + ".json")
+        
         Write-Debug ('Report Excel File: {0}' -f $File)
         Write-Progress -activity 'Inventory' -Status "21% Complete." -PercentComplete 21 -CurrentOperation "Starting to process extraction data.."
     }
@@ -683,12 +684,132 @@ function ExecuteInventoryProcessing()
         }
     }
 
+    function ProcessCostAndUsageApi()
+    {
+        if ($Consumption.IsPresent)
+        {
+            $ConsumptionObject = New-Object PSObject
+            $ConsumptionObject | Add-Member -MemberType NoteProperty -Name Consumption -Value NotSet
+
+            $tmpRows = [System.Collections.Generic.List[psobject]]::new()
+
+            foreach($sub in $Global:Subscriptions)
+            {
+                $queryScope = "subscriptions/" + $sub.Id
+                $queryUri = "https://management.azure.com/$queryScope/providers/Microsoft.CostManagement/query?api-version=2023-03-01"
+
+                $queryBody = @{
+                    type = "Usage"
+                    timeframe = "Custom"
+                    timePeriod = @{
+                        from = "2023-08-01"
+                        to = "2023-08-27"
+                    }
+                    dataSet = @{
+                        granularity = "None"
+                        aggregation = @{
+                            totalCostUSD = @{
+                                name = "CostUSD"
+                                function = "Sum"
+                            }
+                            totalQuantity = @{
+                                function = "Sum"
+                                name = "UsageQuantity"
+                            }
+                        }
+                        grouping = @(
+                            @{
+                                type = "Dimension"
+                                name = "ServiceName"
+                            },
+                            @{
+                                type = "Dimension"
+                                name = "ResourceId"
+                            },
+                            @{
+                                type = "Dimension"
+                                name = "ResourceGroup"
+                            },
+                            @{
+                                type = "Dimension"
+                                name = "Meter"
+                            },
+                            @{
+                                type = "Dimension"
+                                name = "MeterCategory"
+                            },
+                            @{
+                                type = "Dimension"
+                                name = "MeterSubcategory"
+                            }
+                        )
+                    }
+                }
+
+                $queryJson = ($queryBody | ConvertTo-Json -Depth 10 -Compress).Replace('"', '\"')
+
+                Write-Host ("Gathering Consumption Data: {0}" -f $queryUri) -BackgroundColor Black -ForegroundColor Green
+
+                $consumptionData = (az rest --method post --uri $queryUri --body $queryJson --headers "Content-Type=application/json") | ConvertFrom-Json
+
+                if($consumptionData)
+                {
+                    foreach($cRow in $consumptionData.properties.rows)
+                    {
+                        $costObject = [PSCustomObject]@{
+                            Quantity = $cRow[0].ToString("0.#########")
+                            CostUSD = $cRow[1].ToString("0.#########")
+                            ServiceName = $cRow[2]
+                            ResourceId = $cRow[3]
+                            ResourceGroup = $cRow[4]
+                            Meter = $cRow[5]
+                            MeterCategory = $cRow[6]
+                            MeterSubcategory = $cRow[7]
+                            Currency = $cRow[8]
+                        }
+
+                        $tmpRows.Add($costObject)
+                    }
+
+                    while($consumptionData.nextLink)
+                    {
+                        Write-Host ("Gathering Consumption Data: {0}" -f $consumptionData.nextLink) -BackgroundColor Black -ForegroundColor Green
+
+                        $consumptionData = (az rest --method post --uri $consumptionData.nextLink --body $queryJson --headers "Content-Type=application/json") | ConvertFrom-Json
+
+                        foreach($cRow in $consumptionData.properties.rows)
+                        {
+                            $costObject = [PSCustomObject]@{
+                                Quantity = $cRow[0].ToString("0.#########")
+                                CostUSD = $cRow[1].ToString("0.#########")
+                                ServiceName = $cRow[2]
+                                ResourceId = $cRow[3]
+                                ResourceGroup = $cRow[4]
+                                Meter = $cRow[5]
+                                MeterCategory = $cRow[6]
+                                MeterSubcategory = $cRow[7]
+                                Currency = $cRow[8]
+                            }
+
+                            $tmpRows.Add($costObject)
+                        }
+                    }    
+                }
+            }
+
+            $ConsumptionObject.Consumption = $tmpRows
+
+            #$Global:Consumption = ($DefaultPath + "Consumption_" + $Global:ReportName + "_" + $CurrentDateTime + ".json")
+            $ConsumptionObject | ConvertTo-Json -depth 100 -compress | Out-File $Global:ConsumptionFile 
+        }
+    }
+
     InitializeInventoryProcessing
     CreateMetricsJob
     CreateResourceJobs   
     ProcessMetricsResult
     ProcessResourceResult
-    ProcessConsumption
+    ProcessCostAndUsageApi
 }
 
 function FinalizeOutputs
@@ -697,38 +818,35 @@ function FinalizeOutputs
     {
         Write-Debug ('Creating Summary Report')
 
-        if (!$SkipMetrics.IsPresent) 
+        Write-Debug ('Starting Summary Report Processing Job.')
+
+        If ($RunOnline -eq $true) 
         {
-            Write-Debug ('Starting Summary Report Processing Job.')
+            Write-Debug ('Looking for the following file: '+$RawRepo + '/Extension/Summary.ps1')
+            $ModuSeq = (New-Object System.Net.WebClient).DownloadString($RawRepo + '/Extension/Summary.ps1')
 
-            If ($RunOnline -eq $true) 
-            {
-                Write-Debug ('Looking for the following file: '+$RawRepo + '/Extension/Summary.ps1')
-                $ModuSeq = (New-Object System.Net.WebClient).DownloadString($RawRepo + '/Extension/Summary.ps1')
-
-                Write-Debug(($PSScriptRoot + '\Extension\Summary.ps1'))
-
-                if($PSScriptRoot -like '*\*')
-                {
-                    $ModuSeq | Out-File ($PSScriptRoot + '\Extension\Summary.ps1') 
-                }
-                else
-                {
-                    $ModuSeq | Out-File ($PSScriptRoot + '/Extension/Summary.ps1')
-                }
-            }
+            Write-Debug(($PSScriptRoot + '\Extension\Summary.ps1'))
 
             if($PSScriptRoot -like '*\*')
             {
-                $MetricPath = Get-ChildItem -Path ($PSScriptRoot + '\Extension\Summary.ps1') -Recurse
+                $ModuSeq | Out-File ($PSScriptRoot + '\Extension\Summary.ps1') 
             }
             else
             {
-                $MetricPath = Get-ChildItem -Path ($PSScriptRoot + '/Extension/Summary.ps1') -Recurse
+                $ModuSeq | Out-File ($PSScriptRoot + '/Extension/Summary.ps1')
             }
-
-            $ChartsRun = & $MetricPath -File $file -TableStyle $TableStyle -PlatOS $PlatformOS -Subscriptions $Subscriptions -Resources $Resources -ExtractionRunTime $Runtime -ReportingRunTime $ReportingRunTime -RunLite $false
         }
+
+        if($PSScriptRoot -like '*\*')
+        {
+            $SummaryPath = Get-ChildItem -Path ($PSScriptRoot + '\Extension\Summary.ps1') -Recurse
+        }
+        else
+        {
+            $SummaryPath = Get-ChildItem -Path ($PSScriptRoot + '/Extension/Summary.ps1') -Recurse
+        }
+
+        $ChartsRun = & $SummaryPath -File $file -TableStyle $TableStyle -PlatOS $PlatformOS -Subscriptions $Subscriptions -Resources $Resources -ExtractionRunTime $Runtime -ReportingRunTime $ReportingRunTime -RunLite $false
     }
 
     ProcessSummary
@@ -750,10 +868,20 @@ FinalizeOutputs
 
 Write-Host ("Compressing Resources Output: {0}" -f $Global:ZipOutputFile) -ForegroundColor Yellow
 
+if(!$Consumption.IsPresent)
+{
+    "Consumption Not Gathered" | ConvertTo-Json -depth 100 -compress | Out-File $Global:ConsumptionFile 
+}
+
+if($SkipMetrics.IsPresent)
+{
+    "Metrics Not Gathered" | ConvertTo-Json -depth 100 -compress | Out-File $Global:MetricsJsonFile 
+}
+
 $compressionOutput = @{
-  Path = $Global:File, $Global:MetricsJsonFile, $Global:JsonFile
-  CompressionLevel = "Optimal"
-  DestinationPath = $Global:ZipOutputFile
+    Path = $Global:File, $Global:MetricsJsonFile, $Global:JsonFile, $Global:ConsumptionFile
+    CompressionLevel = "Optimal"
+    DestinationPath = $Global:ZipOutputFile
 }
 
 Compress-Archive @compressionOutput
