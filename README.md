@@ -1,33 +1,93 @@
+---
+
 # AriPlus
 
-Based on Azure Resource Inventory (https://github.com/microsoft/ARI), Azure Resource inventory (ARI) is a powerful script written in powershell that generates an Excel report of any Azure Environment you have read access.
-This project is intend to help Cloud Admins and anyone that might need an easy and fast way to build a full Excel Report of an Azure Environment.
+AriPlus is an enhanced version of the [Azure Resource Inventory](https://github.com/microsoft/ARI) (ARI) tool. ARI is a robust PowerShell script provided by Microsoft that generates an Excel report of any Azure environment to which you have read access. This tool aims to assist Cloud Administrators and other professionals in creating a comprehensive Excel report of an Azure Environment quickly and easily. AriPlus enhances the original script by capturing additional utilization metrics.
 
-ARIPlus has been customized to capture additional information such as utilization metrics.
+## Table of Contents
+
+- [Prerequisites](#prerequisites)
+- [Installation](#installation)
+- [Running the Script](#running-the-script)
+- [Acknowledgments](#acknowledgments)
 
 ## Prerequisites
-You can use Azure Resource Inventory in both in Cloudshell and Powershell Desktop.
 
-What things you need to run the script
+AriPlus can be executed in both Azure Cloudshell and PowerShell Desktop environments. 
 
-* Install-Module ImportExcel
-* Install Azure CLI
-* Install Azure CLI Account Extension
-* Install Azure CLI Resource-Graph Extension
-* :exclamation: **REQUIRES POWERSHELL 7 or AZURE CLOUDSHELL**
-  
-By default Azure Resource Inventory will call to install the required Powershell modules and Azure CLI components but you must have administrator privileges during the script execution.
+### Requirements
+> **Note:** By default, Azure Resource Inventory will attempt to install the necessary PowerShell modules and Azure CLI components, but you need administrator privileges during the script execution.
 
-Special Thanks for Doug Finke, the Author of Powershell ImportExcel Module.
 
-## Running the script
+- PowerShell 7 or Azure CloudShell
+- Azure CLI
+- Azure CLI Account Extension
+- Azure CLI Resource-Graph Extension
 
-This script uses Concurrency to to execute commands in parallel when gathering metrics, the default is set to 2, to override this use the option.
 
-  -ConcurrencyLimit <value> 
+### Dependencies
 
-  -Online options will download the latest modules from Github so you only need to download ResourceInventory.ps1
+Install the required PowerShell module:
 
-* Download "ResourceInventory.ps1" or Clone the repositroy in Azure CloudShell or Desktop version of Powershell 7
-* Run "ResourceInventory.ps1 - Online". In Azure CloudShell you're already authenticated. In PowerShell Desktop you will be redirected to  Azure sign-in page. 
+```powershell
+Install-Module ImportExcel
+```
 
+## Installation
+
+1. Clone the repository or download the `ResourceInventory.ps1` script.
+
+```bash
+git clone https://github.com/stefoy/AriPlus
+```
+
+2. Run the script. If you are in Azure CloudShell, you're already authenticated. In PowerShell Desktop, you will be redirected to the Azure sign-in page.
+
+```powershell
+./ResourceInventory.ps1 -Online
+```
+
+## Running the Script
+
+AriPlus uses concurrency to execute commands in parallel, especially when gathering metrics. By default, the concurrency limit is set to 6. To change this, use the `-ConcurrencyLimit` option. 
+
+The `-Online` option fetches the latest modules from GitHub, meaning you only need to download the `ResourceInventory.ps1`.
+
+Example:
+
+```powershell
+./ResourceInventory.ps1 -Online -ConcurrencyLimit 8
+```
+
+---
+
+## Parameters
+
+The following table lists the parameters that can be used with the script:
+
+| Parameter         | Type     | Description                                                                                                     |
+|-------------------|----------|-----------------------------------------------------------------------------------------------------------------|
+| `$TenantID`       | String   | Specifies the Tenant ID you want to create a Resource Inventory                                                                                       |
+| `$Appid`          | String   | Service Principal Authentication ID.                                                                                   |
+| `$SubscriptionID` | String   | Specifies the Subscription which will be run for Inventory.                                                                                  |
+| `$Secret`         | String   | Client Secret of the Service Principal key.                                                                                       |
+| `$ResourceGroup`  | String   | Specifies the Resource Group.                                                                                   |
+| `$Online`         | Switch   | A switch to indicate if online mode is used.                                                                    |
+| `$Debug`          | Switch   | Enable Debug Mode                                                                                  |
+| `$SkipMetrics`    | Switch   | A switch to skip metrics retrieval.                                                                             |
+| `$Help`           | Switch   | A switch to display the help message.                                                                           |
+| `$Consumption`    | Switch   | A switch to indicate if consumption metrics should be gathered.                                                |
+| `$DeviceLogin`    | Switch   | A switch to trigger device login.                                                                               |
+| `$ConcurrencyLimit` | Integer | Specifies the concurrency limit for parallel command execution. Default value is `6`.                            |
+
+---
+
+## Acknowledgments
+
+Special thanks to Doug Finke, the author of the PowerShell ImportExcel Module. 
+
+---
+
+© 2023 AriPlus Contributors. All rights reserved.
+
+---
