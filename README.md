@@ -1,5 +1,3 @@
----
-
 # AriPlus
 
 AriPlus is an enhanced version of the [Azure Resource Inventory](https://github.com/microsoft/ARI) (ARI) tool. ARI is a robust PowerShell script provided by Microsoft that generates an Excel report of any Azure environment to which you have read access. This tool aims to assist Cloud Administrators and other professionals in creating a comprehensive Excel report of an Azure Environment quickly and easily. AriPlus enhances the original script by capturing additional utilization metrics.
