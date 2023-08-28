@@ -9,7 +9,7 @@ param ($TenantID,
         [switch]$Help,
         [switch]$Consumption,
         [switch]$DeviceLogin,
-        $ConcurrencyLimit = 2,
+        $ConcurrencyLimit = 6,
         $AzureEnvironment,
         $ReportName = 'ResourcesReport', 
         $OutputDirectory)
