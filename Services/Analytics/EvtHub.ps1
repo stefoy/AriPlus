@@ -13,13 +13,13 @@ If ($Task -eq 'Processing')
         {
             $tmp = @()
             foreach ($1 in $evthub) {
-                $ResUCount = 1
                 $sub1 = $SUB | Where-Object { $_.id -eq $1.subscriptionId }
                 $data = $1.PROPERTIES
                 $timecreated = $data.createdAt
                 $timecreated = [datetime]$timecreated
                 $timecreated = $timecreated.ToString("yyyy-MM-dd HH:mm")
                 $sku = $1.SKU
+                
                 $obj = @{
                     'ID'                   = $1.id;
                     'Subscription'         = $sub1.Name;
@@ -34,10 +34,9 @@ If ($Task -eq 'Processing')
                     'MaxThroughputUnits' = $data.maximumThroughputUnits;
                     'KafkaEnabled'        = $data.kafkaEnabled;
                     'CreatedTime'         = $timecreated;
-                    'ResourceU'           = $ResUCount;
                 }
+                
                 $tmp += $obj
-                if ($ResUCount -eq 1) { $ResUCount = 0 }         
             }
             $tmp
         }
@@ -55,8 +54,6 @@ Else
         $Style = New-ExcelStyle -HorizontalAlignment Center -AutoSize -NumberFormat '0'
 
         $condtxt = @()
-        $condtxt += New-ConditionalText false -Range I:I
-        $condtxt += New-ConditionalText falso -Range I:I
 
         $Exc = New-Object System.Collections.Generic.List[System.Object]
         $Exc.Add('Subscription')
@@ -65,7 +62,7 @@ Else
         $Exc.Add('Location')
         $Exc.Add('SKU')
         $Exc.Add('Status')
-        $Exc.Add('GeoRep')
+        $Exc.Add('GeoReplication')
         $Exc.Add('ThroughputUnits')
         $Exc.Add('AutoInflate')
         $Exc.Add('MaxThroughputUnits')
