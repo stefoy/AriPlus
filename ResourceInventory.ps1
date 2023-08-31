@@ -64,6 +64,15 @@ Function RunInventorySetup()
 {
     function CheckCliRequirements() 
     {
+        $psVersion = $PSVersionTable.PSVersion.Major
+        Write-Host ("PowerShell Version {0}" -f $psVersion) -ForegroundColor Cyan
+
+        if ($PSVersionTable.PSVersion.Major -lt 7) 
+        {
+            Write-Host "Please user PowerShell 7!" -ForegroundColor Red
+            Exit
+        }
+        
         Write-Host "Checking Cli Installed..."
         $azCliVersion = az --version
         Write-Host ('CLI Version: {0}' -f $azCliVersion[0]) -ForegroundColor Green
