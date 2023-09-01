@@ -83,6 +83,7 @@ Function RunInventorySetup()
 
             if($Update -eq 'Y')
             {
+                $Global:Version = $versionNumber
                 $Global:RunOnline = $true
                 Write-Host ('Running Online and Updating') -ForegroundColor Yellow
             }
