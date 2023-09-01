@@ -75,7 +75,7 @@ Function RunInventorySetup()
         $versionJson = (New-Object System.Net.WebClient).DownloadString($RawRepo + '/Version.json') | ConvertFrom-Json
         $versionNumber = ('{0}.{1}.{2}' -f $versionJson.MajorVersion, $versionJson.MinorVersion, $versionJson.BuildVersion)
 
-        if($versionNumber -ne $Global:Version)
+        if($Update -eq 'Y' -or $Update -eq 'y')
         {
             Write-Host ('New Version Available: {0}.{1}.{2}' -f $versionJson.MajorVersion, $versionJson.MinorVersion, $versionJson.BuildVersion ) -ForegroundColor Yellow
 
