@@ -28,6 +28,10 @@ function Variables
     $Global:Subscriptions = ''
     $Global:ReportName = $ReportName   
     $Global:Version = '2.0.6'
+    $Global:MajorVersion = 2
+    $Global:MinorVersion = 0
+    $Global:BuildVersion = 6
+
 
 
     if ($Online.IsPresent) { $Global:RunOnline = $true }else { $Global:RunOnline = $false }
@@ -64,10 +68,34 @@ function Variables
 
 Function RunInventorySetup()
 {
-    function CheckCliRequirements() 
-    {        
+    function CheckAriVersion()
+    {
         Write-Host ('ARI Plus Version: {0}' -f $Global:Version) -ForegroundColor Magenta
 
+        $versionJson = (New-Object System.Net.WebClient).DownloadString($RawRepo + '/Version.json') | ConvertFrom-Json
+        $versionNumber = ('{0}.{1}.{2}' -f $versionJson.MajorVersion, $versionJson.MinorVersion, $versionJson.BuildVersion)
+
+        if($versionNumber -ne $Global:Version)
+        {
+            Write-Host ('New Version Available: {0}.{1}.{2}' -f $versionJson.MajorVersion, $versionJson.MinorVersion, $versionJson.BuildVersion ) -ForegroundColor Yellow
+
+            $Update = Read-Host 'Do you want to update by automatically? (Y/N)'
+
+            if($Update -eq 'Y')
+            {
+                $Global:RunOnline = $true
+                Write-Host ('Running Online and Updating') -ForegroundColor Yellow
+            }
+            else 
+            {
+                Write-Host ('Download or Clone the latest version and run again: https://github.com/stefoy/AriPlus/tree/main') -ForegroundColor Yellow
+                Exit
+            }
+        }
+    }
+
+    function CheckCliRequirements() 
+    {        
         Write-Host "Checking Cli Installed..."
         $azCliVersion = az --version
         Write-Host ('CLI Version: {0}' -f $azCliVersion[0]) -ForegroundColor Green
@@ -432,6 +460,7 @@ Function RunInventorySetup()
         Write-Progress -Id 1 -activity "Running AVD Resource Inventory Job" -Status "$Looper / $Loop of Inventory Jobs" -Completed
     }
 
+    CheckAriVersion
     CheckCliRequirements
     CheckPowerShell
     GetSubscriptionsData
