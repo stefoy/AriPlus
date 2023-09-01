@@ -1,4 +1,4 @@
-param($File, $TableStyle, $PlatOS, $Subscriptions, $Resources, $ExtractionRunTime, $ReportingRunTime, $RunLite)
+param($File, $TableStyle, $PlatOS, $Subscriptions, $Resources, $ExtractionRunTime, $ReportingRunTime, $RunLite, $Version)
 
 if(!$RunLite)
 {
@@ -144,7 +144,7 @@ if(!$RunLite)
     $Draw.SetSize(445, 240)
     $Draw.SetPosition(1, 0, 2, 5)
 
-    $txt = $Draw.RichText.Add('AriPlus Version 1.3' + "`n")
+    $txt = $Draw.RichText.Add('AriPlus Version ' + $Version + "`n")
     $txt.Size = 14
     $txt.ComplexFont = $Font
     $txt.LatinFont = $Font
