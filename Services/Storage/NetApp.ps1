@@ -1,4 +1,4 @@
-param($SCPath, $Sub, $Resources, $Task , $File, $SmaResources, $TableStyle)
+param($SCPath, $Sub, $Resources, $Task ,$File, $SmaResources, $TableStyle, $Metrics)
 
 if ($Task -eq 'Processing') 
 {
@@ -11,7 +11,7 @@ if ($Task -eq 'Processing')
         {
             $sub1 = $SUB | Where-Object { $_.id -eq $1.subscriptionId }
             $data = $1.PROPERTIES
-            
+
             $NetApp = $1.Name.split('/')[0]
             $CapacityPool = $1.Name.split('/')[1]
             $Volume = $1.Name.split('/')[2]
