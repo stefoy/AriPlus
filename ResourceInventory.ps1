@@ -174,7 +174,8 @@ Function RunInventorySetup()
         
             if ($PSVersionTable.PSVersion.Major -lt 7) 
             {
-                Write-Host "Please user PowerShell 7!" -ForegroundColor Red
+                Write-Host "You must use Powershell 7 to run the AriPlus." -ForegroundColor Red
+                Write-Host "https://learn.microsoft.com/en-us/powershell/scripting/install/installing-powershell-on-windows?view=powershell-7.3" -ForegroundColor Yellow
                 Exit
             }
         }
