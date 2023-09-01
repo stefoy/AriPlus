@@ -40,7 +40,6 @@ else
 {
     if ($SmaResources.ComputeSnapshots) 
     {
-
         $TableName = ('ComputeSnapsTable_'+($SmaResources.ComputeSnapshots.id | Select-Object -Unique).count)
         $Style = @()
         

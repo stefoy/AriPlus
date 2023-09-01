@@ -1,46 +1,42 @@
 ﻿param($SCPath, $Sub, $Resources, $Task ,$File, $SmaResources, $TableStyle, $Metrics)
 
-If ($Task -eq 'Processing')
+if ($Task -eq 'Processing')
 {
-    <######### Insert the resource extraction here ########>
-
-        $AvSet = $Resources | Where-Object {$_.TYPE -eq 'microsoft.compute/availabilitysets'}
-
-    <######### Insert the resource Process here ########>
+    $AvSet = $Resources | Where-Object {$_.TYPE -eq 'microsoft.compute/availabilitysets'}
 
     if($AvSet)
+    {
+        $tmp = @()
+
+        foreach ($1 in $AvSet) 
         {
-            $tmp = @()
-
-            foreach ($1 in $AvSet) {
-                $sub1 = $SUB | Where-Object { $_.Id -eq $1.subscriptionId }
-                $data = $1.PROPERTIES
+            $sub1 = $SUB | Where-Object { $_.Id -eq $1.subscriptionId }
+            $data = $1.PROPERTIES
+            
+            foreach ($vmid in $data.virtualMachines.id) 
+            {
+                $vmIds = $vmid.split('/')[8]
                 
-                Foreach ($vmid in $data.virtualMachines.id) {
-                    $vmIds = $vmid.split('/')[8]
-                    $obj = @{
-                        'ID'               = $1.id;
-                        'Subscription'     = $sub1.Name;
-                        'Resource Group'   = $1.RESOURCEGROUP;
-                        'Name'             = $1.NAME;
-                        'Location'         = $1.LOCATION;
-                        'Fault Domains'    = [string]$data.platformFaultDomainCount;
-                        'Update Domains'   = [string]$data.platformUpdateDomainCount;
-                        'Virtual Machines' = [string]$vmIds;
-                    }
-                    $tmp += $obj                 
+                $obj = @{
+                    'ID'               = $1.id;
+                    'Subscription'     = $sub1.Name;
+                    'ResourceGroup'    = $1.RESOURCEGROUP;
+                    'Name'             = $1.NAME;
+                    'Location'         = $1.LOCATION;
+                    'FaultDomains'     = [string]$data.platformFaultDomainCount;
+                    'UpdateDomains'    = [string]$data.platformUpdateDomainCount;
+                    'VirtualMachines'  = [string]$vmIds;
                 }
+
+                $tmp += $obj                 
             }
-            $tmp
         }
+
+        $tmp
+    }
 }
-
-<######## Resource Excel Reporting Begins Here ########>
-
-Else
+else
 {
-    <######## $SmaResources.(RESOURCE FILE NAME) ##########>
-
     if($SmaResources.AvSet)
     {
 
@@ -49,26 +45,17 @@ Else
             
         $Exc = New-Object System.Collections.Generic.List[System.Object]
         $Exc.Add('Subscription')
-        $Exc.Add('Resource Group')
+        $Exc.Add('ResourceGroup')
         $Exc.Add('Name')
         $Exc.Add('Location')
-        $Exc.Add('Fault Domains')
-        $Exc.Add('Update Domains')
-        $Exc.Add('Virtual Machines')
+        $Exc.Add('FaultDomains')
+        $Exc.Add('UpdateDomains')
+        $Exc.Add('VirtualMachines')
 
         $ExcelVar = $SmaResources.AvSet  
 
         $ExcelVar | 
         ForEach-Object { [PSCustomObject]$_ } | Select-Object -Unique $Exc | 
         Export-Excel -Path $File -WorksheetName 'Availability Sets' -AutoSize -MaxAutoSizeRows 100 -TableName $TableName -TableStyle $tableStyle -Style $Style
-
-        <######## Insert Column comments and documentations here following this model #########>
-
-
-        #$excel = Open-ExcelPackage -Path $File -KillExcel
-
-
-        #Close-ExcelPackage $excel 
-
     }
 }

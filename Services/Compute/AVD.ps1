@@ -1,88 +1,79 @@
 param($SCPath, $Sub, $Resources, $Task ,$File, $SmaResources, $TableStyle, $Metrics)
 
-If ($Task -eq 'Processing') {
-
-    <######### Insert the resource extraction here ########>
-
+if ($Task -eq 'Processing') 
+{
     $VM =  $Resources | Where-Object {$_.TYPE -eq 'microsoft.compute/virtualmachines'}
     $AVD = $Resources | Where-Object { $_.TYPE -eq 'microsoft.desktopvirtualization/hostpools' }
     $Hosts = $Resources | Where-Object { $_.TYPE -eq 'microsoft.desktopvirtualization/hostpools/sessionhosts' }
 
     if($AVD)
+    {
+        $tmp = @()
+
+        foreach ($1 in $AVD) 
         {
-            $tmp = @()
-            foreach ($1 in $AVD) {
-                $ResUCount = 1
-                $sub1 = $SUB | Where-Object { $_.id -eq $1.subscriptionId }
-                $data = $1.PROPERTIES
+            $sub1 = $SUB | Where-Object { $_.id -eq $1.subscriptionId }
+            $data = $1.PROPERTIES
 
-                $sessionhosts = @()
-                foreach ($h in $Hosts){
-                    $n = $h.ID -split '/sessionhosts/' 
-                    if ($n[0] -eq $1.id ) 
-                    {
-                        $sessionhosts += $h                    
-                    }
+            $sessionhosts = @()
+            foreach ($h in $Hosts)
+            {
+                $n = $h.ID -split '/sessionhosts/' 
 
-                }
-                
-                if ($1.ZONES) { $Zones = $1.ZONES }else { $Zones = 'Not Configured' }
-
-                foreach ($2 in $sessionhosts)
+                if ($n[0] -eq $1.id ) 
                 {
-                    $domain = $2.name.replace(($2.name.split(".")[0]),'')
-                    $vmsessionhosts = $VM | Where-Object { $_.ID -eq $2.properties.resourceId}
+                    $sessionhosts += $h                    
+                }
+            }
+            
+            foreach ($2 in $sessionhosts)
+            {
+                $vmsessionhosts = $VM | Where-Object { $_.ID -eq $2.properties.resourceId}
 
-                    $obj = @{
-                        'ID'                 = $1.id;
-                        'Subscription'       = $sub1.Name;
-                        'ResourceGroup'     = $1.RESOURCEGROUP;
-                        'HostpoolName'      = $1.NAME;
-                        'Location'           = $1.LOCATION;
-                        'Zone'               = $Zones;
-                        'HostPoolType'      = $data.hostPoolType;
-                        'LoadBalancer'       = $data.loadBalancerType;
-                        'maxSessionLimit'    = $data.maxSessionLimit;
-                        'PreferredAppGroup' = $data.preferredAppGroupType;
-                        'AVDAgentVersion'  = $2.properties.agentVersion;
-                        'AllowNewSession'  = $2.properties.allowNewSession;
-                        'UpdateStatus'      = $2.properties.updateState;
-                        'Hostname'           = $vmsessionhosts.name;
-                        'VMSize'            = $vmsessionhosts.properties.hardwareProfile.vmsize;
-                        'OSType'            = $vmsessionhosts.properties.storageProfile.osdisk.ostype;
-                        'VMDiskType'       = $vmsessionhosts.properties.storageProfile.osdisk.managedDisk.storageAccountType;
-                        'HostStatus'        = $2.properties.status;
-                        'OSVersion'         = $2.properties.osVersion;
-                        'ResourceU'         = $ResUCount;
-                    }
-                    $tmp += $obj
-                    if ($ResUCount -eq 1) { $ResUCount = 0 }          
+                $obj = @{
+                    'ID'                 = $1.id;
+                    'Subscription'       = $sub1.Name;
+                    'ResourceGroup'      = $1.RESOURCEGROUP;
+                    'Name'               = $1.NAME;
+                    'Location'           = $1.LOCATION;
+                    'HostPoolType'       = $data.hostPoolType;
+                    'LoadBalancer'       = $data.loadBalancerType;
+                    'MaxSessionLimit'    = $data.maxSessionLimit;
+                    'PreferredAppGroup'  = $data.preferredAppGroupType;
+                    'AVDAgentVersion'    = $2.properties.agentVersion;
+                    'AllowNewSession'    = $2.properties.allowNewSession;
+                    'UpdateStatus'       = $2.properties.updateState;
+                    'HostId'             = $vmsessionhosts.Id;
+                    'Hostname'           = $vmsessionhosts.name;
+                    'VMSize'             = $vmsessionhosts.properties.hardwareProfile.vmsize;
+                    'OSType'             = $vmsessionhosts.properties.storageProfile.osdisk.ostype;
+                    'VMDiskType'         = $vmsessionhosts.properties.storageProfile.osdisk.managedDisk.storageAccountType;
+                    'HostStatus'         = $2.properties.status;
+                    'OSVersion'          = $2.properties.osVersion;
+                }
+
+                $tmp += $obj
             }
         }
 
-            $tmp
-        }
+        $tmp
+    }
 }
-<######## Resource Excel Reporting Begins Here ########>
-
-Else {
-    <######## $SmaResources.(RESOURCE FILE NAME) ##########>
-
-    if ($SmaResources.AVD) {
-
+else 
+{
+    if ($SmaResources.AVD) 
+    {
         $TableName = ('AVD_'+($SmaResources.AVD.id | Select-Object -Unique).count)
-        $condtxtzone = New-ConditionalText "Not Configured" -Range E:E
         $Style = New-ExcelStyle -HorizontalAlignment Center -AutoSize -NumberFormat 0
 
         $Exc = New-Object System.Collections.Generic.List[System.Object]
         $Exc.Add('Subscription')
         $Exc.Add('ResourceGroup')
-        $Exc.Add('HostpoolName')             
+        $Exc.Add('Name')             
         $Exc.Add('Location')                
-        $Exc.Add('Zone')
         $Exc.Add('HostPoolType')
         $Exc.Add('LoadBalancer')
-        $Exc.Add('maxSessionLimit')
+        $Exc.Add('MaxSessionLimit')
         $Exc.Add('PreferredAppGroup')
         $Exc.Add('AVDAgentVersion')  
         $Exc.Add('AllowNewSession')
@@ -98,6 +89,6 @@ Else {
 
         $ExcelVar | 
         ForEach-Object { [PSCustomObject]$_ } | Select-Object -Unique $Exc | 
-        Export-Excel -Path $File -WorksheetName 'AVD' -AutoSize -TableName $TableName -MaxAutoSizeRows 100 -TableStyle $tableStyle -ConditionalText $condtxtzone -Style $Style    
+        Export-Excel -Path $File -WorksheetName 'AVD' -AutoSize -TableName $TableName -MaxAutoSizeRows 100 -TableStyle $tableStyle -Style $Style    
     }
 }

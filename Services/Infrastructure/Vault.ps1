@@ -1,49 +1,42 @@
 ﻿param($SCPath, $Sub, $Resources, $Task ,$File, $SmaResources, $TableStyle, $Metrics)
 
-If ($Task -eq 'Processing')
+if ($Task -eq 'Processing')
 {
-    <######### Insert the resource extraction here ########>
-
-        $VAULT = $Resources | Where-Object {$_.TYPE -eq 'microsoft.keyvault/vaults'}
-
-    <######### Insert the resource Process here ########>
+    $VAULT = $Resources | Where-Object {$_.TYPE -eq 'microsoft.keyvault/vaults'}
 
     if($VAULT)
+    {
+        $tmp = @()
+
+        foreach ($1 in $VAULT) 
         {
-            $tmp = @()
-
-            foreach ($1 in $VAULT) {
-                $ResUCount = 1
-                $sub1 = $SUB | Where-Object { $_.id -eq $1.subscriptionId }
-                $data = $1.PROPERTIES
-                if([string]::IsNullOrEmpty($Data.enableSoftDelete)){$Soft = $false}else{$Soft = $Data.enableSoftDelete}
-                
-                        $obj = @{
-                            'ID'                         = $1.id;
-                            'Subscription'               = $sub1.Name;
-                            'ResourceGroup'             = $1.RESOURCEGROUP;
-                            'Name'                       = $1.NAME;
-                            'Location'                   = $1.LOCATION;
-                            'SKUFamily'                 = $data.sku.family;
-                            'SKU'                        = $data.sku.name;
-                            'Enable RBAC'                = $data.enableRbacAuthorization;
-                            'EnableSoftDelete'         = $Soft;
-                            'EnableEncryption' = $data.enabledForDiskEncryption;
-                            'EnableTemplateDeploy' = $data.enabledForTemplateDeployment;
-                            'SoftDeleteRetentionDays' = $data.softDeleteRetentionInDays;
-                        }
-                        $tmp += $obj           
+            $sub1 = $SUB | Where-Object { $_.id -eq $1.subscriptionId }
+            $data = $1.PROPERTIES
+            if([string]::IsNullOrEmpty($Data.enableSoftDelete)){$Soft = $false}else{$Soft = $Data.enableSoftDelete}
+            
+            $obj = @{
+                'ID'                            = $1.id;
+                'Subscription'                  = $sub1.Name;
+                'ResourceGroup'                 = $1.RESOURCEGROUP;
+                'Name'                          = $1.NAME;
+                'Location'                      = $1.LOCATION;
+                'SKUFamily'                     = $data.sku.family;
+                'SKU'                           = $data.sku.name;
+                'EnableRBAC'                    = $data.enableRbacAuthorization;
+                'EnableSoftDelete'              = $Soft;
+                'EnableEncryption'              = $data.enabledForDiskEncryption;
+                'EnableTemplateDeploy'          = $data.enabledForTemplateDeployment;
+                'SoftDeleteRetentionDays'       = $data.softDeleteRetentionInDays;
             }
-            $tmp
+
+            $tmp += $obj           
         }
+
+        $tmp
+    }
 }
-
-<######## Resource Excel Reporting Begins Here ########>
-
-Else
+else
 {
-    <######## $SmaResources.(RESOURCE FILE NAME) ##########>
-
     if($SmaResources.Vault)
     {
 
@@ -51,8 +44,6 @@ Else
         $Style = New-ExcelStyle -HorizontalAlignment Center -AutoSize -NumberFormat '0'
 
         $condtxt = @()
-        $condtxt += New-ConditionalText false -Range I:I
-        $condtxt += New-ConditionalText falso -Range I:I
 
         $Exc = New-Object System.Collections.Generic.List[System.Object]
         $Exc.Add('Subscription')
@@ -72,14 +63,5 @@ Else
         $ExcelVar | 
         ForEach-Object { [PSCustomObject]$_ } | Select-Object -Unique $Exc | 
         Export-Excel -Path $File -WorksheetName 'Key Vaults' -AutoSize -MaxAutoSizeRows 100 -TableName $TableName -TableStyle $tableStyle -ConditionalText $condtxt -Style $Style
-
-        <######## Insert Column comments and documentations here following this model #########>
-
-
-        #$excel = Open-ExcelPackage -Path $File -KillExcel
-
-
-        #Close-ExcelPackage $excel 
-
     }
 }

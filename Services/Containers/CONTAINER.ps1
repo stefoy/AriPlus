@@ -1,56 +1,47 @@
 ﻿param($SCPath, $Sub, $Resources, $Task ,$File, $SmaResources, $TableStyle, $Metrics)
 
-If ($Task -eq 'Processing')
+if ($Task -eq 'Processing')
 {
-
-    <######### Insert the resource extraction here ########>
-
-        $CONTAINER = $Resources | Where-Object {$_.TYPE -eq 'microsoft.containerinstance/containergroups'}
-
-    <######### Insert the resource Process here ########>
+    $CONTAINER = $Resources | Where-Object {$_.TYPE -eq 'microsoft.containerinstance/containergroups'}
 
     if($CONTAINER)
+    {
+        $tmp = @()
+
+        foreach ($1 in $CONTAINER) 
         {
-            $tmp = @()
-
-            foreach ($1 in $CONTAINER) {
-                $ResUCount = 1
-                $sub1 = $SUB | Where-Object { $_.id -eq $1.subscriptionId }
-                $data = $1.PROPERTIES
-                
-                foreach ($2 in $data.containers) {
-                    $obj = @{
-                        'ID'                  = $1.id;
-                        'Subscription'        = $sub1.Name;
-                        'ResourceGroup'       = $1.RESOURCEGROUP;
-                        'Name'                = $1.NAME;
-                        'Location'            = $1.LOCATION;
-                        'Sku'                 = $data.Sku;
-                        'InstanceOSType'    = $data.osType;
-                        'ContainerName'      = $2.name;
-                        'ContainerState'     = $2.properties.instanceView.currentState.state;
-                        'ContainerImage'     = [string]$2.properties.image;
-                        'RestartCount'       = $2.properties.instanceView.restartCount;
-                        'StartTime'          = $2.properties.instanceView.currentState.startTime;
-                        'Command'             = [string]$2.properties.command;
-                        'RequestCPU'         = $2.properties.resources.requests.cpu;
-                        'RequestMemoryGB' = $2.properties.resources.requests.memoryInGB;
-                        'Total'               = $Total;
-                    }
-                    $tmp += $obj
-                    if ($ResUCount -eq 1) { $ResUCount = 0 }                
+            $sub1 = $SUB | Where-Object { $_.id -eq $1.subscriptionId }
+            $data = $1.PROPERTIES
+            
+            foreach ($2 in $data.containers) 
+            {
+                $obj = @{
+                    'ID'                  = $1.id;
+                    'Subscription'        = $sub1.Name;
+                    'ResourceGroup'       = $1.RESOURCEGROUP;
+                    'Name'                = $1.NAME;
+                    'Location'            = $1.LOCATION;
+                    'Sku'                 = $data.Sku;
+                    'InstanceOSType'      = $data.osType;
+                    'ContainerName'       = $2.name;
+                    'ContainerState'      = $2.properties.instanceView.currentState.state;
+                    'ContainerImage'      = [string]$2.properties.image;
+                    'RestartCount'        = $2.properties.instanceView.restartCount;
+                    'StartTime'           = $2.properties.instanceView.currentState.startTime;
+                    'Command'             = [string]$2.properties.command;
+                    'RequestCPU'          = $2.properties.resources.requests.cpu;
+                    'RequestMemoryGB'     = $2.properties.resources.requests.memoryInGB;
                 }
+
+                $tmp += $obj
             }
-            $tmp
         }
+
+        $tmp
+    }
 }
-
-<######## Resource Excel Reporting Begins Here ########>
-
-Else
+else
 {
-    <######## $SmaResources.(RESOURCE FILE NAME) ##########>
-
     if($SmaResources.CONTAINER)
     {
         $TableName = ('ContsTable_'+($SmaResources.CONTAINER.id | Select-Object -Unique).count)
@@ -77,6 +68,5 @@ Else
         $ExcelVar | 
         ForEach-Object { [PSCustomObject]$_ } | Select-Object -Unique $Exc | 
         Export-Excel -Path $File -WorksheetName 'Containers' -AutoSize -MaxAutoSizeRows 100 -TableName $TableName -TableStyle $tableStyle -Style $Style
-
     }
 }

@@ -1,81 +1,76 @@
 ﻿param($SCPath, $Sub, $Resources, $Task ,$File, $SmaResources, $TableStyle, $Metrics)
 
-If ($Task -eq 'Processing')
+if ($Task -eq 'Processing')
 {
-    <######### Insert the resource extraction here ########>
-
-        $runbook = $Resources | Where-Object {$_.TYPE -eq 'microsoft.automation/automationaccounts/runbooks'}
-        $autacc = $Resources | Where-Object {$_.TYPE -eq 'microsoft.automation/automationaccounts'}
-
-    <######### Insert the resource Process here ########>
+    $runbook = $Resources | Where-Object {$_.TYPE -eq 'microsoft.automation/automationaccounts/runbooks'}
+    $autacc = $Resources | Where-Object {$_.TYPE -eq 'microsoft.automation/automationaccounts'}
 
     if($autacc)
-        {
-            $tmp = @()
+    {
+        $tmp = @()
 
-            foreach ($0 in $autacc) {
-                $ResUCount = 1
-                $sub1 = $SUB | Where-Object { $_.Id -eq $0.subscriptionId }
-                $rbs = $runbook | Where-Object { $_.id.split('/')[8] -eq $0.name }
-                
-                $data0 = $0.properties
-                $timecreated = $data0.creationTime
-                $timecreated = [datetime]$timecreated
-                $timecreated = $timecreated.ToString("yyyy-MM-dd HH:mm")
-                if ($null -ne $rbs) {
-                    foreach ($1 in $rbs) {
-                        $data = $1.PROPERTIES
-                        $obj = @{
-                            'ID'                       = $1.id;
-                            'Subscription'             = $sub1.Name;
-                            'Resource Group'           = $0.RESOURCEGROUP;
-                            'Automation Account Name'  = $0.NAME;
-                            'Automation Account State' = $0.properties.State;
-                            'Automation Account SKU'   = $0.properties.sku.name;
-                            'Automation Account Created Time'  = $timecreated;   
-                            'Location'                 = $0.LOCATION;
-                            'Runbook Name'             = $1.Name;
-                            'Last Modified Time'       = ([datetime]$data.lastModifiedTime).tostring('MM/dd/yyyy hh:mm') ;
-                            'Runbook State'            = $data.state;
-                            'Runbook Type'             = $data.runbookType;
-                            'Runbook Description'      = $data.description;
-                            'Resource U'               = $ResUCount;
-                        }
-                        $tmp += $obj
-                        if ($ResUCount -eq 1) { $ResUCount = 0 }                      
-                    }
-                }
-                else {
+        foreach ($0 in $autacc) 
+        {
+            $sub1 = $SUB | Where-Object { $_.Id -eq $0.subscriptionId }
+            $rbs = $runbook | Where-Object { $_.id.split('/')[8] -eq $0.name }
+            
+            $data0 = $0.properties
+            $timecreated = $data0.creationTime
+            $timecreated = [datetime]$timecreated
+            $timecreated = $timecreated.ToString("yyyy-MM-dd HH:mm")
+
+            if ($null -ne $rbs) 
+            {
+                foreach ($1 in $rbs) 
+                {
+                    $data = $1.PROPERTIES
+
                     $obj = @{
-                        'ID'                       = $1.id;
-                        'Subscription'             = $sub1.name;
-                        'Resource Group'           = $0.RESOURCEGROUP;
-                        'Automation Account Name'  = $0.NAME;
-                        'Automation Account State' = $0.properties.State;
-                        'Automation Account SKU'   = $0.properties.sku.name;
-                        'Automation Account Created Time'  = $timecreated;   
-                        'Location'                 = $0.LOCATION;
-                        'Runbook Name'             = $null;
-                        'Last Modified Time'       = $null;
-                        'Runbook State'            = $null;
-                        'Runbook Type'             = $null;
-                        'Runbook Description'      = $null;
-                        'Resource U'               = $ResUCount;
+                        'ID'                            = $1.id;
+                        'Subscription'                  = $sub1.Name;
+                        'ResourceGroup'                 = $0.RESOURCEGROUP;
+                        'AutomationAccountName'         = $0.NAME;
+                        'AutomationAccountState'        = $0.properties.State;
+                        'AutomationAccountSKU'          = $0.properties.sku.name;
+                        'AutomationAccountCreatedTime'  = $timecreated;   
+                        'Location'                      = $0.LOCATION;
+                        'RunbookName'                   = $1.Name;
+                        'LastModifiedTime'              = ([datetime]$data.lastModifiedTime).tostring('MM/dd/yyyy hh:mm') ;
+                        'RunbookState'                  = $data.state;
+                        'RunbookType'                   = $data.runbookType;
+                        'RunbookDescription'            = $data.description;
                     }
+
                     $tmp += $obj
-                    if ($ResUCount -eq 1) { $ResUCount = 0 }                    
                 }
             }
-            $tmp
+            else 
+            {
+                $obj = @{
+                    'ID'                            = $1.id;
+                    'Subscription'                  = $sub1.name;
+                    'ResourceGroup'                 = $0.RESOURCEGROUP;
+                    'AutomationAccountName'         = $0.NAME;
+                    'AutomationAccountState'        = $0.properties.State;
+                    'AutomationAccountSKU'          = $0.properties.sku.name;
+                    'AutomationAccountCreatedTime'  = $timecreated;   
+                    'Location'                      = $0.LOCATION;
+                    'RunbookName'                   = $null;
+                    'LastModifiedTime'              = $null;
+                    'RunbookState'                  = $null;
+                    'RunbookType'                   = $null;
+                    'RunbookDescription'            = $null;
+                }
+
+                $tmp += $obj
+            }
         }
+
+        $tmp
+    }
 }
-
-<######## Resource Excel Reporting Begins Here ########>
-
-Else
+else
 {
-    <######## $SmaResources.(RESOURCE FILE NAME) ##########>
-
     if($SmaResources.AutomationAcc)
     {
 
@@ -87,31 +82,22 @@ Else
 
         $Exc = New-Object System.Collections.Generic.List[System.Object]
         $Exc.Add('Subscription')
-        $Exc.Add('Resource Group')
-        $Exc.Add('Automation Account Name')
-        $Exc.Add('Automation Account State')
-        $Exc.Add('Automation Account SKU')
-        $Exc.Add('Automation Account Created Time')
+        $Exc.Add('ResourceGroup')
+        $Exc.Add('AutomationAccountName')
+        $Exc.Add('AutomationAccountState')
+        $Exc.Add('AutomationAccountSKU')
+        $Exc.Add('AutomationAccountCreatedTime')
         $Exc.Add('Location')
-        $Exc.Add('Runbook Name')
-        $Exc.Add('Last Modified Time')
-        $Exc.Add('Runbook State')
-        $Exc.Add('Runbook Type')
-        $Exc.Add('Runbook Description')
+        $Exc.Add('RunbookName')
+        $Exc.Add('LastModifiedTime')
+        $Exc.Add('RunbookState')
+        $Exc.Add('RunbookType')
+        $Exc.Add('RunbookDescription')
 
         $ExcelVar = $SmaResources.AutomationAcc  
             
         $ExcelVar | 
         ForEach-Object { [PSCustomObject]$_ } | Select-Object -Unique $Exc | 
         Export-Excel -Path $File -WorksheetName 'Runbooks' -AutoSize -MaxAutoSizeRows 100 -TableName $TableName -TableStyle $tableStyle -ConditionalText $condtxt -Style $Style, $StyleExt
-
-        <######## Insert Column comments and documentations here following this model #########>
-
-
-        #$excel = Open-ExcelPackage -Path $File -KillExcel
-
-
-        #Close-ExcelPackage $excel 
-
     }
 }

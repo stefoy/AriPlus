@@ -1,91 +1,68 @@
 param($SCPath, $Sub, $Resources, $Task ,$File, $SmaResources, $TableStyle, $Metrics)
 
-If ($Task -eq 'Processing') {
-
+if ($Task -eq 'Processing') 
+{
     $COSMOS = $Resources | Where-Object { $_.TYPE -eq 'microsoft.documentdb/databaseaccounts' }
 
     if($COSMOS)
-        {
-            $tmp = @()
+    {
+        $tmp = @()
 
-            foreach ($1 in $COSMOS) {                
-                $ResUCount = 1
-                $sub1 = $SUB | Where-Object { $_.id -eq $1.subscriptionId }
-                $data = $1.PROPERTIES
-                $VNETs = @()
-                foreach ($VNET in $data.virtualNetworkRules.id)
-                    {
-                        $VNETs += $VNET.split('/')[8]
-                    }
-                $VNETs = $VNETs | Select-Object -Unique
-                if(!$data.privateEndpointConnections){$PVTENDP = $false}else{$PVTENDP = $data.privateEndpointConnections.Id.split("/")[8]}
-                $GeoReplicate = if($data.failoverPolicies.count -gt 1){'Enabled'}else{'Disabled'}
-                $Mongo = if([string]::IsNullOrEmpty($data.mongoEndpoint)){$data.documentEndpoint}else{$data.mongoEndpoint}
-                $FreeTier = if($data.enableFreeTier -eq $true){'Opted In'}else{'Opted Out'}
-                
-                $obj = @{
-                    'ID'                        = $1.id;
-                    'Subscription'              = $sub1.Name;
-                    'Resource Group'            = $1.RESOURCEGROUP;
-                    'Name'                      = $1.NAME;
-                    'Location'                  = $1.LOCATION;
-                    'Enabled API Types'         = $data.EnabledApiTypes;
-                    'Backup Policy'             = $data.backupPolicy.type;
-                    'Backup Storage Redundancy' = $data.backupPolicy.periodicModeProperties.backupStorageRedundancy;
-                    'Account Offer Type'        = $data.databaseAccountOfferType;
-                    'Replicate Data Globally'   = $GeoReplicate;
-                    'VNET Filtering'            = $data.isVirtualNetworkFilterEnabled;
-                    'Virtual Networks'          = [string]$VNETs;
-                    'Free Tier Discount'        = $FreeTier;
-                    'Default Consistency'       = $data.consistencyPolicy.defaultConsistencyLevel;
-                    'Private Endpoint'          = $PVTENDP;
-                    'Read Locations'            = [string]$data.readLocations.locationName;
-                    'Write Locations'           = [string]$data.writeLocations.locationName;
-                }
-                $tmp += $obj
-                if ($ResUCount -eq 1) { $ResUCount = 0 }          
+        foreach ($1 in $COSMOS) 
+        {                
+            $sub1 = $SUB | Where-Object { $_.id -eq $1.subscriptionId }
+            $data = $1.PROPERTIES
+
+            $GeoReplicate = if($data.failoverPolicies.count -gt 1) { 'Enabled' } else { 'Disabled' }
+            $FreeTier = if($data.enableFreeTier -eq $true) { 'Opted In' } else { 'Opted Out' }
+            
+            $obj = @{
+                'ID'                        = $1.id;
+                'Subscription'              = $sub1.Name;
+                'ResourceGroup'             = $1.RESOURCEGROUP;
+                'Name'                      = $1.NAME;
+                'Location'                  = $1.LOCATION;
+                'EnabledAPITypes'           = $data.EnabledApiTypes;
+                'BackupPolicy'              = $data.backupPolicy.type;
+                'BackupStorageRedundancy'   = $data.backupPolicy.periodicModeProperties.backupStorageRedundancy;
+                'AccountOfferType'          = $data.databaseAccountOfferType;
+                'ReplicateDataGlobally'     = $GeoReplicate;
+                'FreeTierDiscount'          = $FreeTier;
+                'DefaultConsistency'        = $data.consistencyPolicy.defaultConsistencyLevel;
             }
-            $tmp
-        }
-}
-Else 
-{
-    if ($SmaResources.CosmosDB) {
 
+            $tmp += $obj
+        }
+        
+        $tmp
+    }
+}
+else 
+{
+    if ($SmaResources.CosmosDB) 
+    {
         $TableName = ('CosmosTable_'+($SmaResources.CosmosDB.id | Select-Object -Unique).count)
         $Style = New-ExcelStyle -HorizontalAlignment Center -AutoSize -NumberFormat 0
 
         $condtxt = @()
-        $condtxt += New-ConditionalText FALSE -Range J:J
-        $condtxt += New-ConditionalText FALSO -Range J:J
-        $condtxt += New-ConditionalText Enabled -Range M:M
-        $condtxt += New-ConditionalText Disabled -Range I:I
-        $condtxt += New-ConditionalText Local -Range G:G
 
         $Exc = New-Object System.Collections.Generic.List[System.Object]
         $Exc.Add('Subscription')
-        $Exc.Add('Resource Group')
+        $Exc.Add('ResourceGroup')
         $Exc.Add('Name')
         $Exc.Add('Location')
-        $Exc.Add('Enabled API Types')
-        $Exc.Add('Backup Policy')
-        $Exc.Add('Backup Storage Redundancy')
-        $Exc.Add('Account Offer Type')
-        $Exc.Add('Replicate Data Globally')
-        $Exc.Add('VNET Filtering')
-        $Exc.Add('Virtual Networks')
-        $Exc.Add('Free Tier Discount')
-        $Exc.Add('Default Consistency')
-        $Exc.Add('Private Endpoint')
-        $Exc.Add('Read Locations')
-        $Exc.Add('Write Locations')
-
+        $Exc.Add('EnabledAPITypes')
+        $Exc.Add('BackupPolicy')
+        $Exc.Add('BackupStorageRedundancy')
+        $Exc.Add('AccountOfferType')
+        $Exc.Add('ReplicateDataGlobally')
+        $Exc.Add('FreeTierDiscount')
+        $Exc.Add('DefaultConsistency')
 
         $ExcelVar = $SmaResources.CosmosDB 
 
         $ExcelVar | 
         ForEach-Object { [PSCustomObject]$_ } | Select-Object -Unique $Exc | 
         Export-Excel -Path $File -WorksheetName 'Cosmos DB' -AutoSize -MaxAutoSizeRows 100 -TableName $TableName -TableStyle $tableStyle -ConditionalText $condtxt -Style $Style
-
     }
 }

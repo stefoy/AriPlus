@@ -1,46 +1,47 @@
 ﻿param($SCPath, $Sub, $Resources, $Task , $File, $SmaResources, $TableStyle) 
 
-if ($Task -eq 'Processing') {
-
+if ($Task -eq 'Processing') 
+{
     $SQLPOOL = $Resources | Where-Object { $_.TYPE -eq 'microsoft.sql/servers/elasticPools' }
 
     if($SQLPOOL)
-        {
-            $tmp = @()
+    {
+        $tmp = @()
 
-            foreach ($1 in $SQLPOOL) {          
-                $ResUCount = 1
-                $sub1 = $SUB | Where-Object { $_.id -eq $1.subscriptionId }
-                $data = $1.PROPERTIES
+        foreach ($1 in $SQLPOOL) 
+        {          
+            $sub1 = $SUB | Where-Object { $_.id -eq $1.subscriptionId }
+            $data = $1.PROPERTIES
 
-                $obj = @{
-                    'ID'                         = $1.id;
-                    'Subscription'               = $sub1.Name;
-                    'ResourceGroup'             = $1.RESOURCEGROUP;
-                    'Name'                       = $1.NAME;
-                    'Location'                   = $1.LOCATION;
-                    'Capacity'                   = $1.sku.Capacity;
-                    'Sku'                        = $1.sku.name;
-                    'Size'                       = $1.sku.size;
-                    'Tier'                       = $1.sku.tier;
-                    'ReplicaCount'              = $data.highAvailabilityReplicaCount;
-                    'License'                    = $data.licenseType;
-                    'MinCapacity'               = $data.minCapacity;
-                    'MaxSizeGB'              = (($data.maxSizeBytes / 1024) / 1024) / 1024;
-                    'DBMaxCapacity'            = $data.perDatabaseSettings.maxCapacity;
-                    'DBMinCapacity'            = $data.perDatabaseSettings.minCapacity;
-                    'ZoneRedundant'             = $data.zoneRedundant;
-                }
-                
-                $tmp += $obj
-                if ($ResUCount -eq 1) { $ResUCount = 0 }           
+            $obj = @{
+                'ID'                         = $1.id;
+                'Subscription'               = $sub1.Name;
+                'ResourceGroup'              = $1.RESOURCEGROUP;
+                'Name'                       = $1.NAME;
+                'Location'                   = $1.LOCATION;
+                'Capacity'                   = $1.sku.Capacity;
+                'Sku'                        = $1.sku.name;
+                'Size'                       = $1.sku.size;
+                'Tier'                       = $1.sku.tier;
+                'ReplicaCount'               = $data.highAvailabilityReplicaCount;
+                'License'                    = $data.licenseType;
+                'MinCapacity'                = $data.minCapacity;
+                'MaxSizeGB'                  = (($data.maxSizeBytes / 1024) / 1024) / 1024;
+                'DBMaxCapacity'              = $data.perDatabaseSettings.maxCapacity;
+                'DBMinCapacity'              = $data.perDatabaseSettings.minCapacity;
+                'ZoneRedundant'              = $data.zoneRedundant;
             }
-            $tmp
+            
+            $tmp += $obj
         }
-}
-else {
-    if ($SmaResources.SQLPOOL) {
 
+        $tmp
+    }
+}
+else 
+{
+    if ($SmaResources.SQLPOOL) 
+    {
         $TableName = ('SqlPoolTable_'+($SmaResources.SQLPOOL.id | Select-Object -Unique).count)
         $Style = New-ExcelStyle -HorizontalAlignment Center -AutoSize -NumberFormat 0
         

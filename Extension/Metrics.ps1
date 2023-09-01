@@ -3,8 +3,6 @@ param($Subscriptions, $Resources, $Task ,$File, $Metrics, $TableStyle, $Concurre
 If ($Task -eq 'Processing')
 {
     $tmp = [System.Collections.Concurrent.ConcurrentBag[psobject]]::new()
-    $tmpParallel = [System.Collections.Concurrent.ConcurrentBag[psobject]]::new()
-
 
     $metricDefs = [System.Collections.Generic.List[object]]::new()
 

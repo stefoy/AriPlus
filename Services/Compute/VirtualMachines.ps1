@@ -26,9 +26,7 @@ If ($Task -eq 'Processing')
         {
             $sub1 = $SUB | Where-Object { $_.id -eq $vm.subscriptionId }
             $data = $vm.PROPERTIES 
-            $timecreated = $data.timeCreated
-            $timecreated = [datetime]$timecreated
-            $timecreated = $timecreated.ToString("yyyy-MM-dd HH:mm")
+            $timecreated = [datetime]($data.timeCreated) | Get-Date -Format "yyyy-MM-dd HH:mm"
 
             switch ($data.licenseType) 
             {
@@ -75,7 +73,7 @@ If ($Task -eq 'Processing')
 }
 else
 {
-    If($SmaResources.VirtualMachines)
+    if($SmaResources.VirtualMachines)
     {
         $TableName = ('VMTable_'+($SmaResources.VirtualMachines.id | Select-Object -Unique).count)
         $Style = New-ExcelStyle -HorizontalAlignment Center -AutoSize -NumberFormat '0' -VerticalAlignment Center

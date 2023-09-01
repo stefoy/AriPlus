@@ -2,15 +2,12 @@
 
 if ($Task -eq 'Processing')
 {
-    <######### Insert the resource extraction here ########>
+    $vmss = $Resources | Where-Object {$_.TYPE -eq 'microsoft.compute/virtualmachinescalesets'}
+    $AutoScale = $Resources | Where-Object {$_.TYPE -eq "microsoft.insights/autoscalesettings" -and $_.Properties.enabled -eq 'true'} 
+    $AKS = $Resources | Where-Object {$_.TYPE -eq 'microsoft.containerservice/managedclusters'}
+    $SFC = $Resources | Where-Object {$_.TYPE -eq 'microsoft.servicefabric/clusters'}
 
-        $vmss = $Resources | Where-Object {$_.TYPE -eq 'microsoft.compute/virtualmachinescalesets'}
-        $AutoScale = $Resources | Where-Object {$_.TYPE -eq "microsoft.insights/autoscalesettings" -and $_.Properties.enabled -eq 'true'} 
-        $AKS = $Resources | Where-Object {$_.TYPE -eq 'microsoft.containerservice/managedclusters'}
-        $SFC = $Resources | Where-Object {$_.TYPE -eq 'microsoft.servicefabric/clusters'}
-
-        $scaleSetMetrics = $Metrics | Where-Object { $_.Service -eq 'Virtual Machines' }
-
+    $scaleSetMetrics = $Metrics | Where-Object { $_.Service -eq 'Virtual Machines' }
 
     $vmsizemap = @{}
 
@@ -29,7 +26,8 @@ if ($Task -eq 'Processing')
     {
         $tmp = @()
 
-        foreach ($1 in $vmss) {
+        foreach ($1 in $vmss) 
+        {
             $sub1 = $SUB | Where-Object { $_.id -eq $1.subscriptionId }
             $data = $1.PROPERTIES
             $OS = $data.virtualMachineProfile.storageProfile.osDisk.osType
@@ -48,7 +46,6 @@ if ($Task -eq 'Processing')
             $cpuUtilisationMetric = $vmssMetrics | Where-Object { $_.Metric -eq 'Percentage CPU' }
             $memoryAvilableMetric = $vmssMetrics | Where-Object { $_.Metric -eq 'Available Memory Bytes' }
             $memoryTotalGb = $vmsizemap[$1.sku.name].RAM
-
 
             $obj = @{
                 'ID'                            = $1.id;

@@ -1,54 +1,52 @@
 param($SCPath, $Sub, $Resources, $Task ,$File, $SmaResources, $TableStyle, $Metrics)
 
-If ($Task -eq 'Processing') {
-
-    <######### Insert the resource extraction here ########>
-
+if ($Task -eq 'Processing') 
+{
     $Streamanalytics = $Resources | Where-Object { $_.TYPE -eq 'microsoft.streamanalytics/streamingjobs' }
 
     if($Streamanalytics)
+    {
+        $tmp = @()
+
+        foreach ($1 in $Streamanalytics) 
         {
-            $tmp = @()
-            foreach ($1 in $Streamanalytics) {
-                $ResUCount = 1
-                $sub1 = $SUB | Where-Object { $_.id -eq $1.subscriptionId }
-                $data = $1.PROPERTIES
-                $Creadate = (get-date $data.createdDate).ToString("yyyy-MM-dd HH:mm:ss")
-                $LastOutput = (get-date $data.lastOutputEventTime).ToString("yyyy-MM-dd HH:mm:ss:ffff")
-                $OutputStart = (get-date $data.outputStartTime).ToString("yyyy-MM-dd HH:mm:ss:ffff")
-                $obj = @{
-                    'ID'                                = $1.id;
-                    'Subscription'                      = $sub1.Name;
-                    'ResourceGroup'                    = $1.RESOURCEGROUP;
-                    'Name'                              = $1.NAME;
-                    'Location'                          = $1.LOCATION;
-                    'SKU'                               = $data.sku.name;
-                    'CompatibilityLevel'               = $data.compatibilityLevel;
-                    'ContentStoragePolicy'            = $data.contentStoragePolicy;
-                    'CreatedDate'                      = $Creadate;
-                    'DataLocale'                       = $data.dataLocale;
-                    'LateArrivalMaxDelaySeconds' = $data.eventsLateArrivalMaxDelayInSeconds;
-                    'OutOfOrderMaxDelaySeconds' = $data.eventsOutOfOrderMaxDelayInSeconds;
-                    'OutOfOrderPolicy'               = $data.eventsOutOfOrderPolicy;
-                    'JobState'                         = $data.jobState;
-                    'JobType'                          = $data.jobType;
-                    'LastOutputEventTime'            = $LastOutput;
-                    'OutputStartTime'                 = $OutputStart;
-                    'OutputErrorPolicy'               = $data.outputErrorPolicy;
-                }
-                $tmp += $obj
-                if ($ResUCount -eq 1) { $ResUCount = 0 }               
+            $sub1 = $SUB | Where-Object { $_.id -eq $1.subscriptionId }
+            $data = $1.PROPERTIES
+            $CreateDate = (get-date $data.createdDate).ToString("yyyy-MM-dd HH:mm:ss")
+            $LastOutput = (get-date $data.lastOutputEventTime).ToString("yyyy-MM-dd HH:mm:ss:ffff")
+            $OutputStart = (get-date $data.outputStartTime).ToString("yyyy-MM-dd HH:mm:ss:ffff")
+
+            $obj = @{
+                'ID'                               = $1.id;
+                'Subscription'                     = $sub1.Name;
+                'ResourceGroup'                    = $1.RESOURCEGROUP;
+                'Name'                             = $1.NAME;
+                'Location'                         = $1.LOCATION;
+                'SKU'                              = $data.sku.name;
+                'CompatibilityLevel'               = $data.compatibilityLevel;
+                'ContentStoragePolicy'             = $data.contentStoragePolicy;
+                'CreatedDate'                      = $CreateDate;
+                'DataLocale'                       = $data.dataLocale;
+                'LateArrivalMaxDelaySeconds'       = $data.eventsLateArrivalMaxDelayInSeconds;
+                'OutOfOrderMaxDelaySeconds'        = $data.eventsOutOfOrderMaxDelayInSeconds;
+                'OutOfOrderPolicy'                 = $data.eventsOutOfOrderPolicy;
+                'JobState'                         = $data.jobState;
+                'JobType'                          = $data.jobType;
+                'LastOutputEventTime'              = $LastOutput;
+                'OutputStartTime'                  = $OutputStart;
+                'OutputErrorPolicy'                = $data.outputErrorPolicy;
             }
-            $tmp
+
+            $tmp += $obj
         }
+        
+        $tmp
+    }
 }
-<######## Resource Excel Reporting Begins Here ########>
-
-Else {
-    <######## $SmaResources.(RESOURCE FILE NAME) ##########>
-
-    if ($SmaResources.Streamanalytics) {
-
+else 
+{
+    if ($SmaResources.Streamanalytics) 
+    {
         $TableName = ('StreamsATable_'+($SmaResources.Streamanalytics.id | Select-Object -Unique).count)
         $Style = New-ExcelStyle -HorizontalAlignment Center -AutoSize -NumberFormat 0
         
@@ -76,7 +74,5 @@ Else {
         $ExcelVar | 
         ForEach-Object { [PSCustomObject]$_ } | Select-Object -Unique $Exc | 
         Export-Excel -Path $File -WorksheetName 'Stream Analytics Jobs' -AutoSize -MaxAutoSizeRows 100 -TableName $TableName -TableStyle $tableStyle -Style $Style
-
     }
-    <######## Insert Column comments and documentations here following this model #########>
 }

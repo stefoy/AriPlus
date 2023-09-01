@@ -1,53 +1,45 @@
 ﻿param($SCPath, $Sub, $Resources, $Task ,$File, $SmaResources, $TableStyle, $Metrics)
 
-If ($Task -eq 'Processing')
+if ($Task -eq 'Processing')
 {
-
-    <######### Insert the resource extraction here ########>
-
-        $evthub = $Resources | Where-Object {$_.TYPE -eq 'microsoft.eventhub/namespaces'}
-
-    <######### Insert the resource Process here ########>
+    $evthub = $Resources | Where-Object {$_.TYPE -eq 'microsoft.eventhub/namespaces'}
 
     if($evthub)
+    {
+        $tmp = @()
+        
+        foreach ($1 in $evthub) 
         {
-            $tmp = @()
-            foreach ($1 in $evthub) {
-                $sub1 = $SUB | Where-Object { $_.id -eq $1.subscriptionId }
-                $data = $1.PROPERTIES
-                $timecreated = $data.createdAt
-                $timecreated = [datetime]$timecreated
-                $timecreated = $timecreated.ToString("yyyy-MM-dd HH:mm")
-                $sku = $1.SKU
-                
-                $obj = @{
-                    'ID'                   = $1.id;
-                    'Subscription'         = $sub1.Name;
-                    'ResourceGroup'       = $1.RESOURCEGROUP;
-                    'Name'                 = $1.NAME;
-                    'Location'             = $1.LOCATION;
-                    'SKU'                  = $sku.name;
-                    'Status'               = $data.status;
-                    'GeoReplication'      = $data.zoneRedundant;
-                    'ThroughputUnits'     = $1.sku.capacity;
-                    'AutoInflate'         = $data.isAutoInflateEnabled;
-                    'MaxThroughputUnits' = $data.maximumThroughputUnits;
-                    'KafkaEnabled'        = $data.kafkaEnabled;
-                    'CreatedTime'         = $timecreated;
-                }
-                
-                $tmp += $obj
+            $sub1 = $SUB | Where-Object { $_.id -eq $1.subscriptionId }
+            $data = $1.PROPERTIES
+            $timecreated = $data.createdAt
+            $timecreated = [datetime]$timecreated
+            $timecreated = $timecreated.ToString("yyyy-MM-dd HH:mm")
+
+            $obj = @{
+                'ID'                   = $1.id;
+                'Subscription'         = $sub1.Name;
+                'ResourceGroup'        = $1.RESOURCEGROUP;
+                'Name'                 = $1.NAME;
+                'Location'             = $1.LOCATION;
+                'SKU'                  = $1.sku.name;
+                'Status'               = $data.status;
+                'GeoReplication'       = $data.zoneRedundant;
+                'ThroughputUnits'      = $1.sku.capacity;
+                'AutoInflate'          = $data.isAutoInflateEnabled;
+                'MaxThroughputUnits'   = $data.maximumThroughputUnits;
+                'KafkaEnabled'         = $data.kafkaEnabled;
+                'CreatedTime'          = $timecreated;
             }
-            $tmp
+            
+            $tmp += $obj
         }
+
+        $tmp
+    }
 }
-
-<######## Resource Excel Reporting Begins Here ########>
-
-Else
+else
 {
-    <######## $SmaResources.(RESOURCE FILE NAME) ##########>
-
     if($SmaResources.EvtHub)
     {
         $TableName = ('EvtHubTable_'+($SmaResources.EvtHub.id | Select-Object -Unique).count)

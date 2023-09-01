@@ -10,12 +10,9 @@ if ($Task -eq 'Processing')
 
         foreach ($1 in $wrkspace) 
         {
-            $ResUCount = 1
             $sub1 = $SUB | Where-Object { $_.id -eq $1.subscriptionId }
             $data = $1.PROPERTIES
-            $timecreated = $data.createdDate
-            $timecreated = [datetime]$timecreated
-            $timecreated = $timecreated.ToString("yyyy-MM-dd HH:mm")
+            $timecreated = [datetime]($data.createdDate) | Get-Date -Format "yyyy-MM-dd HH:mm"
 
             $obj = @{
                 'ID'                = $1.id;
@@ -29,11 +26,9 @@ if ($Task -eq 'Processing')
                 'RetentionDays'     = $data.retentionInDays;
                 'DailyQuotaGB'      = [decimal]$data.workspaceCapping.dailyQuotaGb;
                 'CreatedTime'       = $timecreated;
-                'ResourceU'         = $ResUCount;
             }
 
             $tmp += $obj
-            if ($ResUCount -eq 1) { $ResUCount = 0 }           
         }
 
         $tmp

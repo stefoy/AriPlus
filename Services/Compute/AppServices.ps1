@@ -24,15 +24,9 @@ If ($Task -eq 'Processing')
                 'State'                         = $data.state;
                 'SKU'                           = $data.sku;
                 'AvailabilityState'             = $data.availabilityState;
-                'Linux'                         = $data.SiteConfig.linuxFxVersion;
-                'Windows'                       = $data.SiteConfig.windowsFxVersion;
-                'NetVersion'                    = $data.SiteConfig.netFrameworkVersion;
-                'PHPVersion'                    = $data.SiteConfig.phpVersion;
-                'PowerShellVersion'             = $data.SiteConfig.powerShellVersion;
-                'NodeVersion'                   = $data.SiteConfig.nodeVersion;
-                'PythonVersion'                 = $data.SiteConfig.pythonVersion;
-                'JavaVersion'                   = $data.SiteConfig.javaVersion;                  
+                'SiteProperties'                = $data.siteProperties;          
                 'ContainerSize'                 = $data.containerSize;
+                'ServerFarmId'                  = $data.serverFarmId;
             }
 
             $tmp += $obj
@@ -45,7 +39,6 @@ Else
 {
     if($SmaResources.AppServices)
     {
-
         $TableName = ('AppSvcsTable_'+($SmaResources.AppServices.id | Select-Object -Unique).count)
         $Style = New-ExcelStyle -HorizontalAlignment Center -AutoSize -NumberFormat '0'
 
@@ -58,16 +51,7 @@ Else
         $Exc.Add('Enabled')
         $Exc.Add('State')
         $Exc.Add('SKU')
-        $Exc.Add('AvailabilityState')
-        $Exc.Add('Linux')
-        $Exc.Add('Windows')
-        $Exc.Add('NetVersion')
-        $Exc.Add('PHPVersion')
-        $Exc.Add('PowerShellVersion')
-        $Exc.Add('NodeVersion')
-        $Exc.Add('PythonVersion')
-        $Exc.Add('JavaVersion')
-        $Exc.Add('Stack')               
+        $Exc.Add('AvailabilityState')             
         $Exc.Add('ContainerSize')
         
         $ExcelVar = $SmaResources.AppServices 

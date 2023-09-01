@@ -46,7 +46,6 @@ else
 {
     if ($SmaResources.SQLMI) 
     {
-
         $TableName = ('SQLMITable_'+($SmaResources.SQLMI.id | Select-Object -Unique).count)
         $Style = New-ExcelStyle -HorizontalAlignment Center -AutoSize -NumberFormat 0
 

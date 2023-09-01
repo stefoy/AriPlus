@@ -12,10 +12,12 @@ if ($Task -eq 'Processing')
         foreach ($1 in $APPSvcPlan) 
         {
             Remove-Variable AutoScale -ErrorAction SilentlyContinue
+
             $sub1 = $SUB | Where-Object { $_.id -eq $1.subscriptionId }
             $data = $1.PROPERTIES
             $sku = $1.SKU
             $AutoScale = ($APPAutoScale | Where-Object {$_.Properties.targetResourceUri -eq $1.id})
+
             if([string]::IsNullOrEmpty($AutoScale)){$AutoSc = $false}else{$AutoSc = $true}
 
             $obj = @{
@@ -28,7 +30,7 @@ if ($Task -eq 'Processing')
                 'Size'                  = $sku.name;
                 'PricingTier'           = ($sku.tier+'('+$sku.name+': '+$data.currentNumberOfWorkers+')');
                 'ComputeMode'           = $data.computeMode;
-                'InstanceSize'           = $data.currentWorkerSize;
+                'InstanceSize'          = $data.currentWorkerSize;
                 'CurrentInstances'      = $data.currentNumberOfWorkers;
                 'Spot'                  = $data.isSpot
                 'AutoscaleEnabled'      = $AutoSc;
@@ -49,7 +51,6 @@ else
 {
     if($SmaResources.AppServicePlan)
     {
-
         $TableName = ('AppSvcPlanTable_'+($SmaResources.AppServicePlan.id | Select-Object -Unique).count)
         $Style = New-ExcelStyle -HorizontalAlignment Center -AutoSize -NumberFormat '0'
        
@@ -77,6 +78,5 @@ else
         $ExcelVar | 
         ForEach-Object { [PSCustomObject]$_ } | Select-Object -Unique $Exc | 
         Export-Excel -Path $File -WorksheetName 'App Service Plan' -AutoSize -MaxAutoSizeRows 100 -TableName $TableName -TableStyle $tableStyle -Style $Style
-
     }
 }

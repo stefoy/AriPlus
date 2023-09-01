@@ -1,46 +1,48 @@
 ﻿param($SCPath, $Sub, $Resources, $Task ,$File, $SmaResources, $TableStyle, $Metrics)
 
-
-If ($Task -eq 'Processing') {
-
+if ($Task -eq 'Processing') 
+{
     $APPGTW = $Resources | Where-Object { $_.TYPE -eq 'microsoft.network/applicationgateways' }
 
     if($APPGTW)
+    {
+        $tmp = @()
+
+        foreach ($1 in $APPGTW) 
         {
-            $tmp = @()
+            $sub1 = $SUB | Where-Object { $_.Id -eq $1.subscriptionId }
+            $data = $1.PROPERTIES
 
-            foreach ($1 in $APPGTW) {
-                $ResUCount = 1
-                $sub1 = $SUB | Where-Object { $_.Id -eq $1.subscriptionId }
-                $data = $1.PROPERTIES
-                if([string]::IsNullOrEmpty($data.autoscaleConfiguration.maxCapacity)){$MaxCap = 'Autoscale Disabled'}else{$MaxCap = $data.autoscaleConfiguration.maxCapacity}
-                if([string]::IsNullOrEmpty($data.autoscaleConfiguration.minCapacity)){$MinCap = 'Autoscale Disabled'}else{$MinCap = $data.autoscaleConfiguration.minCapacity}
-                if([string]::IsNullOrEmpty($data.sslPolicy.minProtocolVersion)){$PROT = 'Default'}else{$PROT = $data.sslPolicy.minProtocolVersion}
-                if([string]::IsNullOrEmpty($data.webApplicationFirewallConfiguration.enabled)){$WAF = $false}else{$WAF = $data.webApplicationFirewallConfiguration.enabled}
-                
-                $obj = @{
-                    'ID'                    = $1.id;
-                    'Subscription'          = $sub1.Name;
-                    'Resource Group'        = $1.RESOURCEGROUP;
-                    'Name'                  = $1.NAME;
-                    'Location'              = $1.LOCATION;
-                    'State'                 = $data.OperationalState;
-                    'WAF Enabled'           = $WAF;
-                    'Minimum TLS Version'   = "$($PROT -Replace '_', '.' -Replace 'v', ' ' -Replace 'tls', 'TLS')";
-                    'Autoscale Min Capacity'= $MinCap;
-                    'Autoscale Max Capacity'= $MaxCap;
-                    'SKU Name'              = $data.sku.tier;
-                    'Current Instances'     = $data.sku.capacity;
-                }
-                $tmp += $obj
-                if ($ResUCount -eq 1) { $ResUCount = 0 }             
+            if([string]::IsNullOrEmpty($data.autoscaleConfiguration.maxCapacity)){$MaxCap = 'Autoscale Disabled'}else{$MaxCap = $data.autoscaleConfiguration.maxCapacity}
+            if([string]::IsNullOrEmpty($data.autoscaleConfiguration.minCapacity)){$MinCap = 'Autoscale Disabled'}else{$MinCap = $data.autoscaleConfiguration.minCapacity}
+            if([string]::IsNullOrEmpty($data.sslPolicy.minProtocolVersion)){$PROT = 'Default'}else{$PROT = $data.sslPolicy.minProtocolVersion}
+            if([string]::IsNullOrEmpty($data.webApplicationFirewallConfiguration.enabled)){$WAF = $false}else{$WAF = $data.webApplicationFirewallConfiguration.enabled}
+            
+            $obj = @{
+                'ID'                    = $1.id;
+                'Subscription'          = $sub1.Name;
+                'ResourceGroup'         = $1.RESOURCEGROUP;
+                'Name'                  = $1.NAME;
+                'Location'              = $1.LOCATION;
+                'State'                 = $data.OperationalState;
+                'WAFEnabled'            = $WAF;
+                'MinimumTLSVersion'     = "$($PROT -Replace '_', '.' -Replace 'v', ' ' -Replace 'tls', 'TLS')";
+                'AutoscaleMinCapacity'  = $MinCap;
+                'AutoscaleMaxCapacity'  = $MaxCap;
+                'SKUName'               = $data.sku.tier;
+                'CurrentInstances'      = $data.sku.capacity;
             }
-            $tmp
-        }
-}
-Else {
-    if ($SmaResources.APPGW) {
 
+            $tmp += $obj
+        }
+
+        $tmp
+    }
+}
+else 
+{
+    if ($SmaResources.APPGW) 
+    {
         $TableName = ('APPGWTable_'+($SmaResources.APPGW.id | Select-Object -Unique).count)
         $Style = New-ExcelStyle -HorizontalAlignment Center -AutoSize -NumberFormat 0
 
@@ -48,16 +50,16 @@ Else {
 
         $Exc = New-Object System.Collections.Generic.List[System.Object]
         $Exc.Add('Subscription')
-        $Exc.Add('Resource Group')
+        $Exc.Add('ResourceGroup')
         $Exc.Add('Name')
         $Exc.Add('Location')
         $Exc.Add('State')
-        $Exc.Add('WAF Enabled')
-        $Exc.Add('Minimum TLS Version')
-        $Exc.Add('Autoscale Min Capacity')
-        $Exc.Add('Autoscale Max Capacity')
-        $Exc.Add('SKU Name')
-        $Exc.Add('Current Instances')
+        $Exc.Add('WAFEnabled')
+        $Exc.Add('MinimumTLSVersion')
+        $Exc.Add('AutoscaleMinCapacity')
+        $Exc.Add('AutoscaleMaxCapacity')
+        $Exc.Add('SKUName')
+        $Exc.Add('CurrentInstances')
 
         $ExcelVar = $SmaResources.APPGW 
 

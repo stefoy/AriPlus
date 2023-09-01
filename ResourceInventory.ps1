@@ -644,11 +644,15 @@ function ExecuteInventoryProcessing()
 
             $tmpConsumption = [System.Collections.Generic.List[psobject]]::new()
 
+            $consumptionLookBack = -31
+            $consumptionStartTime = (Get-Date).AddDays($consumptionLookBack).ToString("yyyy-MM-dd")
+            $consumptionEndTime = (Get-Date).ToString("yyyy-MM-dd")
+
             foreach($resourceItem in $Global:Resources)
             {
                 $ResourceIds = $resourceItem.Id
 
-                $Consumption = (az consumption usage list --include-meter-details --only-show-errors --output json --query "[?instanceId=='$ResourceIds'].{id: instanceId, service: meterDetails.serviceName, meter: meterId, product: product, quantity: usageQuantity, cost: pretaxCost}") | ConvertFrom-Json
+                $Consumption = (az consumption usage list --start-date $consumptionStartTime --end-date $consumptionEndTime --include-meter-details --only-show-errors --output json --query "[?instanceId=='$ResourceIds'].{id: instanceId, service: meterDetails.serviceName, meter: meterId, product: product, quantity: usageQuantity, cost: pretaxCost}") | ConvertFrom-Json
 
                 Write-Host ("Gathering Consumption for {0}" -f $ResourceIds) -BackgroundColor Black -ForegroundColor Green
 
@@ -686,8 +690,7 @@ function ExecuteInventoryProcessing()
 
             $ConsumptionData.Consumption = $tmpConsumption
 
-            $ConsumptionFile = ($DefaultPath + "Consumption_" + $Global:ReportName + "_" + $CurrentDateTime + ".json")
-            $ConsumptionData | ConvertTo-Json -depth 100 -compress | Out-File $ConsumptionFile
+            $ConsumptionData | ConvertTo-Json -depth 100 -compress | Out-File $Global:ConsumptionFile 
             
             Write-Host ("Exported Consumption Data to {0}" -f $ConsumptionFile) -BackgroundColor Black -ForegroundColor Green
         }
@@ -702,6 +705,10 @@ function ExecuteInventoryProcessing()
 
             $tmpRows = [System.Collections.Generic.List[psobject]]::new()
 
+            $consumptionLookBack = -31
+            $consumptionStartTime = (Get-Date).AddDays($consumptionLookBack).ToString("yyyy-MM-dd")
+            $consumptionEndTime = (Get-Date).ToString("yyyy-MM-dd")
+
             foreach($sub in $Global:Subscriptions)
             {
                 $queryScope = "subscriptions/" + $sub.Id
@@ -711,8 +718,8 @@ function ExecuteInventoryProcessing()
                     type = "Usage"
                     timeframe = "Custom"
                     timePeriod = @{
-                        from = "2023-08-01"
-                        to = "2023-08-27"
+                        from = $consumptionStartTime
+                        to = $consumptionEndTime
                     }
                     dataSet = @{
                         granularity = "None"
@@ -752,6 +759,11 @@ function ExecuteInventoryProcessing()
                                 name = "MeterSubcategory"
                             }
                         )
+                        sorting = @( 
+                            @{
+                                direction = "Descending"
+                                name = "CostUSD"
+                            })
                     }
                 }
 
@@ -761,6 +773,15 @@ function ExecuteInventoryProcessing()
 
                 $consumptionData = (az rest --method post --uri $queryUri --body $queryJson --headers "Content-Type=application/json") | ConvertFrom-Json
 
+                if($consumptionData.properties.error.code -eq "TooManyRequests")
+                {
+                    $waitTime = $consumptionData.properties.error.details[0].waitTimeInSeconds
+                    Write-Host ("Too Many Requests. Waiting {0} seconds" -f $waitTime) -BackgroundColor Black -ForegroundColor Yellow
+                    Start-Sleep -Seconds $waitTime
+
+                    $consumptionData = (az rest --method post --uri $queryUri --body $queryJson --headers "Content-Type=application/json") | ConvertFrom-Json
+                }
+                
                 if($consumptionData)
                 {
                     foreach($cRow in $consumptionData.properties.rows)
@@ -780,11 +801,20 @@ function ExecuteInventoryProcessing()
                         $tmpRows.Add($costObject)
                     }
 
-                    while($consumptionData.nextLink)
+                    while($null -ne $consumptionData.properties.nextLink)
                     {
                         Write-Host ("Gathering Consumption Data: {0}" -f $consumptionData.nextLink) -BackgroundColor Black -ForegroundColor Green
 
                         $consumptionData = (az rest --method post --uri $consumptionData.nextLink --body $queryJson --headers "Content-Type=application/json") | ConvertFrom-Json
+
+                        if($consumptionData.properties.error.code -eq "TooManyRequests")
+                        {
+                            $waitTime = $consumptionData.properties.error.details[0].waitTimeInSeconds
+                            Write-Host ("Too Many Requests. Waiting {0} seconds" -f $waitTime) -BackgroundColor Black -ForegroundColor Yellow
+                            Start-Sleep -Seconds $waitTime
+        
+                            $consumptionData = (az rest --method post --uri $queryUri --body $queryJson --headers "Content-Type=application/json") | ConvertFrom-Json
+                        }
 
                         foreach($cRow in $consumptionData.properties.rows)
                         {
@@ -807,8 +837,6 @@ function ExecuteInventoryProcessing()
             }
 
             $ConsumptionObject.Consumption = $tmpRows
-
-            #$Global:Consumption = ($DefaultPath + "Consumption_" + $Global:ReportName + "_" + $CurrentDateTime + ".json")
             $ConsumptionObject | ConvertTo-Json -depth 100 -compress | Out-File $Global:ConsumptionFile 
         }
     }

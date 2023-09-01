@@ -7,12 +7,11 @@ if ($Task -eq 'Processing')
     if($Synapse)
     {
         $tmp = @()
+        
         foreach ($1 in $Synapse) 
         {
-            $ResUCount = 1
             $sub1 = $SUB | Where-Object { $_.id -eq $1.subscriptionId }
             $data = $1.PROPERTIES
-            $pvt = $data.privateEndpointConnections.count
 
             $obj = @{
                 'ID'                           = $1.id;
@@ -26,7 +25,6 @@ if ($Task -eq 'Processing')
             }
 
             $tmp += $obj
-            if ($ResUCount -eq 1) { $ResUCount = 0 }            
         }
 
         $tmp
@@ -36,7 +34,6 @@ else
 {
     if ($SmaResources.Synapse) 
     {
-
         $TableName = ('SynapseTable_'+($SmaResources.Synapse.id | Select-Object -Unique).count)
         $Style = New-ExcelStyle -HorizontalAlignment Center -AutoSize -NumberFormat 0
         
@@ -54,6 +51,5 @@ else
         $ExcelVar | 
         ForEach-Object { [PSCustomObject]$_ } | Select-Object -Unique $Exc | 
         Export-Excel -Path $File -WorksheetName 'Synapse' -AutoSize -MaxAutoSizeRows 100 -TableName $TableName -TableStyle $tableStyle -Style $Style
-
     }
 }

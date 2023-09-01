@@ -1,47 +1,38 @@
 ﻿param($SCPath, $Sub, $Resources, $Task ,$File, $SmaResources, $TableStyle, $Metrics)
 
-If ($Task -eq 'Processing')
+if ($Task -eq 'Processing')
 {
-    <######### Insert the resource extraction here ########>
-
-        $BASTION = $Resources | Where-Object {$_.TYPE -eq 'microsoft.network/bastionhosts'}
-
-    <######### Insert the resource Process here ########>
+    $BASTION = $Resources | Where-Object {$_.TYPE -eq 'microsoft.network/bastionhosts'}
 
     if($BASTION)
+    {
+        $tmp = @()
+
+        foreach ($1 in $BASTION) 
         {
-            $tmp = @()
-
-            foreach ($1 in $BASTION) {
-                $ResUCount = 1
-                $sub1 = $SUB | Where-Object { $_.Id -eq $1.subscriptionId }
-                $data = $1.PROPERTIES
-                
-                $obj = @{
-                    'ID'              = $1.id;
-                    'Subscription'    = $sub1.Name;
-                    'ResourceGroup'  = $1.RESOURCEGROUP;
-                    'Name'            = $1.NAME;
-                    'Location'        = $1.LOCATION;
-                    'SKU'             = $1.sku.name;
-                    'ScaleUnits'     = $data.scaleUnits;
-                }
-                $tmp += $obj
-                if ($ResUCount -eq 1) { $ResUCount = 0 }             
+            $sub1 = $SUB | Where-Object { $_.Id -eq $1.subscriptionId }
+            $data = $1.PROPERTIES
+            
+            $obj = @{
+                'ID'              = $1.id;
+                'Subscription'    = $sub1.Name;
+                'ResourceGroup'   = $1.RESOURCEGROUP;
+                'Name'            = $1.NAME;
+                'Location'        = $1.LOCATION;
+                'SKU'             = $1.sku.name;
+                'ScaleUnits'      = $data.scaleUnits;
             }
-            $tmp
+
+            $tmp += $obj
+
         }
+        $tmp
+    }
 }
-
-<######## Resource Excel Reporting Begins Here ########>
-
-Else
+else
 {
-    <######## $SmaResources.(RESOURCE FILE NAME) ##########>
-
     if($SmaResources.BASTION)
     {
-
         $TableName = ('BASTIONTable_'+($SmaResources.BASTION.id | Select-Object -Unique).count)
         $Style = New-ExcelStyle -HorizontalAlignment Center -AutoSize -NumberFormat '0'
 
@@ -58,14 +49,5 @@ Else
         $ExcelVar | 
         ForEach-Object { [PSCustomObject]$_ } | Select-Object -Unique $Exc | 
         Export-Excel -Path $File -WorksheetName 'Bastion Hosts' -AutoSize -MaxAutoSizeRows 100 -TableName $TableName -TableStyle $tableStyle -Style $Style
-
-        <######## Insert Column comments and documentations here following this model #########>
-
-
-        #$excel = Open-ExcelPackage -Path $File -KillExcel
-
-
-        #Close-ExcelPackage $excel 
-
     }
 }

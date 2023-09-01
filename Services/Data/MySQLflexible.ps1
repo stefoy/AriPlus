@@ -1,84 +1,79 @@
 param($SCPath, $Sub, $Resources, $Task , $File, $SmaResources, $TableStyle)
 
-If ($Task -eq 'Processing') {
-
+if ($Task -eq 'Processing') 
+{
     $MySQLFlexible = $Resources | Where-Object { $_.TYPE -eq 'Microsoft.DBforMySQL/flexibleServers' }
 
     if($MySQLFlexible)
+    {
+        $tmp = @()
+
+        foreach ($1 in $MySQLFlexible) 
         {
-            $tmp = @()
-            foreach ($1 in $MySQLFlexible) {
-                $ResUCount = 1
-                $sub1 = $SUB | Where-Object { $_.id -eq $1.subscriptionId }
-                $data = $1.PROPERTIES
-                
-                $obj = @{
-                    'ID'                                = $1.id;
-                    'Subscription'                      = $sub1.Name;
-                    'Resource Group'                    = $1.RESOURCEGROUP;
-                    'Name'                              = $1.NAME;
-                    'Location'                          = $1.LOCATION;
-                    'SKU'                               = $data.sku.name;
-                    'Version'                           = $data.version;
-                    'State'                             = $data.state;
-                    'Zone'                              = $data.availabilityZone;
-                    'Storage Size (GB)'                 = $data.storage.storageSizeGB;
-                    'Limit IOPs'                        = $data.storage.iops;
-                    'Auto Grow'                         = $data.storage.autoGrow;
-                    'Storage Sku'                       = $data.storage.storageSku;
-                    'Custom Maintenance Window'         = $data.maintenanceWindow.customWindow;
-                    'Replication Role'                  = $data.replicationRole;
-                    'Replica Capacity'                  = $data.replicaCapacity;
-                    'Public Network Access'             = $data.network.publicNetworkAccess;
-                    'Backup Retention Days'             = $data.backup.backupRetentionDays;
-                    'Geo Redundant Backup'              = $data.backup.geoRedundantBackup;
-                    'High Availability'                 = $data.highAvailability.mode;
-                    'High Availability State'           = $data.highAvailability.state;                            
-                }
-                $tmp += $obj
-                if ($ResUCount -eq 1) { $ResUCount = 0 }           
+            $sub1 = $SUB | Where-Object { $_.id -eq $1.subscriptionId }
+            $data = $1.PROPERTIES
+            
+            $obj = @{
+                'ID'                                = $1.id;
+                'Subscription'                      = $sub1.Name;
+                'ResourceGroup'                     = $1.RESOURCEGROUP;
+                'Name'                              = $1.NAME;
+                'Location'                          = $1.LOCATION;
+                'SKU'                               = $data.sku.name;
+                'Version'                           = $data.version;
+                'State'                             = $data.state;
+                'Zone'                              = $data.availabilityZone;
+                'StorageSizeGB'                     = $data.storage.storageSizeGB;
+                'LimitIOPs'                         = $data.storage.iops;
+                'AutoGrow'                          = $data.storage.autoGrow;
+                'StorageSku'                        = $data.storage.storageSku;
+                'CustomMaintenanceWindow'           = $data.maintenanceWindow.customWindow;
+                'ReplicationRole'                   = $data.replicationRole;
+                'ReplicaCapacity'                   = $data.replicaCapacity;
+                'BackupRetentionDays'               = $data.backup.backupRetentionDays;
+                'GeoRedundantBackup'                = $data.backup.geoRedundantBackup;
+                'HighAvailability'                  = $data.highAvailability.mode;
+                'HighAvailabilityState'             = $data.highAvailability.state;                            
             }
-            $tmp
+
+            $tmp += $obj
         }
+
+        $tmp
+    }
 }
-<######## Resource Excel Reporting Begins Here ########>
-
-Else {
-    <######## $SmaResources.MySQLFlexible ##########>
-
-    if ($SmaResources.MySQLFlexible) {
-
+else 
+{
+    if ($SmaResources.MySQLFlexible) 
+    {
         $TableName = ('MySQLFlexTable_'+($SmaResources.MySQLFlexible.id | Select-Object -Unique).count)
         $Style = New-ExcelStyle -HorizontalAlignment Center -AutoSize -NumberFormat 0
         
         $Exc = New-Object System.Collections.Generic.List[System.Object]
         $Exc.Add('Subscription')
-        $Exc.Add('Resource Group')
+        $Exc.Add('ResourceGroup')
         $Exc.Add('Name')
         $Exc.Add('Location')
         $Exc.Add('SKU')
         $Exc.Add('Version')
         $Exc.Add('State')
         $Exc.Add('Zone')
-        $Exc.Add('Storage Size (GB)')
-        $Exc.Add('Limit IOPs')
-        $Exc.Add('Auto Grow')
-        $Exc.Add('Storage Sku')
-        $Exc.Add('Custom Maintenance Window')
-        $Exc.Add('Replication Role')
-        $Exc.Add('Replica Capacity')
-        $Exc.Add('Public Network Access')
-        $Exc.Add('Backup Retention Days')
-        $Exc.Add('Geo Redundant Backup')
-        $Exc.Add('High Availability')
-        $Exc.Add('High Availability State')
+        $Exc.Add('StorageSizeGB')
+        $Exc.Add('LimitIOPs')
+        $Exc.Add('AutoGrow')
+        $Exc.Add('StorageSku')
+        $Exc.Add('CustomMaintenanceWindow')
+        $Exc.Add('ReplicationRole')
+        $Exc.Add('ReplicaCapacity')
+        $Exc.Add('BackupRetentionDays')
+        $Exc.Add('GeoRedundantBackup')
+        $Exc.Add('HighAvailability')
+        $Exc.Add('HighAvailabilityState')
 
         $ExcelVar = $SmaResources.MySQLFlexible 
 
         $ExcelVar | 
         ForEach-Object { [PSCustomObject]$_ } | Select-Object -Unique $Exc | 
         Export-Excel -Path $File -WorksheetName 'MySQL Flexible' -AutoSize -MaxAutoSizeRows 100 -TableName $TableName -TableStyle $tableStyle -Style $Style
-
     }
-    <######## Insert Column comments and documentations here following this model #########>
 }

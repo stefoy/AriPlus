@@ -1,45 +1,41 @@
 param($SCPath, $Sub, $Resources, $Task , $File, $SmaResources, $TableStyle)
 
-If ($Task -eq 'Processing') {
-
-    <######### Insert the resource extraction here ########>
-
+If ($Task -eq 'Processing') 
+{
     $SQLVM = $Resources | Where-Object { $_.TYPE -eq 'microsoft.sqlvirtualmachine/sqlvirtualmachines' }
 
     if($SQLVM)
+    {
+        $tmp = @()
+
+        foreach ($1 in $SQLVM) 
         {
-            $tmp = @()
-
-            foreach ($1 in $SQLVM) {
-                $ResUCount = 1
-                $sub1 = $SUB | Where-Object { $_.id -eq $1.subscriptionId }
-                $data = $1.PROPERTIES
-                
-                $obj = @{
-                    'ID'                      = $1.id;
-                    'Subscription'            = $sub1.Name;
-                    'ResourceGroup'          = $1.RESOURCEGROUP;
-                    'Name'                    = $1.NAME;
-                    'Location'                = $1.LOCATION;
-                    'Zone'                    = if ($null -ne $1.ZONES) { $1.ZONES } else { 'None' }
-                    'SQLServerLicenseType' = $data.sqlServerLicenseType;
-                    'SQLImage'               = $data.sqlImageOffer;
-                    'SQLManagement'          = $data.sqlManagement;
-                    'SQLImageSku'           = $data.sqlImageSku;
-                }
-                
-                $tmp += $obj      
+            $sub1 = $SUB | Where-Object { $_.id -eq $1.subscriptionId }
+            $data = $1.PROPERTIES
+            
+            $obj = @{
+                'ID'                        = $1.id;
+                'Subscription'              = $sub1.Name;
+                'ResourceGroup'             = $1.RESOURCEGROUP;
+                'Name'                      = $1.NAME;
+                'Location'                  = $1.LOCATION;
+                'Zone'                      = if ($null -ne $1.ZONES) { $1.ZONES } else { 'None' }
+                'SQLServerLicenseType'      = $data.sqlServerLicenseType;
+                'SQLImage'                  = $data.sqlImageOffer;
+                'SQLManagement'             = $data.sqlManagement;
+                'SQLImageSku'               = $data.sqlImageSku;
             }
-            $tmp
+            
+            $tmp += $obj      
         }
+
+        $tmp
+    }
 }
-<######## Resource Excel Reporting Begins Here ########>
-
-Else {
-    <######## $SmaResources.(RESOURCE FILE NAME) ##########>
-
-    if ($SmaResources.SQLVM) {
-
+else 
+{
+    if ($SmaResources.SQLVM) 
+    {
         $TableName = ('SQLVMTable_'+($SmaResources.SQLVM.id | Select-Object -Unique).count)
         $Style = New-ExcelStyle -HorizontalAlignment Center -AutoSize -NumberFormat 0
         
@@ -61,5 +57,4 @@ Else {
         Export-Excel -Path $File -WorksheetName 'SQL VMs' -AutoSize -MaxAutoSizeRows 100 -TableName $TableName -TableStyle $tableStyle -Style $Style
 
     }
-    <######## Insert Column comments and documentations here following this model #########>
 }

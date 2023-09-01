@@ -8,7 +8,8 @@ if ($Task -eq 'Processing')
     {
         $tmp = @()
 
-        foreach ($1 in $SQLSERVERMIDB) {
+        foreach ($1 in $SQLSERVERMIDB) 
+        {
             $sub1 = $SUB | Where-Object { $_.id -eq $1.subscriptionId }
             $data = $1.PROPERTIES
 

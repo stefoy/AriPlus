@@ -44,7 +44,6 @@ else
 {
     if($SmaResources.VMDisk)
     {
-
         $TableName = ('VMDiskT_'+($SmaResources.VMDisk.id | Select-Object -Unique).count)
         $condtxt = @()
         $Style = New-ExcelStyle -HorizontalAlignment Center -AutoSize -NumberFormat '0'

@@ -1,51 +1,41 @@
 ﻿param($SCPath, $Sub, $Resources, $Task ,$File, $SmaResources, $TableStyle, $Metrics)
 
-If ($Task -eq 'Processing')
+if ($Task -eq 'Processing')
 {
-
-    <######### Insert the resource extraction here ########>
-
-        $arcservers = $Resources | Where-Object {$_.TYPE -eq 'microsoft.hybridcompute/machines'}
-
-    <######### Insert the resource Process here ########>
+    $arcservers = $Resources | Where-Object {$_.TYPE -eq 'microsoft.hybridcompute/machines'}
 
     if($arcservers)
+    {
+        $tmp = @()
+        foreach ($1 in $arcservers) 
         {
-            $tmp = @()
-            foreach ($1 in $arcservers) {
-                $ResUCount = 1
-                $sub1 = $SUB | Where-Object { $_.id -eq $1.subscriptionId }
-                $data = $1.PROPERTIES
+            $sub1 = $SUB | Where-Object { $_.id -eq $1.subscriptionId }
+            $data = $1.PROPERTIES
 
-                    foreach ($Tag in $Tags) { 
-                        $obj = @{
-                            'ID'                   = $1.id;
-                            'Subscription'         = $sub1.name;
-                            'ResourceGroup'       = $1.RESOURCEGROUP;
-                            'Name'                 = $1.NAME;
-                            'Location'             = $1.LOCATION;
-                            'model'                = $data.detectedProperties.model;
-                            'status'               = $data.status;
-                            'osName'               = $data.osName;
-                            'osVersion'            = $data.osVersion;
-                            'osSku'                = $data.osSku;
-                            'domainName'           = $data.domainName;
-                            'Resource U'           = $ResUCount;
-                        }
-                        $tmp += $obj
-                        if ($ResUCount -eq 1) { $ResUCount = 0 } 
-                    }               
-            }
-            $tmp
+            foreach ($Tag in $Tags) { 
+                $obj = @{
+                    'ID'                   = $1.id;
+                    'Subscription'         = $sub1.name;
+                    'ResourceGroup'       = $1.RESOURCEGROUP;
+                    'Name'                 = $1.NAME;
+                    'Location'             = $1.LOCATION;
+                    'Model'                = $data.detectedProperties.model;
+                    'Status'               = $data.status;
+                    'OsName'               = $data.osName;
+                    'OsVersion'            = $data.osVersion;
+                    'OsSku'                = $data.osSku;
+                    'DomainName'           = $data.domainName;
+                }
+                
+                $tmp += $obj
+            }               
         }
+
+        $tmp
+    }
 }
-
-<######## Resource Excel Reporting Begins Here ########>
-
-Else
+else
 {
-    <######## $SmaResources.(RESOURCE FILE NAME) ##########>
-
     if($SmaResources.ARCServers)
     {
         $TableName = ('ARCServer_'+($SmaResources.ARCServer.id | Select-Object -Unique).count)
@@ -56,12 +46,12 @@ Else
         $Exc.Add('ResourceGroup')
         $Exc.Add('Name')
         $Exc.Add('Location')
-        $Exc.Add('model')
-        $Exc.Add('status')
-        $Exc.Add('osName')
-        $Exc.Add('osVersion')
-        $Exc.Add('osSku')
-        $Exc.Add('domainName')
+        $Exc.Add('Model')
+        $Exc.Add('Status')
+        $Exc.Add('OssName')
+        $Exc.Add('OsVersion')
+        $Exc.Add('OsSku')
+        $Exc.Add('DomainName')
 
         $ExcelVar = $SmaResources.ARCServers  
 
