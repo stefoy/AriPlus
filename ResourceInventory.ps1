@@ -27,6 +27,8 @@ function Variables
     $Global:Resources = @()
     $Global:Subscriptions = ''
     $Global:ReportName = $ReportName   
+    $Global:Version = '2.0.6'
+
 
     if ($Online.IsPresent) { $Global:RunOnline = $true }else { $Global:RunOnline = $false }
 
@@ -64,6 +66,8 @@ Function RunInventorySetup()
 {
     function CheckCliRequirements() 
     {        
+        Write-Host ('ARI Plus Version: {0}' -f $Global:Version) -ForegroundColor Magenta
+
         Write-Host "Checking Cli Installed..."
         $azCliVersion = az --version
         Write-Host ('CLI Version: {0}' -f $azCliVersion[0]) -ForegroundColor Green
@@ -883,7 +887,7 @@ function FinalizeOutputs
             $SummaryPath = Get-ChildItem -Path ($PSScriptRoot + '/Extension/Summary.ps1') -Recurse
         }
 
-        $ChartsRun = & $SummaryPath -File $file -TableStyle $TableStyle -PlatOS $PlatformOS -Subscriptions $Subscriptions -Resources $Resources -ExtractionRunTime $Runtime -ReportingRunTime $ReportingRunTime -RunLite $false
+        $ChartsRun = & $SummaryPath -File $file -TableStyle $TableStyle -PlatOS $PlatformOS -Subscriptions $Subscriptions -Resources $Resources -ExtractionRunTime $Runtime -ReportingRunTime $ReportingRunTime -RunLite $false -Version $Global:Version
     }
 
     ProcessSummary
