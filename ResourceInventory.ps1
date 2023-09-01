@@ -807,7 +807,7 @@ function ExecuteInventoryProcessing()
                 Write-Host ("Gathering Consumption Data: {0}" -f $queryUri) -BackgroundColor Black -ForegroundColor Green
 
                 $consumptionData = (az rest --method post --uri $queryUri --body $queryJson --headers "Content-Type=application/json") | ConvertFrom-Json
-
+                Write-Host ("{0}" -f $consumptionData.properties.error.code) -BackgroundColor Black -ForegroundColor Yellow
                 if($consumptionData.properties.error.code -eq "TooManyRequests")
                 {
                     $waitTime = $consumptionData.properties.error.details[0].waitTimeInSeconds
