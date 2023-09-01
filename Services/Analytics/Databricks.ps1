@@ -16,25 +16,20 @@ If ($Task -eq 'Processing') {
                 $timecreated = $data.createdDateTime
                 $timecreated = [datetime]$timecreated
                 $timecreated = $timecreated.ToString("yyyy-MM-dd HH:mm")
-                $PIP = if($data.parameters.enableNoPublicIp.value -eq 'False'){$true}else{$false}
-                $VNET = $data.parameters.customVirtualNetworkId.value.split('/')[8]
                 
                 $obj = @{
                     'ID'                        = $1.id;
                     'Subscription'              = $sub1.Name;
-                    'ResourceGroup'            = $1.RESOURCEGROUP;
+                    'ResourceGroup'             = $1.RESOURCEGROUP;
                     'Name'                      = $1.NAME;
                     'Location'                  = $1.LOCATION;
-                    'PricingTier'              = $sku.name;
-                    'ManagedResourceGroup'    = $data.managedResourceGroupId.split('/')[4];
-                    'StorageAccount'           = $data.parameters.storageAccountName.value;
-                    'StorageAccountSKU'       = $data.parameters.storageAccountSkuName.value;
-                    'CustomVirtualNetwork'    = $VNET;
-                    'CreatedTime'              = $timecreated;
-                    'ResourceU'                = $ResUCount;
+                    'PricingTier'               = $sku.name;
+                    'ManagedResourceGroup'      = $data.managedResourceGroupId.split('/')[4];
+                    'StorageAccount'            = $data.parameters.storageAccountName.value;
+                    'StorageAccountSKU'         = $data.parameters.storageAccountSkuName.value;
+                    'CreatedTime'               = $timecreated;
                 }
                 $tmp += $obj
-                if ($ResUCount -eq 1) { $ResUCount = 0 }            
             }
             $tmp
         }
@@ -44,14 +39,12 @@ If ($Task -eq 'Processing') {
 Else {
     <######## $SmaResources.(RESOURCE FILE NAME) ##########>
 
-    if ($SmaResources.Databricks) {
-
+    if ($SmaResources.Databricks) 
+    {
         $TableName = ('DBricksTable_'+($SmaResources.Databricks.id | Select-Object -Unique).count)
         $Style = New-ExcelStyle -HorizontalAlignment Center -AutoSize -NumberFormat 0
 
         $condtxt = @()
-
-
 
         $Exc = New-Object System.Collections.Generic.List[System.Object]
         $Exc.Add('Subscription')
@@ -62,7 +55,6 @@ Else {
         $Exc.Add('ManagedResourceGroup')
         $Exc.Add('StorageAccount')
         $Exc.Add('StorageAccountSKU')
-        $Exc.Add('CustomVirtualNetwork')
         $Exc.Add('CreatedTime')  
 
         $ExcelVar = $SmaResources.Databricks
