@@ -1,4 +1,4 @@
-﻿param($SCPath, $Sub, $Resources, $Task ,$File, $SmaResources, $TableStyle, $Metrics)
+param($SCPath, $Sub, $Resources, $Task ,$File, $SmaResources, $TableStyle, $Metrics)
 
 If ($Task -eq 'Processing')
 {
@@ -60,8 +60,8 @@ If ($Task -eq 'Processing')
                 'OSName'                        = $data.extended.instanceView.osname;
                 'OSVersion'                     = $data.extended.instanceView.osversion;
                 'PowerState'                    = $data.extended.instanceView.powerState.displayStatus;
-                'CPUAvgPercent'                 = if ($null -ne $cpuUtilisationMetric.MetricValue) { $cpuUtilisationMetric.MetricValue } else { '0' }
-                'MemoryAvgPercent'              = if ($null -ne $memoryAvilableMetric.MetricValue) { $memoryTotalGb - ($memoryAvilableMetric.MetricValue / (1024 * 1024 * 1024)) } else { '0' }
+                'CpuUtilizationPercent'         = if ($null -ne $cpuUtilisationMetric.MetricPercentile) { $cpuUtilisationMetric.MetricPercentile } else { '0' }
+                'MemoryUtilizationPercent'      = if ($null -ne $memoryAvilableMetric.MetricPercentile) { $memoryTotalGb - ($memoryAvilableMetric.MetricPercentile / (1024 * 1024 * 1024)) } else { '0' }
                 'CreatedTime'                   = $timecreated;
             }
 
@@ -94,8 +94,8 @@ else
         $Exc.Add('HybridBenefit')
         $Exc.Add('PowerState')
         $Exc.Add('AvailabilitySet')
-        $Exc.Add('CPUAvgPercent')
-        $Exc.Add('MemoryAvgPercent')
+        $Exc.Add('CpuUtilizationPercent')
+        $Exc.Add('MemoryUtilizationPercent')
         $Exc.Add('CreatedTime')     
 
         $ExcelVar = $SmaResources.VirtualMachines
