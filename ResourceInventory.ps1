@@ -864,8 +864,15 @@ function ExecuteInventoryProcessing()
                     }
                 }
 
-                $queryJson = ($queryBody | ConvertTo-Json -Depth 10 -Compress).Replace('"', '\"')
-
+                if ($Global:PlatformOS -eq 'Azure CloudShell')
+                {
+                   $queryJson = ($queryBody | ConvertTo-Json -Depth 10 -Compress)
+                }
+                else
+                {
+                   $queryJson = ($queryBody | ConvertTo-Json -Depth 10 -Compress).Replace('"', '\"')
+                }
+                
                 Write-Host ("Gathering Consumption Data: {0}" -f $queryUri) -BackgroundColor Black -ForegroundColor Green
 
                 $consumptionData = (az rest --method post --uri $queryUri --body $queryJson --headers "Content-Type=application/json") | ConvertFrom-Json
