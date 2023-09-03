@@ -75,13 +75,13 @@ Function RunInventorySetup()
         $versionJson = (New-Object System.Net.WebClient).DownloadString($RawRepo + '/Version.json') | ConvertFrom-Json
         $versionNumber = ('{0}.{1}.{2}' -f $versionJson.MajorVersion, $versionJson.MinorVersion, $versionJson.BuildVersion)
 
-        if($Update -eq 'Y' -or $Update -eq 'y')
+        if($versionNumber -ne $Global:Version)
         {
             Write-Host ('New Version Available: {0}.{1}.{2}' -f $versionJson.MajorVersion, $versionJson.MinorVersion, $versionJson.BuildVersion ) -ForegroundColor Yellow
 
             $Update = Read-Host 'Do you want to update by automatically? (Y/N)'
 
-            if($Update -eq 'Y')
+            if($Update -eq 'Y' -or $Update -eq 'y')
             {
                 $Global:Version = $versionNumber
                 $Global:RunOnline = $true
@@ -557,6 +557,51 @@ function ExecuteInventoryProcessing()
         }
     }
 
+    function GetServiceName($moduleUrl)
+    {    
+        if ($moduleUrl -like '*Services/Analytics*')
+        {
+            $directoryService = 'Analytics'
+        }
+
+        if ($moduleUrl -like '*Services/Compute*')
+        {
+            $directoryService = 'Compute'
+        }
+
+        if ($moduleUrl -like '*Services/Containers*')
+        {
+            $directoryService = 'Containers'
+        }
+
+        if ($moduleUrl -like '*Services/Data*')
+        {
+            $directoryService = 'Data'
+        }
+
+        if ($moduleUrl -like '*Services/Infrastructure*')
+        {
+            $directoryService = 'Infrastructure'
+        }
+
+        if ($moduleUrl -like '*Services/Integration*')
+        {
+            $directoryService = 'Integration'
+        }
+
+        if ($moduleUrl -like '*Services/Networking*')
+        {
+            $directoryService = 'Networking'
+        }
+
+        if ($moduleUrl -like '*Services/Storage*')
+        {
+            $directoryService = 'Storage'
+        }
+
+        return $directoryService
+    }
+
     function CreateResourceJobs()
     {
         $Global:SmaResources = New-Object PSObject
@@ -569,7 +614,7 @@ function ExecuteInventoryProcessing()
 
             $OnlineRepo = Invoke-WebRequest -Uri $Repo
             $RepoContent = $OnlineRepo | ConvertFrom-Json
-            $ModuleUrls = ($RepoContent.tree | Where-Object {$_.path -like '*.ps1' -and $_.path -notlike 'Extension/*' -and $_.path -ne 'ResourceInventory.ps1'}).path
+            $ModuleUrls = ($RepoContent.tree | Where-Object {$_.path -like '*.ps1' -and $_.path -notlike 'Extension/*' -and $_.path -ne 'ResourceInventory.ps1'}).path      
 
             if($PSScriptRoot -like '*\*')
             {
@@ -591,13 +636,30 @@ function ExecuteInventoryProcessing()
                 $ModuleContent = (New-Object System.Net.WebClient).DownloadString($RawRepo + '/' + $moduleUrl)
                 $ModuleFileName = [System.IO.Path]::GetFileName($moduleUrl)
 
+                $servicePath = GetServiceName($moduleUrl)
+
                 if($PSScriptRoot -like '*\*')
                 {
-                    $ModuleContent | Out-File ($PSScriptRoot + '\Services\' + $ModuleFileName) 
+                    if (!(Test-Path -Path ($PSScriptRoot + '\Services\' + $servicePath + '\')))
+                    {
+                        New-Item -Path ($PSScriptRoot + '\Services\' + $servicePath + '\') -ItemType Directory
+                    }
                 }
                 else
                 {
-                    $ModuleContent | Out-File ($PSScriptRoot + '/Services/' + $ModuleFileName) 
+                    if (!(Test-Path -Path ($PSScriptRoot + '/Services/' + $servicePath + '/')))
+                    {
+                        New-Item -Path ($PSScriptRoot + '/Services/' + $servicePath + '/') -ItemType Directory
+                    }
+                }
+
+                if($PSScriptRoot -like '*\*')
+                {
+                    $ModuleContent | Out-File ($PSScriptRoot + '\Services\' + $servicePath + '\' + $ModuleFileName) 
+                }
+                else
+                {
+                    $ModuleContent | Out-File ($PSScriptRoot + '/Services/'+ $servicePath + '/' + $ModuleFileName) 
                 }
             }
         }
@@ -802,19 +864,12 @@ function ExecuteInventoryProcessing()
                     }
                 }
 
-                if ($Global:PlatformOS -eq 'Azure CloudShell')
-                {
-                   $queryJson = ($queryBody | ConvertTo-Json -Depth 10 -Compress)
-                }
-                else
-                {
-                   $queryJson = ($queryBody | ConvertTo-Json -Depth 10 -Compress).Replace('"', '\"')
-                }
+                $queryJson = ($queryBody | ConvertTo-Json -Depth 10 -Compress).Replace('"', '\"')
 
                 Write-Host ("Gathering Consumption Data: {0}" -f $queryUri) -BackgroundColor Black -ForegroundColor Green
 
                 $consumptionData = (az rest --method post --uri $queryUri --body $queryJson --headers "Content-Type=application/json") | ConvertFrom-Json
-                
+
                 if($consumptionData.properties.error.code -eq "TooManyRequests")
                 {
                     $waitTime = $consumptionData.properties.error.details[0].waitTimeInSeconds
