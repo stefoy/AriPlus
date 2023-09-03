@@ -89,6 +89,5 @@ The following table lists the parameters that can be used with the script:
 ## Acknowledgments
 
 Special thanks to Doug Finke, the author of the PowerShell ImportExcel Module. 
-© 2023 AriPlus Contributors. All rights reserved.
 
 ---
