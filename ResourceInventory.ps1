@@ -27,10 +27,10 @@ function Variables
     $Global:Resources = @()
     $Global:Subscriptions = ''
     $Global:ReportName = $ReportName   
-    $Global:Version = '2.0.6'
+    $Global:Version = '2.0.7'
     $Global:MajorVersion = 2
     $Global:MinorVersion = 0
-    $Global:BuildVersion = 6
+    $Global:BuildVersion = 7
 
 
 
