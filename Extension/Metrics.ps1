@@ -220,9 +220,9 @@ if ($Task -eq 'Processing')
             $metricMaxValue = 0
             $metricMaxValue = ($metricQueryResults | Measure-Object -Maximum).Maximum
 
-            $metricQueryResults = $metricQueryResults | Sort-Object
-            $metricPercentileIndex = [math]::Ceiling(0.95 * $metricQueryResults.Count) - 1
-            $metricPercentile = $metricQueryResults[$metricPercentileIndex]
+            $metricQueryResultsSorted = $metricQueryResults | Sort-Object
+            $metricPercentileIndex = [math]::Ceiling(0.95 * $metricQueryResultsSorted.Count) - 1
+            $metricPercentile = $metricQueryResultsSorted[$metricPercentileIndex]
 
             if ($_.Series -eq 'true')
             {                
@@ -267,6 +267,7 @@ if ($Task -eq 'Processing')
         $metricQueryResultsCount = $null
         $metricTimeSeries = $null
         $metricTimeStamps = $null
+        $metricQueryResultsSorted  $null
 
         #$([System.GC]::GetTotalMemory($false))
         #[System.GC]::Collect()
