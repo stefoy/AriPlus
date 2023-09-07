@@ -204,9 +204,6 @@ if ($Task -eq 'Processing')
                 }
         }
 
-        $metricStartTimeStamp = $metricTimeStamps[0]
-        $metricLastTimeStamp = $metricTimeStamps[-1]
-
         $metricQueryResultsCount = ($metricQueryResults.Where({$_ -ne $null}).Count)
 
         if($metricQueryResultsCount -eq 0)
@@ -214,9 +211,17 @@ if ($Task -eq 'Processing')
             $metricQueryResults = 0
             $metricQueryResultsCount = 0
             $metricMaxValue = 0
+            $metricPercentileIndex = 0
+            $metricPercentile = 0
+
+            $metricStartTimeStamp = ""
+            $metricLastTimeStamp = "" 
         }
         else
         {
+            $metricStartTimeStamp = $metricTimeStamps[0]
+            $metricLastTimeStamp = $metricTimeStamps[-1]
+        
             $metricMaxValue = 0
             $metricMaxValue = ($metricQueryResults | Measure-Object -Maximum).Maximum
 
