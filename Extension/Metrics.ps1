@@ -272,7 +272,7 @@ if ($Task -eq 'Processing')
         $metricQueryResultsCount = $null
         $metricTimeSeries = $null
         $metricTimeStamps = $null
-        $metricQueryResultsSorted  $null
+        $metricQueryResultsSorted = $null
 
         #$([System.GC]::GetTotalMemory($false))
         #[System.GC]::Collect()
