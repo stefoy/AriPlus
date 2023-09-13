@@ -51,10 +51,16 @@ AriPlus uses concurrency to execute commands in parallel, especially when gather
 
 The `-Online` option fetches the latest modules from GitHub, meaning you only need to download the `ResourceInventory.ps1`.
 
-Example:
+Standard ARI+ Output:
 
 ```powershell
 ./ResourceInventory.ps1 -Online -ConcurrencyLimit 8
+```
+Consumption ARI+ Output
+
+This provides the Consumption in the ARI+ which will give a more comprehensive mapping of the Azure Environment
+```powershell
+./ResourceInventory.ps1 -Online -ConcurrencyLimit 10 -Consumption -Debug
 ```
 ---
 
