@@ -84,6 +84,12 @@ The following table lists the parameters that can be used with the script:
 | `$ConcurrencyLimit` | Integer | Specifies the concurrency limit for parallel command execution. Default value is `6`.                            |
 
 ---
+
+## Script Output/Reports
+When the script has completed, a zip file of the report will be saved in the folder **_AriPlusReports._** 
+
+---
+
 ## ⚠️ Warning Messages
 
 - **Important:** Azure Resource Inventory will not upgrade the current version of the Powershell modules.
