@@ -1,4 +1,4 @@
-﻿param($SCPath, $Sub, $Resources, $Task ,$File, $SmaResources, $TableStyle, $Metrics)
+param($SCPath, $Sub, $Resources, $Task ,$File, $SmaResources, $TableStyle, $Metrics)
 
 if ($Task -eq 'Processing')
 {
@@ -17,7 +17,7 @@ if ($Task -eq 'Processing')
         {
             $vmsizemap[$vmsize.name] = @{
                 CPU = $vmSize.numberOfCores
-                RAM = [math]::Round($vmSize.memoryInMB / 1024, 0) 
+                RAM = [math]::Max($vmSize.memoryInMB / 1024, 0) 
             }
         }
     }
