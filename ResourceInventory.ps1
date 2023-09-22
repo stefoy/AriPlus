@@ -229,15 +229,21 @@ Function RunInventorySetup()
             Write-Debug ('Cleaning az account cache')
             az account clear | Out-Null
             Write-Debug ('Calling az login')
+
+            $DebugPreference = "SilentlyContinue"
     
             if($DeviceLogin.IsPresent)
             {
                 az login --use-device-code
+                Connect-AzAccount | Out-Null
             }
             else 
             {
                 az login --only-show-errors | Out-Null
+                Connect-AzAccount | Out-Null
             }
+
+            $DebugPreference = "Continue"
     
             $Tenants = az account list --query [].homeTenantId -o tsv --only-show-errors | Sort-Object -Unique
             Write-Debug ('Checking number of Tenants')
@@ -730,219 +736,86 @@ function ExecuteInventoryProcessing()
         Write-Debug ('Resource Reporting Phase Done.')
     }
 
-    function ProcessConsumption()
+    function Get-AzureUsage 
     {
-        if ($Consumption.IsPresent)
+        [CmdletBinding()]
+        param(
+            [Parameter(Mandatory)]
+            [ValidateNotNullOrEmpty()]
+            [datetime]$FromTime,
+     
+            [Parameter(Mandatory)]
+            [ValidateNotNullOrEmpty()]
+            [datetime]$ToTime,
+     
+            [Parameter()]
+            [ValidateNotNullOrEmpty()]
+            [ValidateSet('Hourly', 'Daily')]
+            [string]$Interval = 'Daily'
+        )
+        
+        Write-Verbose -Message "Querying usage data [$($FromTime) - $($ToTime)]..."
+
+        $usageData = $null
+
+        foreach($sub in $Global:Subscriptions)
         {
-            $Global:ConsumptionData = New-Object PSObject
-            $Global:ConsumptionData | Add-Member -MemberType NoteProperty -Name Consumption -Value NotSet
+            Set-AzContext -Subscription $sub.id | Out-Null
+            Write-Host ("Gathering Consumption for: {0}" -f $sub.Name)
 
-            Write-Host ("Gathering Consumption Data") -BackgroundColor Black -ForegroundColor Green
-
-            $tmpConsumption = [System.Collections.Generic.List[psobject]]::new()
-
-            $consumptionLookBack = -31
-            $consumptionStartTime = (Get-Date).AddDays($consumptionLookBack).ToString("yyyy-MM-dd")
-            $consumptionEndTime = (Get-Date).ToString("yyyy-MM-dd")
-
-            foreach($resourceItem in $Global:Resources)
-            {
-                $ResourceIds = $resourceItem.Id
-
-                $Consumption = (az consumption usage list --start-date $consumptionStartTime --end-date $consumptionEndTime --include-meter-details --only-show-errors --output json --query "[?instanceId=='$ResourceIds'].{id: instanceId, service: meterDetails.serviceName, meter: meterId, product: product, quantity: usageQuantity, cost: pretaxCost}") | ConvertFrom-Json
-
-                Write-Host ("Gathering Consumption for {0}" -f $ResourceIds) -BackgroundColor Black -ForegroundColor Green
-
-                $Consumption = $Consumption | Group-Object -Property id | ForEach-Object {
-                    $Id = $_.Name
-                    $Service = $_.Group[0].service
-                    $GroupedByMeter = $_.Group | Group-Object -Property meter
-
-                    $tmpMeters = [System.Collections.Generic.List[psobject]]::new()
-
-                    $GroupedByMeter | ForEach-Object {
-                        $MeterId = $_.Name
-                        $TotalQuantity = ($_.Group | Measure-Object -Property quantity -Sum).Sum
-                        $TotalCost = ($_.Group | Measure-Object -Property cost -Sum).Sum
-
-                        $MeterObject = [PSCustomObject]@{
-                            MeterId = $MeterId
-                            Product = $_.Group[0].product
-                            Quantity = $TotalQuantity.ToString("0.#########")
-                            Cost = $TotalCost.ToString("0.#########")
-                        }
-
-                        $tmpMeters.Add($MeterObject)
-                    }
-
-                    $InstanceObject = [PSCustomObject]@{
-                        InstanceId = $Id
-                        Service = $Service
-                        Meters = $tmpMeters
-                    }
-
-                    $tmpConsumption.Add($InstanceObject)
+            do 
+            {    
+                $params = @{
+                    ReportedStartTime      = $FromTime
+                    ReportedEndTime        = $ToTime
+                    AggregationGranularity = $Interval
+                    ShowDetails            = $true
                 }
-            }
-
-            $ConsumptionData.Consumption = $tmpConsumption
-
-            $ConsumptionData | ConvertTo-Json -depth 100 -compress | Out-File $Global:ConsumptionFile 
-            
-            Write-Host ("Exported Consumption Data to {0}" -f $ConsumptionFile) -BackgroundColor Black -ForegroundColor Green
+    
+                if ((Get-Variable -Name usageData -ErrorAction Ignore) -and $usageData) 
+                {
+                    Write-Verbose -Message "Querying Next Page with $($usageData.ContinuationToken)..."
+                    $params.ContinuationToken = $usageData.ContinuationToken
+                }
+    
+                $usageData = Get-UsageAggregates @params
+                $usageData.UsageAggregations | Select-Object -ExpandProperty Properties
+                
+            } while ('ContinuationToken' -in $usageData.psobject.properties.name -and $usageData.ContinuationToken)
         }
     }
 
-    function ProcessCostAndUsageApi()
+
+    function ProcessResourceConsumption()
     {
-        if ($Consumption.IsPresent)
-        {
-            $ConsumptionObject = New-Object PSObject
-            $ConsumptionObject | Add-Member -MemberType NoteProperty -Name Consumption -Value NotSet
+        $DebugPreference = "SilentlyContinue"
 
-            $tmpRows = [System.Collections.Generic.List[psobject]]::new()
+        $reportedStartTime = (Get-Date).AddDays(-32).Date.AddHours(0).AddMinutes(0).AddSeconds(0).DateTime
+        $reportedEndTime = (Get-Date).AddDays(-1).Date.AddHours(0).AddMinutes(0).AddSeconds(0).DateTime
 
-            $consumptionLookBack = -31
-            $consumptionStartTime = (Get-Date).AddDays($consumptionLookBack).ToString("yyyy-MM-dd")
-            $consumptionEndTime = (Get-Date).ToString("yyyy-MM-dd")
+        $consumptionData = Get-AzureUsage -FromTime $reportedStartTime -ToTime $reportedEndTime -Interval Daily -Verbose
 
-            foreach($sub in $Global:Subscriptions)
-            {
-                $queryScope = "subscriptions/" + $sub.Id
-                $queryUri = "https://management.azure.com/$queryScope/providers/Microsoft.CostManagement/query?api-version=2023-03-01"
+        $consumptionData = $consumptionData | Group-Object MeterId | ForEach-Object {
+            $meterId = $_.Name
+            $usageAggregates = $_.Group | Measure-Object -Property Quantity -Sum
+            $unit = $_.Group[0].Unit
+            $meterName = $_.Group[0].MeterName
+            $meterRegion = $_.Group[0].MeterRegion
+            $meterSubCategory = $_.Group[0].MeterSubCategory
 
-                $queryBody = @{
-                    type = "Usage"
-                    timeframe = "Custom"
-                    timePeriod = @{
-                        from = $consumptionStartTime
-                        to = $consumptionEndTime
-                    }
-                    dataSet = @{
-                        granularity = "None"
-                        aggregation = @{
-                            totalCostUSD = @{
-                                name = "CostUSD"
-                                function = "Sum"
-                            }
-                            totalQuantity = @{
-                                function = "Sum"
-                                name = "UsageQuantity"
-                            }
-                        }
-                        grouping = @(
-                            @{
-                                type = "Dimension"
-                                name = "ServiceName"
-                            },
-                            @{
-                                type = "Dimension"
-                                name = "ResourceId"
-                            },
-                            @{
-                                type = "Dimension"
-                                name = "ResourceGroup"
-                            },
-                            @{
-                                type = "Dimension"
-                                name = "Meter"
-                            },
-                            @{
-                                type = "Dimension"
-                                name = "MeterCategory"
-                            },
-                            @{
-                                type = "Dimension"
-                                name = "MeterSubcategory"
-                            }
-                        )
-                        sorting = @( 
-                            @{
-                                direction = "Descending"
-                                name = "CostUSD"
-                            })
-                    }
-                }
-
-                if ($Global:PlatformOS -eq 'Azure CloudShell')
-                {
-                   $queryJson = ($queryBody | ConvertTo-Json -Depth 10 -Compress)
-                }
-                else
-                {
-                   $queryJson = ($queryBody | ConvertTo-Json -Depth 10 -Compress).Replace('"', '\"')
-                }
-                
-                Write-Host ("Gathering Consumption Data: {0}" -f $queryUri) -BackgroundColor Black -ForegroundColor Green
-
-                $consumptionData = (az rest --method post --uri $queryUri --body $queryJson --headers "Content-Type=application/json") | ConvertFrom-Json
-
-                if($consumptionData.properties.error.code -eq "TooManyRequests")
-                {
-                    $waitTime = $consumptionData.properties.error.details[0].waitTimeInSeconds
-                    Write-Host ("Too Many Requests. Waiting {0} seconds" -f $waitTime) -BackgroundColor Black -ForegroundColor Yellow
-                    Start-Sleep -Seconds $waitTime
-
-                    $consumptionData = (az rest --method post --uri $queryUri --body $queryJson --headers "Content-Type=application/json") | ConvertFrom-Json
-                }
-                
-                if($consumptionData)
-                {
-                    foreach($cRow in $consumptionData.properties.rows)
-                    {
-                        $costObject = [PSCustomObject]@{
-                            Quantity = $cRow[0].ToString("0.#########")
-                            CostUSD = $cRow[1].ToString("0.#########")
-                            ServiceName = $cRow[2]
-                            ResourceId = $cRow[3]
-                            ResourceGroup = $cRow[4]
-                            Meter = $cRow[5]
-                            MeterCategory = $cRow[6]
-                            MeterSubcategory = $cRow[7]
-                            Currency = $cRow[8]
-                        }
-
-                        $tmpRows.Add($costObject)
-                    }
-
-                    while($null -ne $consumptionData.properties.nextLink)
-                    {
-                        Write-Host ("Gathering Consumption Data: {0}" -f $consumptionData.nextLink) -BackgroundColor Black -ForegroundColor Green
-
-                        $consumptionData = (az rest --method post --uri $consumptionData.nextLink --body $queryJson --headers "Content-Type=application/json") | ConvertFrom-Json
-
-                        if($consumptionData.properties.error.code -eq "TooManyRequests")
-                        {
-                            $waitTime = $consumptionData.properties.error.details[0].waitTimeInSeconds
-                            Write-Host ("Too Many Requests. Waiting {0} seconds" -f $waitTime) -BackgroundColor Black -ForegroundColor Yellow
-                            Start-Sleep -Seconds $waitTime
-        
-                            $consumptionData = (az rest --method post --uri $queryUri --body $queryJson --headers "Content-Type=application/json") | ConvertFrom-Json
-                        }
-
-                        foreach($cRow in $consumptionData.properties.rows)
-                        {
-                            $costObject = [PSCustomObject]@{
-                                Quantity = $cRow[0].ToString("0.#########")
-                                CostUSD = $cRow[1].ToString("0.#########")
-                                ServiceName = $cRow[2]
-                                ResourceId = $cRow[3]
-                                ResourceGroup = $cRow[4]
-                                Meter = $cRow[5]
-                                MeterCategory = $cRow[6]
-                                MeterSubcategory = $cRow[7]
-                                Currency = $cRow[8]
-                            }
-
-                            $tmpRows.Add($costObject)
-                        }
-                    }    
-                }
+            [PSCustomObject]@{
+                MeterId = $meterId
+                TotalUsage = $usageAggregates.Sum.ToString("0.#########")
+                Unit = $unit
+                MeterName = $meterName
+                MeterRegion = $meterRegion
+                MeterSubCategory = $meterSubCategory
             }
-
-            $ConsumptionObject.Consumption = $tmpRows
-            $ConsumptionObject | ConvertTo-Json -depth 100 -compress | Out-File $Global:ConsumptionFile 
         }
+
+        $DebugPreference = "Continue"
+
+        $consumptionData | ConvertTo-Json -depth 100 | Out-File $Global:ConsumptionFile
     }
 
     InitializeInventoryProcessing
@@ -950,7 +823,7 @@ function ExecuteInventoryProcessing()
     CreateResourceJobs   
     ProcessMetricsResult
     ProcessResourceResult
-    ProcessCostAndUsageApi
+    ProcessResourceConsumption
 }
 
 function FinalizeOutputs
@@ -1009,10 +882,6 @@ FinalizeOutputs
 
 Write-Host ("Compressing Resources Output: {0}" -f $Global:ZipOutputFile) -ForegroundColor Yellow
 
-if(!$Consumption.IsPresent)
-{
-    "Consumption Not Gathered" | ConvertTo-Json -depth 100 -compress | Out-File $Global:ConsumptionFile 
-}
 
 if($SkipMetrics.IsPresent)
 {
