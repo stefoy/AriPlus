@@ -3,7 +3,6 @@ param($SCPath, $Sub, $Resources, $Task ,$File, $SmaResources, $TableStyle, $Metr
 If ($Task -eq 'Processing')
 {
     $virtualMachines =  $Resources | Where-Object { $_.TYPE -eq 'microsoft.compute/virtualmachines' } 
-    $virtualMachineMetrics = $Metrics.Metrics | Where-Object { $_.Service -eq 'Virtual Machines' }
     $disk = $Resources | Where-Object {$_.TYPE -eq 'microsoft.compute/disks'}
     
     $vmsizemap = @{}
@@ -49,11 +48,6 @@ If ($Task -eq 'Processing')
                $OSDisk = if($data.storageProfile.osDisk.vhd.uri){ 'Custom VHD' } else { 'None' }
                $OSDiskSize = $data.storageProfile.osDisk.diskSizeGB
             }
-            
-            $vmMetrics = $virtualMachineMetrics | Where-Object { $_.Id -eq $vm.id }
-            $cpuUtilisationMetric = $vmMetrics | Where-Object { $_.Metric -eq 'Percentage CPU' }
-            $memoryAvilableMetric = $vmMetrics | Where-Object { $_.Metric -eq 'Available Memory Bytes' }
-            $memoryTotalGb = $vmsizemap[$data.hardwareProfile.vmSize].RAM
 
             $obj = @{
                 'ID'                            = $vm.id;
@@ -74,8 +68,6 @@ If ($Task -eq 'Processing')
                 'OSDisk'                        = $OSDisk;
                 'OSDiskSizeGB'                  = $OSDiskSize;
                 'PowerState'                    = $data.extended.instanceView.powerState.displayStatus;
-                'CpuUtilizationPercent'         = if ($null -ne $cpuUtilisationMetric.MetricPercentile) { $cpuUtilisationMetric.MetricPercentile } else { '0' }
-                'MemoryUtilizationPercent'      = if ($null -ne $memoryAvilableMetric.MetricPercentile) { $memoryTotalGb - ($memoryAvilableMetric.MetricPercentile / (1024 * 1024 * 1024)) } else { '0' }
                 'CreatedTime'                   = $timecreated;
             }
 
@@ -110,8 +102,6 @@ else
         $Exc.Add('HybridBenefit')
         $Exc.Add('PowerState')
         $Exc.Add('AvailabilitySet')
-        $Exc.Add('CpuUtilizationPercent')
-        $Exc.Add('MemoryUtilizationPercent')
         $Exc.Add('CreatedTime')     
 
         $ExcelVar = $SmaResources.VirtualMachines
