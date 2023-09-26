@@ -3,7 +3,6 @@ param($SCPath, $Sub, $Resources, $Task , $File, $SmaResources, $TableStyle, $Met
 if ($Task -eq 'Processing') 
 {
     $SQLDB = $Resources | Where-Object { $_.TYPE -eq 'microsoft.sql/servers/databases' -and $_.name -ne 'master' }
-    $sqlMetrics = $Metrics.Metrics | Where-Object { $_.Service -eq 'SQL Database' }
 
     if($SQLDB)
     {
@@ -17,23 +16,6 @@ if ($Task -eq 'Processing')
 
             if (![string]::IsNullOrEmpty($data.elasticPoolId)) { $PoolId = $data.elasticPoolId.Split("/")[10] } else { $PoolId = "None"}
             if ($1.kind.Contains("vcore")) { $SqlType = "vcore" } else { $SqlType = "dtu"}
-
-            $sqlDbMetrics = $sqlMetrics | Where-Object { $_.Id -eq $1.id }
-            $sqlAllocatedStorage = $sqlDbMetrics | Where-Object { $_.Metric -eq 'allocated_data_storage' }
-            $sqlStorage = $sqlDbMetrics | Where-Object { $_.Metric -eq 'storage' }
-            $sqlPhysicalReadPercent = $sqlDbMetrics | Where-Object { $_.Metric -eq 'physical_data_read_percent' }
-            $sqlLogWritePercent = $sqlDbMetrics | Where-Object { $_.Metric -eq 'log_write_percent' }
-
-            if ($SqlType -eq 'vcore') 
-            {
-                $sqlDtuLimit = $sqlDbMetrics | Where-Object { $_.Metric -eq 'cpu_limit' }
-                $sqlDtuUsed = $sqlDbMetrics | Where-Object { ($_.Metric -eq 'cpu_used') -and ($_.MetricMeasure -eq 'Average') }
-            }
-            else 
-            {
-                $sqlDtuLimit = $sqlDbMetrics | Where-Object { $_.Metric -eq 'dtu_limit' }
-                $sqlDtuUsed = $sqlDbMetrics | Where-Object { ($_.Metric -eq 'dtu_used') -and ($_.MetricMeasure -eq 'Average') }
-            }  
 
             $obj = @{
                 'ID'                         = $1.id;
@@ -55,12 +37,6 @@ if ($Task -eq 'Processing')
                 'ReadReplicaCount'           = if ($null -ne $data.readReplicaCount) { $data.readReplicaCount } else { '0' }
                 'DataMaxSizeGB'              = (($data.maxSizeBytes / 1024) / 1024) / 1024;
                 'ElasticPoolID'              = $PoolId;
-                'DtuLimit'                   = if ($null -ne $sqlDtuLimit.MetricValue) { $sqlDtuLimit.MetricValue } else { '0' }
-                'DtuUsed'                    = if ($null -ne $sqlDtuUsed.MetricValue) { $sqlDtuUsed.MetricValue } else { '0' }
-                'AllocatedDataStorage'       = if ($null -ne $sqlAllocatedStorage.MetricValue) { $sqlAllocatedStorage.MetricValue } else { '0' }
-                'Storage'                    = if ($null -ne $sqlStorage.MetricValue) { $sqlStorage.MetricValue } else { '0' }
-                'ReadPercent'                = if ($null -ne $sqlPhysicalReadPercent.MetricValue) { $sqlPhysicalReadPercent.MetricValue } else { '0' }
-                'WritePercent'               = if ($null -ne $sqlLogWritePercent.MetricValue) { $sqlLogWritePercent.MetricValue } else { '0' }
             }
 
             $tmp += $obj 
@@ -97,12 +73,6 @@ else
         $Exc.Add('CatalogCollation')
         $Exc.Add('ReadReplicaCount')
         $Exc.Add('ElasticPoolID')
-        $Exc.Add('DtuLimit')
-        $Exc.Add('DtuUsed')
-        $Exc.Add('AllocatedDataStorage')
-        $Exc.Add('Storage')
-        $Exc.Add('ReadPercent')
-        $Exc.Add('WritePercent')
 
         $ExcelVar = $SmaResources.SQLDB 
 
