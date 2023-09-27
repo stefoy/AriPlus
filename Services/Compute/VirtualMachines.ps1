@@ -49,6 +49,12 @@ If ($Task -eq 'Processing')
                $OSDiskSize = $data.storageProfile.osDisk.diskSizeGB
             }
 
+            $cpus = $vmsizemap[$data.hardwareProfile.vmSize].CPU;
+            $ram = $vmsizemap[$data.hardwareProfile.vmSize].RAM;
+
+            $cpus = if ($null -ne $cpus) { $cpus } else { '0' }
+            $ram = if ($null -ne $ram) { $ram } else { '0' }
+
             $obj = @{
                 'ID'                            = $vm.id;
                 'Subscription'                  = $sub1.Name;
@@ -57,8 +63,8 @@ If ($Task -eq 'Processing')
                 'Location'                      = $vm.LOCATION;
                 'AvailabilitySet'               = if ($null -ne $data.availabilitySet) { 'true' } else { 'false' }    
                 'Size'                          = $data.hardwareProfile.vmSize;
-                'CPU'                           = $vmsizemap[$data.hardwareProfile.vmSize].CPU;
-                'Memory'                        = $vmsizemap[$data.hardwareProfile.vmSize].RAM;
+                'CPU'                           = $cpus;
+                'Memory'                        = $ram;
                 'ImageReference'                = $data.storageProfile.imageReference.publisher;
                 'ImageVersion'                  = $data.storageProfile.imageReference.exactVersion;
                 'HybridBenefit'                 = $Lic;
