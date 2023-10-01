@@ -799,6 +799,7 @@ function ExecuteInventoryProcessing()
             $meterId = $_.Name
             $usageAggregates = $_.Group | Measure-Object -Property Quantity -Sum
             $unit = $_.Group[0].Unit
+            $meterCategory = $_.Group[0].MeterCategory
             $meterName = $_.Group[0].MeterName
             $meterRegion = $_.Group[0].MeterRegion
             $meterSubCategory = $_.Group[0].MeterSubCategory
@@ -807,6 +808,7 @@ function ExecuteInventoryProcessing()
                 MeterId = $meterId
                 TotalUsage = $usageAggregates.Sum.ToString("0.#########")
                 Unit = $unit
+                MeterCategory = $meterCategory
                 MeterName = $meterName
                 MeterRegion = $meterRegion
                 MeterSubCategory = $meterSubCategory
