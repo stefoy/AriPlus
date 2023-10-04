@@ -7,8 +7,6 @@ if ($Task -eq 'Processing')
     $AKS = $Resources | Where-Object {$_.TYPE -eq 'microsoft.containerservice/managedclusters'}
     $SFC = $Resources | Where-Object {$_.TYPE -eq 'microsoft.servicefabric/clusters'}
 
-    $scaleSetMetrics = $Metrics | Where-Object { $_.Service -eq 'Virtual Machines' }
-
     $vmsizemap = @{}
 
     foreach($location in ($vmss | Select-Object -ExpandProperty location -Unique))
@@ -42,11 +40,6 @@ if ($Task -eq 'Processing')
             $timecreated = [datetime]$timecreated
             $timecreated = $timecreated.ToString("yyyy-MM-dd HH:mm")
 
-            $vmssMetrics = $scaleSetMetrics | Where-Object { $_.Id -eq $vm.id }
-            $cpuUtilisationMetric = $vmssMetrics | Where-Object { $_.Metric -eq 'Percentage CPU' }
-            $memoryAvilableMetric = $vmssMetrics | Where-Object { $_.Metric -eq 'Available Memory Bytes' }
-            $memoryTotalGb = $vmsizemap[$1.sku.name].RAM
-
             $obj = @{
                 'ID'                            = $1.id;
                 'Subscription'                  = $sub1.Name;
@@ -67,8 +60,6 @@ if ($Task -eq 'Processing')
                 'DiskSizeGB'                    = $data.virtualMachineProfile.storageProfile.osDisk.diskSizeGB;
                 'StorageAccountType'            = $data.virtualMachineProfile.storageProfile.osDisk.managedDisk.storageAccountType;
                 'AcceleratedNetworkingEnabled'  = $data.virtualMachineProfile.networkProfile.networkInterfaceConfigurations.properties.enableAcceleratedNetworking; 
-                'CPUAvgPercent'                 = if ($null -ne $cpuUtilisationMetric.MetricValue) { $cpuUtilisationMetric.MetricValue } else { '0' }
-                'MemoryAvgPercent'              = if ($null -ne $memoryAvilableMetric.MetricValue) { $memoryTotalGb - ($memoryAvilableMetric.MetricValue / (1024 * 1024 * 1024)) } else { '0' }
                 'CreatedTime'                   = $timecreated;
             }
 
@@ -105,8 +96,6 @@ else
         $Exc.Add('DiskSizeGB')
         $Exc.Add('StorageAccountType')
         $Exc.Add('AcceleratedNetworkingEnabled')
-        $Exc.Add('CPUAvgPercent')
-        $Exc.Add('MemoryAvgPercent')
         $Exc.Add('CreatedTime')
 
         $ExcelVar = $SmaResources.VMSS 
