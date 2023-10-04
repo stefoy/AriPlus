@@ -120,6 +120,26 @@ Function RunInventorySetup()
             Write-Host "Installng Az Cli Extension..."
             az extension add --name resource-graph
         }
+
+        Write-Host "Checking Azure PowerShell Module"
+
+        $VarAzPs = Get-InstalledModule -Name Az -ErrorAction silentlycontinue
+
+        Write-Host ('Azure PowerShell Module Version: {0}.{1}.{2}' -f ([string]$VarAzPs.Version.Major,  [string]$VarAzPs.Version.Minor, [string]$VarAzPs.Version.Build)) -ForegroundColor Green
+
+        IF($null -eq $VarAzPs)
+        {
+            Write-Host "Trying to install Azure PowerShell Module.." -ForegroundColor Yellow
+            Install-Module -Name Az -Repository PSGallery -Force
+        }
+
+        $VarAzPs = Get-InstalledModule -Name Az -ErrorAction silentlycontinue
+
+        if ($null -eq $VarAzPs) 
+        {
+            Read-Host 'Admininstrator rights required to install Azure Module. Press <Enter> to finish script'
+            Exit
+        }
         
         Write-Host "Checking ImportExcel Module..."
     
@@ -206,7 +226,7 @@ Function RunInventorySetup()
         }
     }
     
-    function LoginSession() 
+  function LoginSession() 
     {
         Write-Debug ('Checking Login Session')
     
@@ -235,7 +255,7 @@ Function RunInventorySetup()
             if($DeviceLogin.IsPresent)
             {
                 az login --use-device-code
-                Connect-AzAccount | Out-Null
+                Connect-AzAccount -UseDeviceAuthentication | Out-Null
             }
             else 
             {
@@ -273,10 +293,12 @@ Function RunInventorySetup()
                 if($DeviceLogin.IsPresent)
                 {
                     az login --use-device-code -t $TenantID
+                    Connect-AzAccount -UseDeviceAuthentication -Tenant $TenantID | Out-Null
                 }
                 else 
                 {
                     az login -t $TenantID --only-show-errors | Out-Null
+                    Connect-AzAccount -Tenant $TenantID | Out-Null
                 }
             }
     
@@ -295,10 +317,12 @@ Function RunInventorySetup()
                 if($DeviceLogin.IsPresent)
                 {
                     az login --use-device-code -t $TenantID
+                    Connect-AzAccount -UseDeviceAuthentication -Tenant $TenantID | Out-Null
                 }
                 else 
                 {
                     az login -t $TenantID --only-show-errors | Out-Null
+                    Connect-AzAccount -Tenant $TenantID | Out-Null
                 }
             }
             elseif ($Appid -and $Secret -and $tenantid) 
