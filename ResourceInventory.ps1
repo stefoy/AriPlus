@@ -809,7 +809,6 @@ function ExecuteInventoryProcessing()
         }
     }
 
-
     function ProcessResourceConsumption()
     {
         $DebugPreference = "SilentlyContinue"
@@ -819,29 +818,74 @@ function ExecuteInventoryProcessing()
 
         $consumptionData = Get-AzureUsage -FromTime $reportedStartTime -ToTime $reportedEndTime -Interval Daily -Verbose
 
-        $consumptionData = $consumptionData | Group-Object MeterId | ForEach-Object {
-            $meterId = $_.Name
-            $usageAggregates = $_.Group | Measure-Object -Property Quantity -Sum
-            $unit = $_.Group[0].Unit
-            $meterCategory = $_.Group[0].MeterCategory
-            $meterName = $_.Group[0].MeterName
-            $meterRegion = $_.Group[0].MeterRegion
-            $meterSubCategory = $_.Group[0].MeterSubCategory
+        for($item = 0; $item -lt $consumptionData.Count; $item++) 
+        {
+            $instanceInfo = ($consumptionData[$item].InstanceData | ConvertFrom-Json)
 
-            [PSCustomObject]@{
-                MeterId = $meterId
-                TotalUsage = $usageAggregates.Sum.ToString("0.#########")
-                Unit = $unit
-                MeterCategory = $meterCategory
-                MeterName = $meterName
-                MeterRegion = $meterRegion
-                MeterSubCategory = $meterSubCategory
-            }
+            $consumptionData[$item] | Add-Member -MemberType NoteProperty -Name ResourceId -Value NotSet
+            $consumptionData[$item] | Add-Member -MemberType NoteProperty -Name ResourceLocation -Value NotSet
+
+            $consumptionData[$item].ResourceId = $instanceInfo.'Microsoft.Resources'.resourceUri
+            $consumptionData[$item].ResourceLocation = $instanceInfo.'Microsoft.Resources'.location
         }
 
-        $DebugPreference = "Continue"
+        $aggregatedResult = @()
 
-        $consumptionData | ConvertTo-Json -depth 100 | Out-File $Global:ConsumptionFile
+        # Group by ResourceId
+        $groupedDataByResource = $consumptionData | Group-Object ResourceId
+
+        foreach ($resourceGroup in $groupedDataByResource) 
+        {
+            $resourceId = $resourceGroup.Name
+            $resourceItems = $resourceGroup.Group
+
+            $tmpMeters = [System.Collections.Generic.List[psobject]]::new()
+
+            $aggregatedMeters = $resourceItems | Group-Object MeterId | ForEach-Object {
+                $meterId = $_.Name
+                $usageAggregates = $_.Group | Measure-Object -Property Quantity -Sum
+                $unit = $_.Group[0].Unit
+                $meterCategory = $_.Group[0].MeterCategory
+                $meterName = $_.Group[0].MeterName
+                $meterRegion = $_.Group[0].MeterRegion
+                $meterSubCategory = $_.Group[0].MeterSubCategory
+                $meterInstance = ($_.Group[0].InstanceData | ConvertFrom-Json -depth 100)
+                $additionalInfo = $meterInstance.'Microsoft.Resources'.additionalInfo
+                $meterInfo = $meterInstance.'Microsoft.Resources'.meterInfo
+
+                $MeterObject =[PSCustomObject]@{
+                    MeterId = $meterId
+                    TotalUsage = $usageAggregates.Sum.ToString("0.#########")
+                    MeterCategory = $meterCategory
+                    Unit = $unit
+                    MeterName = $meterName
+                    MeterRegion = $meterRegion
+                    MeterSubCategory = $meterSubCategory
+                    AdditionalInfo = $additionalInfo
+                    MeterInfo = $meterInfo
+                }
+
+                $tmpMeters.Add($MeterObject)
+            }
+
+            $aggregatedResult += [PSCustomObject]@{
+                ResourceId = $resourceId
+                Meters = $tmpMeters
+            }    
+        }
+
+        $ConsumptionOutput = New-Object PSObject
+        $ConsumptionOutput | Add-Member -MemberType NoteProperty -Name StartDate -Value NotSet
+        $ConsumptionOutput | Add-Member -MemberType NoteProperty -Name EndDate -Value NotSet
+        $ConsumptionOutput | Add-Member -MemberType NoteProperty -Name Resources -Value NotSet
+
+        $ConsumptionOutput.StartDate = $reportedStartTime
+        $ConsumptionOutput.EndDate = $reportedEndTime
+        $ConsumptionOutput.Resources = $aggregatedResult
+
+        $ConsumptionOutput | ConvertTo-Json -depth 100 | Out-File $Global:ConsumptionFile
+
+        $DebugPreference = "Continue"  
     }
 
     InitializeInventoryProcessing
