@@ -1,4 +1,4 @@
-﻿param($SCPath, $Sub, $Resources, $Task ,$File, $SmaResources, $TableStyle, $Metrics)
+param($SCPath, $Sub, $Resources, $Task ,$File, $SmaResources, $TableStyle, $Metrics)
 
 if ($Task -eq 'Processing') 
 {
@@ -25,6 +25,9 @@ if ($Task -eq 'Processing')
                     'Name'                     = $1.NAME;
                     'SKU'                      = $1.SKU.Name;
                     'Location'                 = $1.LOCATION;
+                    'AllocationType'           = $data.publicIPAllocationMethod;
+                    'Version'                  = $data.publicIPAddressVersion;
+                    'ProvisioningState'        = $data.provisioningState;
                     'Use'                      = $Use;
                     'AssociatedResource'       = $data.ipConfiguration.id.split('/')[8];
                     'AssociatedResourceType'   = $data.ipConfiguration.id.split('/')[7];
@@ -41,9 +44,12 @@ if ($Task -eq 'Processing')
                     'Name'                     = $1.NAME;
                     'SKU'                      = $1.SKU.Name;
                     'Location'                 = $1.LOCATION;
+                    'AllocationType'           = $data.publicIPAllocationMethod;
+                    'Version'                  = $data.publicIPAddressVersion;
+                    'ProvisioningState'        = $data.provisioningState;
                     'Use'                      = $Use;
-                    'AssociatedResource'       = $null;
-                    'AssociatedResourceType'   = $null;
+                    'AssociatedResource'       = 'None';
+                    'AssociatedResourceType'   = 'None';
                 }
                 
                 $tmp += $obj           
@@ -68,7 +74,9 @@ else
         $Exc.Add('Name')
         $Exc.Add('SKU')
         $Exc.Add('Location')
+        $Exc.Add('AllocationType')
         $Exc.Add('Version')
+        $Exc.Add('ProvisioningState')
         $Exc.Add('Use')
         $Exc.Add('AssociatedResource')
         $Exc.Add('AssociatedResourceType')
