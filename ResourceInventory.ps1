@@ -21,18 +21,24 @@ if ($Debug.IsPresent) {$ErrorActionPreference = "Continue" }Else {$ErrorActionPr
 
 Write-Debug ('Debbuging Mode: On. ErrorActionPreference was set to "Continue", every error will be presented.')
 
+function GetLocalVersion() {
+    $versionJsonPath = "./Version.json"
+    if (Test-Path $versionJsonPath) {
+        $localVersionJson = Get-Content $versionJsonPath | ConvertFrom-Json
+        return ('{0}.{1}.{2}' -f $localVersionJson.MajorVersion, $localVersionJson.MinorVersion, $localVersionJson.BuildVersion)
+    } else {
+        Write-Host "Local Version.json not found. Clone the repo and execute the script from the root. Exiting." -ForegroundColor Red
+        Exit
+    }
+}
+
 function Variables 
 {
     $Global:ResourceContainers = @()
     $Global:Resources = @()
     $Global:Subscriptions = ''
     $Global:ReportName = $ReportName   
-    $Global:Version = '2.0.9'
-    $Global:MajorVersion = 2
-    $Global:MinorVersion = 0
-    $Global:BuildVersion = 9
-
-
+    $Global:Version = GetLocalVersion
 
     if ($Online.IsPresent) { $Global:RunOnline = $true }else { $Global:RunOnline = $false }
 
