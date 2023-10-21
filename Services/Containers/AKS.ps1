@@ -32,9 +32,9 @@ if ($Task -eq 'Processing')
                     'NodeSize'                  = $2.vmSize;
                     'OSDiskSize'                = $2.osDiskSizeGB;
                     'Nodes'                     = $2.count;
-                    'Autoscale'                 = $2.enableAutoScaling;
-                    'AutoscaleMax'              = $2.maxCount;
-                    'AutoscaleMin'              = $2.minCount;
+                    'Autoscale'                 = if ($null -ne $2.enableAutoScaling) { 'true' } else { 'false' }
+                    'AutoscaleMax'              = if ($null -ne $2.maxCount) { $2.maxCount } else { '0' }
+                    'AutoscaleMin'              = if ($null -ne $2.minCount) { $2.minCount } else { '0' }
                     'MaxPodsPerNode'            = $2.maxPods;
                     'OrchestratorVersion'       = $2.orchestratorVersion;
                 }
