@@ -24,9 +24,9 @@ if ($Task -eq 'Processing')
                 'Sku'                   = $data.sku.name;
                 'Capacity'              = $data.sku.capacity;
                 'Family'                = $data.sku.family;
-                'MaxFragMemReserved'    = $data.redisConfiguration.'maxfragmentationmemory-reserved';
-                'MaxMemReserved'        = $data.redisConfiguration.'maxmemory-reserved';
-                'MaxMemoryDelta'        = $data.redisConfiguration.'maxmemory-delta';
+                'MaxFragMemReserved'    = if ($null -ne  $data.redisConfiguration.'maxfragmentationmemory-reserved') { $data.redisConfiguration.'maxfragmentationmemory-reserved' } else { '0' }
+                'MaxMemReserved'        = if ($null -ne  $data.redisConfiguration.'maxmemory-reserved') { $data.redisConfiguration.'maxmemory-reserved' } else { '0' }
+                'MaxMemoryDelta'        = if ($null -ne  $data.redisConfiguration.'maxmemory-delta') { $data.redisConfiguration.'maxmemory-delta' } else { '0' }
                 'MaxClients'            = $data.redisConfiguration.'maxclients';
             }
             
