@@ -19,7 +19,8 @@ if ($Task -eq 'Processing')
                 'ResourceGroup'                     = $1.RESOURCEGROUP;
                 'Name'                              = $1.NAME;
                 'Location'                          = $1.LOCATION;
-                'SKU'                               = $data.sku.name;
+                'SKU'                               = $sku.name;
+                'Tier'                              = $sku.tier;
                 'Version'                           = $data.version;
                 'State'                             = $data.state;
                 'Zone'                              = $data.availabilityZone;
@@ -55,6 +56,7 @@ else
         $Exc.Add('Name')
         $Exc.Add('Location')
         $Exc.Add('SKU')
+        $Exc.Add('Tier')
         $Exc.Add('Version')
         $Exc.Add('State')
         $Exc.Add('Zone')
