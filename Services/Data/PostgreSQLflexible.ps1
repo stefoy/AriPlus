@@ -19,8 +19,8 @@ if ($Task -eq 'Processing')
                 'ResourceGroup'                     = $1.RESOURCEGROUP;
                 'Name'                              = $1.NAME;
                 'Location'                          = $1.LOCATION;
-                'SKU'                               = $sku.name;
-                'Tier'                              = $sku.tier;
+                'SKU'                               = $1.sku.name;
+                'Tier'                              = $1.sku.tier;
                 'Version'                           = $data.version;
                 'State'                             = $data.state;
                 'Zone'                              = $data.availabilityZone;
