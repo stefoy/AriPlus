@@ -867,6 +867,7 @@ function ExecuteInventoryProcessing()
                     MeterName = $meterName
                     MeterRegion = $meterRegion
                     MeterSubCategory = $meterSubCategory
+                    InstanceInfo = $meterInstance
                     AdditionalInfo = $additionalInfo
                     MeterInfo = $meterInfo
                 }
