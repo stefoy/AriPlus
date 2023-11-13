@@ -28,6 +28,8 @@ If ($Task -eq 'Processing')
             $data = $vm.PROPERTIES 
             $timecreated = [datetime]($data.timeCreated) | Get-Date -Format "yyyy-MM-dd HH:mm"
 
+            $Lic = ''
+            
             switch ($data.licenseType) 
             {
                 'Windows_Server' { $Lic = 'AHUB for Windows' }
