@@ -260,12 +260,16 @@ Function RunInventorySetup()
     
             if($DeviceLogin.IsPresent)
             {
+                Write-Debug ('Using device login')
                 az login --use-device-code
+                Write-Debug ('ps login')
                 Connect-AzAccount -UseDeviceAuthentication | Out-Null
             }
             else 
             {
+                Write-Debug ('Using login')
                 az login --only-show-errors | Out-Null
+                Write-Debug ('ps login')
                 Connect-AzAccount | Out-Null
             }
 
