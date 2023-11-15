@@ -27,7 +27,7 @@ if ($Task -eq 'Processing')
                 'StorageSizeGB'                     = $data.storage.storageSizeGB;
                 'LimitIOPs'                         = $data.storage.iops;
                 'AutoGrow'                          = $data.storage.autoGrow;
-                'StorageSku'                        = $data.storage.storageSku;
+                'StorageSku'                        = $data.storage.tier;
                 'ReplicationRole'                   = $data.replicationRole;
                 'ReplicaCapacity'                   = $data.replicaCapacity;
                 'BackupRetentionDays'               = $data.backup.backupRetentionDays;
