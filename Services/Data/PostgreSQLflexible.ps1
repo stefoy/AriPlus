@@ -8,7 +8,7 @@ if ($Task -eq 'Processing')
     {
         $tmp = @()
 
-        foreach ($1 in $MySQLFlexible) 
+        foreach ($1 in $PostgreSQLFlexible) 
         {
             $sub1 = $SUB | Where-Object { $_.id -eq $1.subscriptionId }
             $data = $1.PROPERTIES
@@ -44,9 +44,9 @@ if ($Task -eq 'Processing')
 }
 else 
 {
-    if ($SmaResources.MySQLFlexible) 
+    if ($SmaResources.PostgreSQLFlexible) 
     {
-        $TableName = ('PostgrSQLLFlexTable_'+($SmaResources.PostgreSQLFlexible.id | Select-Object -Unique).count)
+        $TableName = ('PostgrSQLFlexTable_'+($SmaResources.PostgreSQLFlexible.id | Select-Object -Unique).count)
         $Style = New-ExcelStyle -HorizontalAlignment Center -AutoSize -NumberFormat 0
         
         $Exc = New-Object System.Collections.Generic.List[System.Object]
@@ -70,7 +70,7 @@ else
         $Exc.Add('HighAvailability')
         $Exc.Add('HighAvailabilityState')
 
-        $ExcelVar = $SmaResources.MySQLFlexible 
+        $ExcelVar = $SmaResources.PostgreSQLFlexible 
 
         $ExcelVar | 
         ForEach-Object { [PSCustomObject]$_ } | Select-Object -Unique $Exc | 
