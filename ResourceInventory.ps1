@@ -520,7 +520,8 @@ function ExecuteInventoryProcessing()
         $Global:JsonFile = ($DefaultPath + "Inventory_"+ $Global:ReportName + "_" + $CurrentDateTime + ".json")
         $Global:MetricsJsonFile = ($DefaultPath + "Metrics_"+ $Global:ReportName + "_" + $CurrentDateTime + ".json")
         $Global:ConsumptionFile = ($DefaultPath + "Consumption_"+ $Global:ReportName + "_" + $CurrentDateTime + ".json")
-        
+        $Global:ConsumptionFileCsv = ($DefaultPath + "Consumption_"+ $Global:ReportName + "_" + $CurrentDateTime + ".csv")
+
         Write-Debug ('Report Excel File: {0}' -f $File)
         Write-Progress -activity 'Inventory' -Status "21% Complete." -PercentComplete 21 -CurrentOperation "Starting to process extraction data.."
     }
@@ -814,6 +815,8 @@ function ExecuteInventoryProcessing()
     
                 $usageData = Get-UsageAggregates @params
                 $usageData.UsageAggregations | Select-Object -ExpandProperty Properties
+
+                Write-Verbose -Message "Records found: $($usageData.UsageAggregations.Count)..."
                 
             } while ('ContinuationToken' -in $usageData.psobject.properties.name -and $usageData.ContinuationToken)
         }
@@ -823,7 +826,7 @@ function ExecuteInventoryProcessing()
     {
         $DebugPreference = "SilentlyContinue"
 
-        $reportedStartTime = (Get-Date).AddDays(-32).Date.AddHours(0).AddMinutes(0).AddSeconds(0).DateTime
+        $reportedStartTime = (Get-Date).AddDays(-30).Date.AddHours(0).AddMinutes(0).AddSeconds(0).DateTime
         $reportedEndTime = (Get-Date).AddDays(-1).Date.AddHours(0).AddMinutes(0).AddSeconds(0).DateTime
 
         $consumptionData = Get-AzureUsage -FromTime $reportedStartTime -ToTime $reportedEndTime -Interval Daily -Verbose
@@ -838,6 +841,10 @@ function ExecuteInventoryProcessing()
             $consumptionData[$item].ResourceId = $instanceInfo.'Microsoft.Resources'.resourceUri
             $consumptionData[$item].ResourceLocation = $instanceInfo.'Microsoft.Resources'.location
         }
+
+        $consumptionData | Export-Csv $Global:ConsumptionFileCsv -Encoding utf-8
+
+        Write-Host ("Consumption Entries: {0}" -f $consumptionData.Count)
 
         $aggregatedResult = @()
 
@@ -862,6 +869,7 @@ function ExecuteInventoryProcessing()
                 $meterInstance = ($_.Group[0].InstanceData | ConvertFrom-Json -depth 100)
                 $additionalInfo = $meterInstance.'Microsoft.Resources'.additionalInfo
                 $meterInfo = $meterInstance.'Microsoft.Resources'.meterInfo
+                $meterCount = $_.Group.Count
 
                 $MeterObject =[PSCustomObject]@{
                     MeterId = $meterId
@@ -874,6 +882,7 @@ function ExecuteInventoryProcessing()
                     InstanceInfo = $meterInstance
                     AdditionalInfo = $additionalInfo
                     MeterInfo = $meterInfo
+                    MeterCount = $meterCount
                 }
 
                 $tmpMeters.Add($MeterObject)
@@ -894,7 +903,7 @@ function ExecuteInventoryProcessing()
         $ConsumptionOutput.EndDate = $reportedEndTime
         $ConsumptionOutput.Resources = $aggregatedResult
 
-        $ConsumptionOutput | ConvertTo-Json -depth 100 | Out-File $Global:ConsumptionFile
+        $ConsumptionOutput | ConvertTo-Json -depth 100 -compress | Out-File $Global:ConsumptionFile
 
         $DebugPreference = "Continue"  
     }
@@ -970,8 +979,8 @@ if($SkipMetrics.IsPresent)
 }
 
 $compressionOutput = @{
-    Path = $Global:File, $Global:MetricsJsonFile, $Global:JsonFile, $Global:ConsumptionFile
-    CompressionLevel = "Optimal"
+    Path = $Global:File, $Global:MetricsJsonFile, $Global:JsonFile, $Global:ConsumptionFile, $Global:ConsumptionFileCsv
+    CompressionLevel = 'Fastest'
     DestinationPath = $Global:ZipOutputFile
 }
 
