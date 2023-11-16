@@ -40,6 +40,12 @@ if ($Task -eq 'Processing')
             $timecreated = [datetime]$timecreated
             $timecreated = $timecreated.ToString("yyyy-MM-dd HH:mm")
 
+            $cpus = $vmsizemap[$1.sku.name].CPU;
+            $ram = $vmsizemap[$1.sku.name].RAM;
+
+            $cpus = if ($null -ne $cpus) { $cpus } else { '0' }
+            $ram = if ($null -ne $ram) { $ram } else { '0' }
+
             $obj = @{
                 'ID'                            = $1.id;
                 'Subscription'                  = $sub1.Name;
@@ -52,8 +58,8 @@ if ($Task -eq 'Processing')
                 'Instances'                     = $1.sku.capacity;
                 'AutoscaleEnabled'              = $AutoSc;
                 'License'                       = $data.licenseType;
-                'vCPUs'                         = $vmsizemap[$1.sku.name].CPU;
-                'RAM'                           = $vmsizemap[$1.sku.name].RAM;
+                'vCPUs'                         = $cpus;
+                'RAM'                           = $ram;
                 'VMOS'                          = $OS;
                 'OSImage'                       = $data.virtualMachineProfile.storageProfile.imageReference.offer;
                 'ImageVersion'                  = $data.virtualMachineProfile.storageProfile.imageReference.sku;                            
