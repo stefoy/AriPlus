@@ -69,6 +69,7 @@ If ($Task -eq 'Processing')
                 'Memory'                        = $ram;
                 'ImageReference'                = $data.storageProfile.imageReference.publisher;
                 'ImageVersion'                  = $data.storageProfile.imageReference.exactVersion;
+                'ImageSku'                      = $data.storageProfile.imageReference.sku;
                 'HybridBenefit'                 = $Lic;
                 'OS'                            = $data.storageProfile.osDisk.osType;
                 'OSName'                        = $data.extended.instanceView.osname;
@@ -76,6 +77,7 @@ If ($Task -eq 'Processing')
                 'OSDisk'                        = $OSDisk;
                 'OSDiskSizeGB'                  = $OSDiskSize;
                 'PowerState'                    = $data.extended.instanceView.powerState.displayStatus;
+                'Zones'                         = $vm.zones.count;
                 'CreatedTime'                   = $timecreated;
             }
 
@@ -105,6 +107,7 @@ else
         $Exc.Add('OSVersion')
         $Exc.Add('ImageReference')
         $Exc.Add('ImageVersion')
+        $Exc.Add('ImageSku')
         $Exc.Add('OSDisk')
         $Exc.Add('OSDiskSizeGB')
         $Exc.Add('HybridBenefit')
