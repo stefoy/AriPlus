@@ -57,7 +57,7 @@ if ($Task -eq 'Processing')
                 'VMSize'                        = $1.sku.name;
                 'Instances'                     = $1.sku.capacity;
                 'AutoscaleEnabled'              = $AutoSc;
-                'License'                       = $data.licenseType;
+                'License'                       = $data.virtualMachineProfile.licenseType;
                 'vCPUs'                         = $cpus;
                 'RAM'                           = $ram;
                 'VMOS'                          = $OS;
