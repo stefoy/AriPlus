@@ -7,7 +7,6 @@ param ($TenantID,
         [switch]$Debug, 
         [switch]$SkipMetrics, 
         [switch]$Help,
-        [switch]$Consumption,
         [switch]$DeviceLogin,
         $ConcurrencyLimit = 6,
         $AzureEnvironment,
@@ -21,12 +20,31 @@ if ($Debug.IsPresent) {$ErrorActionPreference = "Continue" }Else {$ErrorActionPr
 
 Write-Debug ('Debbuging Mode: On. ErrorActionPreference was set to "Continue", every error will be presented.')
 
+Function Write-Log([string]$Message, [string]$Severity)
+{
+   $DateTime = "[{0:dd-MM-yyyy} {0:HH:mm:ss}]" -f (Get-Date)
+
+   $Global:Logging.Logs.Add([PSCustomObject]@{ Date = $DateTime; Message = $Message; Severity = $Severity })
+
+   switch ($Severity) 
+   {
+        "Info"    { Write-Host $Message -ForegroundColor Cyan }
+        "Warning" { Write-Host $Message -ForegroundColor Yellow }
+        "Error"   { Write-Host $Message -ForegroundColor Red }
+        "Success"   { Write-Host $Message -ForegroundColor Green }
+        default   { Write-Host $Message }
+    }
+}
+
 function GetLocalVersion() {
     $versionJsonPath = "./Version.json"
-    if (Test-Path $versionJsonPath) {
+    if (Test-Path $versionJsonPath) 
+    {
         $localVersionJson = Get-Content $versionJsonPath | ConvertFrom-Json
         return ('{0}.{1}.{2}' -f $localVersionJson.MajorVersion, $localVersionJson.MinorVersion, $localVersionJson.BuildVersion)
-    } else {
+    } 
+    else 
+    {
         Write-Host "Local Version.json not found. Clone the repo and execute the script from the root. Exiting." -ForegroundColor Red
         Exit
     }
@@ -39,6 +57,10 @@ function Variables
     $Global:Subscriptions = ''
     $Global:ReportName = $ReportName   
     $Global:Version = GetLocalVersion
+
+    $Global:Logging = New-Object PSObject
+    $Global:Logging | Add-Member -MemberType NoteProperty -Name Logs -Value NotSet
+    $Global:Logging.Logs = [System.Collections.Generic.List[object]]::new()
 
     if ($Online.IsPresent) { $Global:RunOnline = $true }else { $Global:RunOnline = $false }
 
@@ -62,7 +84,7 @@ function Variables
 
         if([string]::IsNullOrEmpty($LocalFilesValidation))
         {
-            Write-Debug ('Using -Online by force.')
+            Write-Debug ('[Info] - Using -Online by force.')
             $Global:RunOnline = $true
         }
         else
@@ -76,66 +98,59 @@ Function RunInventorySetup()
 {
     function CheckAriVersion()
     {
-        Write-Host ('ARI Plus Version: {0}' -f $Global:Version) -ForegroundColor Magenta
-
+        Write-Log -Message ('Checking ARI Plus Version') -Severity 'Info'
+        Write-Log -Message ('ARI Plus Version: {0}' -f $Global:Version) -Severity 'Info'
+        
         $versionJson = (New-Object System.Net.WebClient).DownloadString($RawRepo + '/Version.json') | ConvertFrom-Json
         $versionNumber = ('{0}.{1}.{2}' -f $versionJson.MajorVersion, $versionJson.MinorVersion, $versionJson.BuildVersion)
 
         if($versionNumber -ne $Global:Version)
         {
-            Write-Host ('New Version Available: {0}.{1}.{2}' -f $versionJson.MajorVersion, $versionJson.MinorVersion, $versionJson.BuildVersion ) -ForegroundColor Yellow
-
-            $Update = Read-Host 'Do you want to update by automatically? (Y/N)'
-
-            if($Update -eq 'Y' -or $Update -eq 'y')
-            {
-                $Global:Version = $versionNumber
-                $Global:RunOnline = $true
-                Write-Host ('Running Online and Updating') -ForegroundColor Yellow
-            }
-            else 
-            {
-                Write-Host ('Download or Clone the latest version and run again: https://github.com/stefoy/AriPlus/tree/main') -ForegroundColor Yellow
-                Exit
-            }
+            Write-Log -Message ('New Version Available: {0}.{1}.{2}' -f $versionJson.MajorVersion, $versionJson.MinorVersion, $versionJson.BuildVersion) -Severity 'Warning'
+            Write-Log -Message ('Download or Clone the latest version and run again: https://github.com/stefoy/AriPlus/tree/main') -Severity 'Error'
+            Exit
         }
     }
 
     function CheckCliRequirements() 
     {        
-        Write-Host "Checking Cli Installed..."
+        Write-Log -Message ('Verifying Azure CLI is installed...') -Severity 'Info'
+
         $azCliVersion = az --version
-        Write-Host ('CLI Version: {0}' -f $azCliVersion[0]) -ForegroundColor Green
+
+        Write-Log -Message ('CLI Version: {0}' -f $azCliVersion[0]) -Severity 'Success'
     
         if ($null -eq $azCliVersion) 
         {
             Read-Host "Azure CLI Not Found. Please install to and run the script again, press <Enter> to exit." -ForegroundColor Red
             Exit
         }
-    
-        Write-Host "Checking Cli Extension..."
+
+        Write-Log -Message ('Verifying Azure CLI Extension...') -Severity 'Info'
+
         $azCliExtension = az extension list --output json | ConvertFrom-Json
         $azCliExtension = $azCliExtension | Where-Object {$_.name -eq 'resource-graph'}
-    
-        Write-Host ('Current Resource-Graph Extension Version: {0}' -f $azCliExtension.Version) -ForegroundColor Green
-    
+
+        Write-Log -Message ('Current Resource-Graph Extension Version: {0}' -f $azCliExtension.Version) -Severity 'Success'
+        
         $azCliExtensionVersion = $azcliExt | Where-Object {$_.name -eq 'resource-graph'}
     
         if (!$azCliExtensionVersion) 
         {
-            Write-Host "Installng Az Cli Extension..."
+            Write-Log -Message ('Azure CLI Extension not found') -Severity 'Warning'
+            Write-Log -Message ('Installing Azure CLI Extension...') -Severity 'Info'
             az extension add --name resource-graph
         }
 
-        Write-Host "Checking Azure PowerShell Module"
+        Write-Log -Message ('Checking Azure PowerShell Module...') -Severity 'Info'
 
         $VarAzPs = Get-InstalledModule -Name Az -ErrorAction silentlycontinue
 
-        Write-Host ('Azure PowerShell Module Version: {0}.{1}.{2}' -f ([string]$VarAzPs.Version.Major,  [string]$VarAzPs.Version.Minor, [string]$VarAzPs.Version.Build)) -ForegroundColor Green
+        Write-Log -Message ('Azure PowerShell Module Version: {0}.{1}.{2}' -f [string]$VarAzPs.Version.Major,  [string]$VarAzPs.Version.Minor, [string]$VarAzPs.Version.Build) -Severity 'Success'
 
         IF($null -eq $VarAzPs)
         {
-            Write-Host "Trying to install Azure PowerShell Module.." -ForegroundColor Yellow
+            Write-Log -Message ('Trying to install Azure PowerShell Module...') -Severity 'Warning'
             Install-Module -Name Az -Repository PSGallery -Force
         }
 
@@ -143,19 +158,21 @@ Function RunInventorySetup()
 
         if ($null -eq $VarAzPs) 
         {
-            Read-Host 'Admininstrator rights required to install Azure Module. Press <Enter> to finish script'
+            Write-Log -Message ('Admininstrator rights required to install Azure PowerShell Module. Press <Enter> to finish script') -Severity 'Error'
+            Read-Host ''
             Exit
         }
         
-        Write-Host "Checking ImportExcel Module..."
+
+        Write-Log -Message ('Checking ImportExcel Module...') -Severity 'Info'
     
         $VarExcel = Get-InstalledModule -Name ImportExcel -ErrorAction silentlycontinue
     
-        Write-Host ('ImportExcel Module Version: {0}.{1}.{2}' -f ([string]$VarExcel.Version.Major,  [string]$VarExcel.Version.Minor, [string]$VarExcel.Version.Build)) -ForegroundColor Green
+        Write-Log -Message ('ImportExcel Module Version: {0}.{1}.{2}' -f [string]$VarExcel.Version.Major,  [string]$VarExcel.Version.Minor, [string]$VarExcel.Version.Build) -Severity 'Success'
     
         if ($null -eq $VarExcel) 
         {
-            Write-Host "Trying to install ImportExcel Module.." -ForegroundColor Yellow
+            Write-Log -Message ('Trying to install ImportExcel Module...') -Severity 'Warning'
             Install-Module -Name ImportExcel -Force
         }
     
@@ -163,14 +180,15 @@ Function RunInventorySetup()
     
         if ($null -eq $VarExcel) 
         {
-            Read-Host 'Admininstrator rights required to install ImportExcel Module. Press <Enter> to finish script'
+            Write-Log -Message ('Admininstrator rights required to install ImportExcel Module. Press <Enter> to finish script') -Severity 'Error'
+            Read-Host ''
             Exit
         }
     }
     
     function CheckPowerShell() 
     {
-        Write-Host 'Checking PowerShell...'
+        Write-Log -Message ('Checking PowerShell...') -Severity 'Info'
     
         $Global:PlatformOS = 'PowerShell Desktop'
         $cloudShell = try{Get-CloudDrive}catch{}
@@ -180,29 +198,29 @@ Function RunInventorySetup()
         
         if ($cloudShell) 
         {
-            Write-Host 'Identified Environment as Azure CloudShell' -ForegroundColor Green
+            Write-Log -Message ('Identified Environment as Azure CloudShell') -Severity 'Success'
             $Global:PlatformOS = 'Azure CloudShell'
             $defaultOutputDir = "$HOME/AriPlusReports/" + $Global:FolderName + "/"
         }
         elseif ($PSVersionTable.Platform -eq 'Unix') 
         {
-            Write-Host 'Identified Environment as PowerShell Unix.' -ForegroundColor Green
+            Write-Log -Message ('Identified Environment as PowerShell Unix') -Severity 'Success'
             $Global:PlatformOS = 'PowerShell Unix'
             $defaultOutputDir = "$HOME/AriPlusReports/" + $Global:FolderName + "/"
         }
         else 
         {
-            Write-Host 'Identified Environment as PowerShell Desktop.' -ForegroundColor Green
+            Write-Log -Message ('Identified Environment as PowerShell Desktop') -Severity 'Success'
             $Global:PlatformOS= 'PowerShell Desktop'
             $defaultOutputDir = "C:\AriPlusReports\" + $Global:FolderName + "\"
 
             $psVersion = $PSVersionTable.PSVersion.Major
-            Write-Host ("PowerShell Version {0}" -f $psVersion) -ForegroundColor Cyan
+            Write-Log -Message ("PowerShell Version {0}" -f $psVersion) -Severity 'Info'
         
             if ($PSVersionTable.PSVersion.Major -lt 7) 
             {
-                Write-Host "You must use Powershell 7 to run the AriPlus." -ForegroundColor Red
-                Write-Host "https://learn.microsoft.com/en-us/powershell/scripting/install/installing-powershell-on-windows?view=powershell-7.3" -ForegroundColor Yellow
+                Write-Log -Message ("You must use Powershell 7 to run the AriPlus.") -Severity 'Error'
+                Write-Log -Message ("https://learn.microsoft.com/en-us/powershell/scripting/install/installing-powershell-on-windows?view=powershell-7.3") -Severity 'Error'
                 Exit
             }
         }
@@ -215,7 +233,7 @@ Function RunInventorySetup()
             }
             catch 
             {
-                Write-Host "ERROR: Wrong OutputDirectory Path! OutputDirectory Parameter must contain the full path." -NoNewline -ForegroundColor Red
+                Write-Log -Message ("Wrong OutputDirectory Path! OutputDirectory Parameter must contain the full path.") -Severity 'Error'
                 Exit
             }
         }
@@ -233,9 +251,7 @@ Function RunInventorySetup()
     }
     
   function LoginSession() 
-    {
-        Write-Debug ('Checking Login Session')
-    
+    {    
         if(![string]::IsNullOrEmpty($AzureEnvironment))
         {
             az cloud set --name $AzureEnvironment
@@ -249,45 +265,42 @@ Function RunInventorySetup()
     
         if (!$TenantID) 
         {
-            Write-Host "Tenant ID not specified. Use -TenantID parameter if you want to specify directly." -ForegroundColor Yellow
-            Write-Host "Authenticating Azure"
+            Write-Log -Message ('Tenant ID not specified. Use -TenantID parameter if you want to specify directly.') -Severity 'Warning'
+            Write-Log -Message ('Authenticating Azure') -Severity 'Info'
     
-            Write-Debug ('Cleaning az account cache')
+            Write-Log -Message ('Clearing account cache') -Severity 'Info'
             az account clear | Out-Null
-            Write-Debug ('Calling az login')
+            Write-Log -Message ('Calling Login, the browser will open and prompt you to login.') -Severity 'Info'
 
             $DebugPreference = "SilentlyContinue"
     
             if($DeviceLogin.IsPresent)
             {
-                Write-Debug ('Using device login')
+                Write-Log -Message ('Using device login') -Severity 'Info'
                 az login --use-device-code
-                Write-Debug ('ps login')
                 Connect-AzAccount -UseDeviceAuthentication | Out-Null
             }
             else 
             {
-                Write-Debug ('Using login')
+                Write-Log -Message ('Using device login') -Severity 'Info'
                 az login --only-show-errors | Out-Null
-                Write-Debug ('ps login')
                 Connect-AzAccount | Out-Null
             }
 
             $DebugPreference = "Continue"
     
             $Tenants = az account list --query [].homeTenantId -o tsv --only-show-errors | Sort-Object -Unique
-            Write-Debug ('Checking number of Tenants')
-            Write-Host ("")
-            Write-Host ("")
+
+            Write-Log -Message ('Checking number of Tenants') -Severity 'Info'
     
             if ($Tenants.Count -eq 1) 
             {
-                Write-Host "You have privileges only in One Tenant " -ForegroundColor Green
+                Write-Log -Message ('You have privileges only in One Tenant') -Severity 'Success'
                 $TenantID = $Tenants
             }
             else 
             {
-                Write-Host "Select the the Azure Tenant ID that you want to connect: "
+                Write-Log -Message ('Select the the Azure Tenant ID that you want to connect: ') -Severity 'Warning'
     
                 $SequenceID = 1
                 foreach ($TenantID in $Tenants) 
@@ -312,8 +325,8 @@ Function RunInventorySetup()
                 }
             }
     
-            Write-Host "Extracting from Tenant $TenantID" -ForegroundColor Yellow
-            Write-Debug ('Extracting Subscription details') 
+            Write-Log -Message ("Extracting from Tenant $TenantID") -Severity 'Info'
+            Write-Log -Message ("Extracting Subscriptions") -Severity 'Info'
     
             $Global:Subscriptions = @(az account list --output json --only-show-errors | ConvertFrom-Json)
             $Global:Subscriptions = @($Subscriptions | Where-Object { $_.tenantID -eq $TenantID })
@@ -337,14 +350,14 @@ Function RunInventorySetup()
             }
             elseif ($Appid -and $Secret -and $tenantid) 
             {
-                Write-Host "Using Service Principal Authentication Method" -ForegroundColor Green
+                Write-Log -Message ("Using Service Principal Authentication Method") -Severity 'Success'
                 az login --service-principal -u $appid -p $secret -t $TenantID | Out-Null
             }
             else
             {
-                Write-Host "You are trying to use Service Principal Authentication Method in a wrong way." -ForegroundColor Red
-                Write-Host "It's Mandatory to specify Application ID, Secret and Tenant ID in Azure Resource Inventory" -ForegroundColor Red
-                Write-Host ".\ResourceInventory.ps1 -appid <SP AppID> -secret <SP Secret> -tenant <TenantID>" -ForegroundColor Red
+                Write-Log -Message ("You are trying to use Service Principal Authentication Method in a wrong way.") -Severity 'Error'
+                Write-Log -Message ("It's Mandatory to specify Application ID, Secret and Tenant ID in Azure Resource Inventory") -Severity 'Error'
+                Write-Log -Message (".\ResourceInventory.ps1 -appid <SP AppID> -secret <SP Secret> -tenant <TenantID>") -Severity 'Error'
                 Exit
             }
     
@@ -354,15 +367,11 @@ Function RunInventorySetup()
     }
     
     function GetSubscriptionsData()
-    {
-        Write-Progress -activity 'Azure Inventory' -Status "1% Complete." -PercentComplete 2 -CurrentOperation 'Discovering Subscriptions..'
-    
+    {    
         $SubscriptionCount = $Subscriptions.Count
         
-        Write-Debug ("Number of Subscriptions Found: {0}" -f $SubscriptionCount)
-        Write-Progress -activity 'Azure Inventory' -Status "3% Complete." -PercentComplete 3 -CurrentOperation "$SubscriptionCount Subscriptions found.."
-        
-        Write-Debug ('Checking report folder: ' + $DefaultPath )
+        Write-Log -Message ("Number of Subscriptions Found: {0}" -f $SubscriptionCount) -Severity 'Info'
+        Write-Log -Message ("Checking report folder: {0}" -f $DefaultPath) -Severity 'Info'
         
         if ((Test-Path -Path $DefaultPath -PathType Container) -eq $false) 
         {
@@ -372,20 +381,16 @@ Function RunInventorySetup()
     
     function ResourceInventoryLoop()
     {
-        Write-Progress -activity 'Azure Inventory' -Status "4% Complete." -PercentComplete 4 -CurrentOperation "Starting Resources extraction jobs.."        
-
         if(![string]::IsNullOrEmpty($ResourceGroup) -and [string]::IsNullOrEmpty($SubscriptionID))
         {
-            Write-Debug ('Resource Group Name present, but missing Subscription ID.')
-            Write-Host ''
-            Write-Host 'If Using the -ResourceGroup Parameter, the Subscription ID must be informed'
-            Write-Host ''
+            Write-Log -Message ("Resource Group Name present, but missing Subscription ID.") -Severity 'Error'
+            Write-Log -Message ("If using ResourceGroup parameter you must also put SubscriptionId") -Severity 'Error'
             Exit
         }
 
         if(![string]::IsNullOrEmpty($ResourceGroup) -and ![string]::IsNullOrEmpty($SubscriptionID))
         {
-            Write-Debug ('Extracting Resources from Subscription: '+$SubscriptionID+'. And from Resource Group: '+$ResourceGroup)
+            Write-Log -Message ('Extracting Resources from Subscription: ' + $SubscriptionID + '. And from Resource Group: ' + $ResourceGroup) -Severity 'Success'
 
             $Subscri = $SubscriptionID
 
@@ -406,15 +411,14 @@ Function RunInventorySetup()
                     $Global:Resources += $Resource.data
                     Start-Sleep 2
                     $Looper ++
-                    Write-Progress -Id 1 -activity "Running Resource Inventory Job" -Status "$Looper / $Loop of Inventory Jobs" -PercentComplete (($Looper / $Loop) * 100)
                     $Limit = $Limit + 1000
                 }
             }
-            Write-Progress -Id 1 -activity "Running Resource Inventory Job" -Status "$Looper / $Loop of Inventory Jobs" -Completed
         }
         elseif([string]::IsNullOrEmpty($ResourceGroup) -and ![string]::IsNullOrEmpty($SubscriptionID))
         {
-            Write-Debug ('Extracting Resources from Subscription: '+$SubscriptionID+'.')
+            Write-Log -Message ('Extracting Resources from Subscription: ' + $SubscriptionID) -Severity 'Success'
+
             $GraphQuery = "resources | where strlen(properties.definition.actions) < 123000 | summarize count()"
             $EnvSize = az graph query -q $GraphQuery  --output json --subscriptions $SubscriptionID --only-show-errors | ConvertFrom-Json
             $EnvSizeNum = $EnvSize.data.'count_'
@@ -432,11 +436,9 @@ Function RunInventorySetup()
                     $Global:Resources += $Resource.data
                     Start-Sleep 2
                     $Looper ++
-                    Write-Progress -Id 1 -activity "Running Resource Inventory Job" -Status "$Looper / $Loop of Inventory Jobs" -PercentComplete (($Looper / $Loop) * 100)
                     $Limit = $Limit + 1000
                 }
             }
-            Write-Progress -Id 1 -activity "Running Resource Inventory Job" -Status "$Looper / $Loop of Inventory Jobs" -Completed
         } 
         else 
         {
@@ -444,7 +446,7 @@ Function RunInventorySetup()
             $EnvSize = az graph query -q  $GraphQuery --output json --only-show-errors | ConvertFrom-Json
             $EnvSizeCount = $EnvSize.Data.'count_'
             
-            Write-Host ("Resources Output: {0} Resources Identified" -f $EnvSizeCount) -BackgroundColor Black -ForegroundColor Green
+            Write-Log -Message ("Resources Output: {0} Resources Identified" -f $EnvSizeCount) -Severity 'Success'
             
             if ($EnvSizeCount -ge 1) 
             {
@@ -461,19 +463,14 @@ Function RunInventorySetup()
                     $Global:Resources += $Resource.Data
                     Start-Sleep 2
                     $Looper++
-                    Write-Progress -Id 1 -activity "Running Resource Inventory Job" -Status "$Looper / $Loop of Inventory Jobs" -PercentComplete (($Looper / $Loop) * 100)
                     $Limit = $Limit + 1000
                 }
             }
-
-            Write-Progress -Id 1 -activity "Running Resource Inventory Job" -Status "$Looper / $Loop of Inventory Jobs" -Completed
         }
     }
     
     function ResourceInventoryAvd()
-    {
-        Write-Progress -activity 'Azure Inventory' -Status "4% Complete." -PercentComplete 4 -CurrentOperation "Starting AVD Resources extraction jobs.."       
-    
+    {    
         $AVDSize = az graph query -q "desktopvirtualizationresources | summarize count()" --output json --only-show-errors | ConvertFrom-Json
         $AVDSizeCount = $AVDSize.data.'count_'
     
@@ -494,12 +491,9 @@ Function RunInventorySetup()
                 $Global:Resources += $AVD.data
                 Start-Sleep 2
                 $Looper++
-                Write-Progress -Id 1 -activity "Running AVD Resource Inventory Job" -Status "$Looper / $Loop of Inventory Jobs" -PercentComplete (($Looper / $Loop) * 100)
                 $Limit = $Limit + 1000
             }
-        }
-    
-        Write-Progress -Id 1 -activity "Running AVD Resource Inventory Job" -Status "$Looper / $Loop of Inventory Jobs" -Completed
+        } 
     }
 
     CheckAriVersion
@@ -522,24 +516,26 @@ function ExecuteInventoryProcessing()
         $Global:ConsumptionFile = ($DefaultPath + "Consumption_"+ $Global:ReportName + "_" + $CurrentDateTime + ".json")
         $Global:ConsumptionFileCsv = ($DefaultPath + "Consumption_"+ $Global:ReportName + "_" + $CurrentDateTime + ".csv")
 
-        Write-Debug ('Report Excel File: {0}' -f $File)
-        Write-Progress -activity 'Inventory' -Status "21% Complete." -PercentComplete 21 -CurrentOperation "Starting to process extraction data.."
+        $Global:LogFile = ($DefaultPath + "Logs_"+ $Global:ReportName + "_" + $CurrentDateTime + ".json")
+    
+
+        Write-Log -Message ('Report Excel File: {0}' -f $File) -Severity 'Info'
     }
 
     function CreateMetricsJob()
     {
-        Write-Debug ('Checking if Metrics Job Should be Run.')
+        Write-Log -Message ('Checking if Metrics Job Should be Run.') -Severity 'Info'
 
         if (!$SkipMetrics.IsPresent) 
         {
-            Write-Debug ('Starting Metrics Processing Job.')
+            Write-Log -Message ('Running Metrics Jobs') -Severity 'Success'
 
             If ($RunOnline -eq $true) 
             {
-                Write-Debug ('Looking for the following file: '+$RawRepo + '/Extension/Metrics.ps1')
+                Write-Log -Message ('Looking for the following file: '+ $RawRepo + '/Extension/Metrics.ps1') -Severity 'Info'
                 $ModuSeq = (New-Object System.Net.WebClient).DownloadString($RawRepo + '/Extension/Metrics.ps1')
 
-                Write-Debug(($PSScriptRoot + '\Extension\Metrics.ps1'))
+                Write-Log -Message ($PSScriptRoot + '\Extension\Metrics.ps1') -Severity 'Info'
 
                 if($PSScriptRoot -like '*\*')
                 {
@@ -580,10 +576,18 @@ function ExecuteInventoryProcessing()
     {
         if (!$SkipMetrics.IsPresent) 
         {
-            Write-Debug ('Generating Subscription Metrics Outputs.')
-            Write-Progress -activity 'Resource Inventory Metrics' -Status "50% Complete." -PercentComplete 50 -CurrentOperation "Building Metrics Outputs"
+            Write-Log -Message ('Generating Subscription Metrics Outputs.') -Severity 'Info'
 
-            $Global:AzMetrics | ConvertTo-Json -depth 100 -compress | Out-File $Global:MetricsJsonFile
+            try 
+            {
+                $Global:AzMetrics | ConvertTo-Json -depth 5 -compress | Out-File $Global:MetricsJsonFile -Encoding utf8
+            }
+            catch 
+            {
+                Write-Log -Message 'Error Exporting Metrics File' -Severity 'Error'
+                Write-Log -Message $_.Exception.Message -Severity 'Error'
+            }
+      
     
             if($PSScriptRoot -like '*\*')
             {
@@ -595,6 +599,13 @@ function ExecuteInventoryProcessing()
             }
 
             $ProcessResults = & $MetricPath -Subscriptions $null -Resources $null -Task "Reporting" -File $file -Metrics $Global:AzMetrics -TableStyle $Global:TableStyle
+
+            $Global:AzMetrics = $null
+
+
+            $([System.GC]::GetTotalMemory($false))
+            $([System.GC]::Collect())
+            $([System.GC]::GetTotalMemory($true))
         }
     }
 
@@ -647,11 +658,12 @@ function ExecuteInventoryProcessing()
     {
         $Global:SmaResources = New-Object PSObject
 
-        Write-Debug ('Starting Service Processing Jobs.')
+        Write-Log -Message ('Starting Service Processing Jobs.') -Severity 'Info'
+        
 
         If ($RunOnline -eq $true) 
         {
-            Write-Debug ('Running Online Checking for Services Modules at: ' + $RawRepo)
+            Write-Log -Message ('Running Online Checking for Services Modules at: ' + $RawRepo) -Severity 'Info'
 
             $OnlineRepo = Invoke-WebRequest -Uri $Repo
             $RepoContent = $OnlineRepo | ConvertFrom-Json
@@ -721,7 +733,8 @@ function ExecuteInventoryProcessing()
         {
             $ModName = $Module.Name.Substring(0, $Module.Name.length - ".ps1".length)
             
-            Write-Host ("Service Processing: {0} {1}" -f $Module, $ModName) -ForegroundColor Green
+            Write-Log -Message ("Service Processing: {0}" -f $ModName) -Severity 'Success'
+
             $result = & $Module -SCPath $SCPath -Sub $Subscriptions -Resources ($Resource | ConvertFrom-Json) -Task "Processing" -File $file -SmaResources $null -TableStyle $null -Metrics $Global:AzMetrics
             $Global:SmaResources | Add-Member -MemberType NoteProperty -Name $ModName -Value NotSet
             $Global:SmaResources.$ModName = $result
@@ -733,9 +746,7 @@ function ExecuteInventoryProcessing()
 
     function ProcessResourceResult()
     {
-        Write-Debug ('Starting Reporting Phase.')
-        $DataActive = ('Azure Resource Inventory Reporting (' + ($resources.count) + ') Resources')
-        Write-Progress -activity $DataActive -Status "Processing Inventory" -PercentComplete 50
+        Write-Log -Message ("Starting Reporting Phase.") -Severity 'Info'
 
         $Services = @()
 
@@ -748,7 +759,7 @@ function ExecuteInventoryProcessing()
             $Services = Get-ChildItem -Path ($PSScriptRoot + '/Services/*.ps1') -Recurse
         }
 
-        Write-Debug ('Services Found: ' + $Services.Count)
+        Write-Log -Message ('Services Found: ' + $Services.Count) -Severity 'Info'
         $Lops = $Services.count
         $ReportCounter = 0
 
@@ -756,19 +767,20 @@ function ExecuteInventoryProcessing()
         {
             $c = (($ReportCounter / $Lops) * 100)
             $c = [math]::Round($c)
-            Write-Progress -Id 1 -activity "Building Report" -Status "$c% Complete." -PercentComplete $c
-
-            Write-Debug "Running Services: '$Service'"
             
+            Write-Log -Message ("Running Services: $Service") -Severity 'Info'
             $ProcessResults = & $Service.FullName -SCPath $PSScriptRoot -Sub $null -Resources $null -Task "Reporting" -File $file -SmaResources $Global:SmaResources -TableStyle $Global:TableStyle -Metrics $null
 
             $ReportCounter++
         }
 
+        $Global:SmaResources | Add-Member -MemberType NoteProperty -Name 'Version' -Value NotSet
+        $Global:SmaResources.Version = $Global:Version
+
         $Global:SmaResources | ConvertTo-Json -depth 100 -compress | Out-File $Global:JsonFile
         #$Global:Resources | ConvertTo-Json -depth 100 -compress | Out-File $Global:AllResourceFile
         
-        Write-Debug ('Resource Reporting Phase Done.')
+        Write-Log -Message ('Resource Reporting Phase Done.') -Severity 'Info'
     }
 
     function Get-AzureUsage 
@@ -789,14 +801,14 @@ function ExecuteInventoryProcessing()
             [string]$Interval = 'Daily'
         )
         
-        Write-Verbose -Message "Querying usage data [$($FromTime) - $($ToTime)]..."
+        Write-Log -Message ("Querying usage data [$($FromTime) - $($ToTime)]...") -Severity 'Info'
 
         $usageData = $null
 
         foreach($sub in $Global:Subscriptions)
         {
             Set-AzContext -Subscription $sub.id | Out-Null
-            Write-Host ("Gathering Consumption for: {0}" -f $sub.Name)
+            Write-Log -Message ("Gathering Consumption for: {0}" -f $sub.Name) -Severity 'Info'
 
             do 
             {    
@@ -809,14 +821,14 @@ function ExecuteInventoryProcessing()
     
                 if ((Get-Variable -Name usageData -ErrorAction Ignore) -and $usageData) 
                 {
-                    Write-Verbose -Message "Querying Next Page with $($usageData.ContinuationToken)..."
+                    Write-Log -Message ("Querying Next Page") -Severity 'Info'
                     $params.ContinuationToken = $usageData.ContinuationToken
                 }
     
                 $usageData = Get-UsageAggregates @params
                 $usageData.UsageAggregations | Select-Object -ExpandProperty Properties
 
-                Write-Verbose -Message "Records found: $($usageData.UsageAggregations.Count)..."
+                Write-Log -Message ("Records found: $($usageData.UsageAggregations.Count)...") -Severity 'Info'
                 
             } while ('ContinuationToken' -in $usageData.psobject.properties.name -and $usageData.ContinuationToken)
         }
@@ -844,7 +856,7 @@ function ExecuteInventoryProcessing()
 
         $consumptionData | Export-Csv $Global:ConsumptionFileCsv -Encoding utf-8
 
-        Write-Host ("Consumption Entries: {0}" -f $consumptionData.Count)
+        Write-Log -Message ("Consumption Entries: {0}" -f $consumptionData.Count) -Severity 'Info'
 
         $aggregatedResult = @()
 
@@ -920,16 +932,15 @@ function FinalizeOutputs
 {
     function ProcessSummary()
     {
-        Write-Debug ('Creating Summary Report')
-
-        Write-Debug ('Starting Summary Report Processing Job.')
+        Write-Log -Message ('Creating Summary Report') -Severity 'Info'
+        Write-Log -Message ('Starting Summary Report Processing Job.') -Severity 'Info'
 
         If ($RunOnline -eq $true) 
         {
-            Write-Debug ('Looking for the following file: '+$RawRepo + '/Extension/Summary.ps1')
+            Write-Log -Message ('Looking for the following file: '+$RawRepo + '/Extension/Summary.ps1') -Severity 'Info'
             $ModuSeq = (New-Object System.Net.WebClient).DownloadString($RawRepo + '/Extension/Summary.ps1')
 
-            Write-Debug(($PSScriptRoot + '\Extension\Summary.ps1'))
+            Write-Log -Message ($PSScriptRoot + '\Extension\Summary.ps1') -Severity 'Info'
 
             if($PSScriptRoot -like '*\*')
             {
@@ -962,30 +973,44 @@ $Global:Runtime = Measure-Command -Expression {
     RunInventorySetup
 }
 
+$Global:PowerShellTranscriptFile = ($DefaultPath + "Transcript_Log_"+ $Global:ReportName + "_" + $CurrentDateTime + ".txt")
+Start-Transcript -Path $Global:PowerShellTranscriptFile -UseMinimalHeader
+
 # Execution and processing of inventory
 $Global:ReportingRunTime = Measure-Command -Expression {
     ExecuteInventoryProcessing
 }
 
+Stop-Transcript
+
 # Prepare the summary and outputs
 FinalizeOutputs
 
-Write-Host ("Compressing Resources Output: {0}" -f $Global:ZipOutputFile) -ForegroundColor Yellow
+Write-Log -Message ("Compressing Resources Output: {0}" -f $Global:ZipOutputFile) -Severity 'Info'
 
+$Global:Logging | ConvertTo-Json -depth 5 -compress | Out-File $Global:LogFile 
 
 if($SkipMetrics.IsPresent)
 {
-    "Metrics Not Gathered" | ConvertTo-Json -depth 100 -compress | Out-File $Global:MetricsJsonFile 
+    "Metrics Not Gathered" | ConvertTo-Json -depth 5 -compress | Out-File $Global:MetricsJsonFile 
 }
 
 $compressionOutput = @{
-    Path = $Global:File, $Global:MetricsJsonFile, $Global:JsonFile, $Global:ConsumptionFile, $Global:ConsumptionFileCsv
+    Path = $Global:File, $Global:MetricsJsonFile, $Global:JsonFile, $Global:ConsumptionFile, $Global:ConsumptionFileCsv, $Global:PowerShellTranscriptFile, $Global:LogFile
     CompressionLevel = 'Fastest'
     DestinationPath = $Global:ZipOutputFile
 }
 
-Compress-Archive @compressionOutput
+try 
+{
+    Compress-Archive @compressionOutput
+}
+catch 
+{
+    Write-Error ("Error Compressing Output File: {0}." -f $Global:ZipOutputFile)
+    Write-Error ("Please zip the output files manually.")
+}
 
-Write-Host ("Execution Time: {0}" -f $Runtime) -ForegroundColor Cyan
-Write-Host ("Reporting Time: {0}" -f $ReportingRunTime) -ForegroundColor Cyan
-Write-Host ("Reporting Data File: {0}" -f $Global:ZipOutputFile) -ForegroundColor Cyan
+Write-Log -Message ("Execution Time: {0}" -f $Runtime) -Severity 'Success'
+Write-Log -Message ("Reporting Time: {0}" -f $ReportingRunTime) -Severity 'Success'
+Write-Log -Message ("Reporting Data File: {0}" -f $Global:ZipOutputFile) -Severity 'Success'
