@@ -8,6 +8,7 @@ param ($TenantID,
         [switch]$SkipMetrics, 
         [switch]$Help,
         [switch]$DeviceLogin,
+        [switch]$EnableLogs,
         $ConcurrencyLimit = 6,
         $AzureEnvironment,
         $ReportName = 'ResourcesReport', 
@@ -24,7 +25,10 @@ Function Write-Log([string]$Message, [string]$Severity)
 {
    $DateTime = "[{0:dd-MM-yyyy} {0:HH:mm:ss}]" -f (Get-Date)
 
-   $Global:Logging.Logs.Add([PSCustomObject]@{ Date = $DateTime; Message = $Message; Severity = $Severity })
+   if($EnableLogs.IsPresent)
+   {
+        $Global:Logging.Logs.Add([PSCustomObject]@{ Date = $DateTime; Message = $Message; Severity = $Severity })
+   }
 
    switch ($Severity) 
    {
@@ -963,7 +967,10 @@ FinalizeOutputs
 
 Write-Log -Message ("Compressing Resources Output: {0}" -f $Global:ZipOutputFile) -Severity 'Info'
 
-$Global:Logging | ConvertTo-Json -depth 5 -compress | Out-File $Global:LogFile 
+if($EnableLogs.IsPresent)
+{
+    $Global:Logging | ConvertTo-Json -depth 5 -compress | Out-File $Global:LogFile
+} 
 
 if($SkipMetrics.IsPresent)
 {
