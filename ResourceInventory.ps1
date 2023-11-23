@@ -565,10 +565,12 @@ function ExecuteInventoryProcessing()
             {
                 $MetricPath = Get-ChildItem -Path ($PSScriptRoot + '/Extension/Metrics.ps1') -Recurse
             }
+
+            $metricsFilePath = ($DefaultPath + "Metrics_"+ $Global:ReportName + "_" + $CurrentDateTime + "_")
             
             $Global:AzMetrics = New-Object PSObject
             $Global:AzMetrics | Add-Member -MemberType NoteProperty -Name Metrics -Value NotSet
-            $Global:AzMetrics.Metrics = & $MetricPath -Subscriptions $Subscriptions -Resources $Resources -Task "Processing" -File $file -Metrics $null -TableStyle $null -ConcurrencyLimit $ConcurrencyLimit
+            $Global:AzMetrics.Metrics = & $MetricPath -Subscriptions $Subscriptions -Resources $Resources -Task "Processing" -File $file -Metrics $null -TableStyle $null -ConcurrencyLimit $ConcurrencyLimit -FilePath $metricsFilePath
         }
     }
 
@@ -576,33 +578,6 @@ function ExecuteInventoryProcessing()
     {
         if (!$SkipMetrics.IsPresent) 
         {
-            Write-Log -Message ('Generating Subscription Metrics Outputs.') -Severity 'Info'
-
-            try 
-            {
-                $Global:AzMetrics | ConvertTo-Json -depth 5 -compress | Out-File $Global:MetricsJsonFile -Encoding utf8
-            }
-            catch 
-            {
-                Write-Log -Message 'Error Exporting Metrics File' -Severity 'Error'
-                Write-Log -Message $_.Exception.Message -Severity 'Error'
-            }
-      
-    
-            if($PSScriptRoot -like '*\*')
-            {
-                $MetricPath = Get-ChildItem -Path ($PSScriptRoot + '\Extension\Metrics.ps1') -Recurse
-            }
-            else
-            {
-                $MetricPath = Get-ChildItem -Path ($PSScriptRoot + '/Extension/Metrics.ps1') -Recurse
-            }
-
-            $ProcessResults = & $MetricPath -Subscriptions $null -Resources $null -Task "Reporting" -File $file -Metrics $Global:AzMetrics -TableStyle $Global:TableStyle
-
-            $Global:AzMetrics = $null
-
-
             $([System.GC]::GetTotalMemory($false))
             $([System.GC]::Collect())
             $([System.GC]::GetTotalMemory($true))
@@ -995,8 +970,10 @@ if($SkipMetrics.IsPresent)
     "Metrics Not Gathered" | ConvertTo-Json -depth 5 -compress | Out-File $Global:MetricsJsonFile 
 }
 
+$jsonWildCard = $DefaultPath + "*.json"
+
 $compressionOutput = @{
-    Path = $Global:File, $Global:MetricsJsonFile, $Global:JsonFile, $Global:ConsumptionFile, $Global:ConsumptionFileCsv, $Global:PowerShellTranscriptFile, $Global:LogFile
+    Path = $Global:File, $Global:ConsumptionFileCsv, $Global:PowerShellTranscriptFile, $jsonWildCard
     CompressionLevel = 'Fastest'
     DestinationPath = $Global:ZipOutputFile
 }
