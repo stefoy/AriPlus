@@ -349,13 +349,8 @@ if ($Task -eq 'Processing')
     } -ThrottleLimit $ConcurrencyLimit
 
     $WarningPreference = "Continue"
-
     $metricDefs = $null;
-
-    $([System.GC]::GetTotalMemory($false))
-    $([System.GC]::Collect())
-    $([System.GC]::GetTotalMemory($true))
-
+    
     $tmp
 }
 else 
