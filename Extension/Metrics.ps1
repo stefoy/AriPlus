@@ -1,8 +1,10 @@
-param($Subscriptions, $Resources, $Task ,$File, $Metrics, $TableStyle, $ConcurrencyLimit)
+param($Subscriptions, $Resources, $Task ,$File, $Metrics, $TableStyle, $ConcurrencyLimit, $FilePath)
 
 if ($Task -eq 'Processing')
 {
-    $tmp = [System.Collections.Concurrent.ConcurrentBag[psobject]]::new()
+    $tmp = New-Object PSObject
+    $tmp | Add-Member -MemberType NoteProperty -Name Metrics -Value NotSet
+    $tmp.Metrics = [System.Collections.Concurrent.ConcurrentBag[psobject]]::new()
 
     $metricDefs = [System.Collections.Generic.List[object]]::new()
 
@@ -226,130 +228,151 @@ if ($Task -eq 'Processing')
 
     $WarningPreference = "SilentlyContinue"
 
-    $metricDefs | ForEach-Object -Parallel {
-        $totalCount = $using:metricCount
+    $rangeBatch = [math]::Min($metricCount , 500)
+    $rangeIdx = 1
+    $defs = [System.Collections.Generic.List[object]]::new()
 
-        Write-Host ("{0}/{1} Processing {2} Metrics: {3}-{4}-{5}-{6}" -f $_.MetricIndex, $totalCount, $_.Service, $_.Name, $_.MetricName, $_.Aggregation, $_.Interval) -BackgroundColor Black -ForegroundColor Green
+    for($i = 0; $i -lt $metricCount; $i++)    
+    {
+        $defs.Add($metricDefs[$i])
 
-        #$metricQuery = (az monitor metrics list --resource $_.Id --metric $_.MetricName --start-time $_.StartTime  --end-time $_.EndTime --interval $_.Interval --aggregation $_.Aggregation | ConvertFrom-Json)
-
-        $metricError = 'None'
-
-        try 
+        if($defs.Count -ge $rangeBatch -or $i -ge $metricCount)
         {
-            $metricQuery = (Get-AzMetric -ResourceId $_.Id -MetricName $_.MetricName -StartTime $_.StartTime -EndTime $_.EndTime -TimeGrain $_.Interval -AggregationType $_.Aggregation)
+            Write-Host ("Writing Metrics File Batch: " + $defs.Count)
 
-            $metricQueryResults = 0
-            $metricTimeSeries = 0
+            $defs | ForEach-Object -Parallel {
+                $totalCount = $using:metricCount
     
-            switch ($_.Aggregation)
-            {
-                'Average'   
-                    { 
-                        $metricQueryResults = $metricQuery.Data.Average
-                    }
-                'Maximum'   
-                    { 
-                        $metricQueryResults = $metricQuery.Data.Maximum 
-                    }
-                'Count'     
-                    { 
-                        $metricQueryResults = $metricQuery.Data.Count 
-                    }
-                'Total'     
-                    { 
-                        $metricQueryResults = $metricQuery.Data.Total 
-                    }
-                'Minimum'   
-                    { 
-                        $metricQueryResults = $metricQuery.Data.Minimum 
-                    }
-            }
+                Write-Host ("{0}/{1} Processing {2} Metrics: {3}-{4}-{5}-{6}" -f $_.MetricIndex, $totalCount, $_.Service, $_.Name, $_.MetricName, $_.Aggregation, $_.Interval) -BackgroundColor Black -ForegroundColor Green
     
-            $metricQueryResultsCount = ($metricQueryResults.Where({$_ -ne $null}).Count)
+                #$metricQuery = (az monitor metrics list --resource $_.Id --metric $_.MetricName --start-time $_.StartTime  --end-time $_.EndTime --interval $_.Interval --aggregation $_.Aggregation | ConvertFrom-Json)
     
-            if($metricQueryResultsCount -eq 0)
-            {
-                $metricQueryResults = 0
-                $metricQueryResultsCount = 0
-                $metricPercentileIndex = 0
-                $metricPercentile = 0
-            }
-            else
-            {
-                $metricQueryResultsSorted = $metricQueryResults | Sort-Object
-                $metricPercentileIndex = [math]::Ceiling(0.95 * $metricQueryResultsSorted.Count) - 1
-                $metricPercentile = $metricQueryResultsSorted[$metricPercentileIndex]
+                $metricError = 'None'
+                $metricName = $_.MetricName
+                $metricId = $_.Id
+                $metricService = $_.Service
     
-                if ($_.Series -eq 'true')
-                {                
-                    $metricTimeSeries = $metricQueryResults.Where({$_ -ne $null})
+                try 
+                {
+                    $metricQuery = (Get-AzMetric -ResourceId $_.Id -MetricName $_.MetricName -StartTime $_.StartTime -EndTime $_.EndTime -TimeGrain $_.Interval -AggregationType $_.Aggregation -ErrorAction Stop)
+    
+                    $metricQueryResults = 0
+                    $metricTimeSeries = 0
+            
+                    switch ($_.Aggregation)
+                    {
+                        'Average'   
+                            { 
+                                $metricQueryResults = $metricQuery.Data.Average
+                            }
+                        'Maximum'   
+                            { 
+                                $metricQueryResults = $metricQuery.Data.Maximum 
+                            }
+                        'Count'     
+                            { 
+                                $metricQueryResults = $metricQuery.Data.Count 
+                            }
+                        'Total'     
+                            { 
+                                $metricQueryResults = $metricQuery.Data.Total 
+                            }
+                        'Minimum'   
+                            { 
+                                $metricQueryResults = $metricQuery.Data.Minimum 
+                            }
+                    }
+            
+                    $metricQueryResultsCount = ($metricQueryResults.Where({$_ -ne $null}).Count)
+            
+                    if($metricQueryResultsCount -eq 0)
+                    {
+                        $metricQueryResults = 0
+                        $metricQueryResultsCount = 0
+                        $metricPercentileIndex = 0
+                        $metricPercentile = 0
+                    }
+                    else
+                    {
+                        $metricQueryResultsSorted = $metricQueryResults | Sort-Object
+                        $metricPercentileIndex = [math]::Ceiling(0.95 * $metricQueryResultsSorted.Count) - 1
+                        $metricPercentile = $metricQueryResultsSorted[$metricPercentileIndex]
+            
+                        if ($_.Series -eq 'true')
+                        {                
+                            $metricTimeSeries = $metricQueryResults.Where({$_ -ne $null})
+                        }
+                        
+                        switch ($_.Measure)
+                        {
+                            'Average'   { $metricQueryResults = ($metricQueryResults | Measure-Object -Average).Average }
+                            'Maximum'   { $metricQueryResults = ($metricQueryResults | Measure-Object -Maximum).Maximum }
+                            'Sum'       { $metricQueryResults = ($metricQueryResults | Measure-Object -Sum).Sum }
+                            'Minimum'   { $metricQueryResults = ($metricQueryResults | Measure-Object -Minimum).Minimum }
+                            'Largest'   { $metricQueryResults = ($metricQueryResults | Sort-Object -Descending)[0] }
+                        }
+                    }
+                }
+                catch 
+                {
+                    $metricQueryResults = 0
+                    $metricQueryResultsCount = 0
+                    $metricPercentileIndex = 0
+                    $metricPercentile = 0
+    
+                    $metricError = $_.Exception.Message
+                    #Write-Error $metricError
+                    Write-Error ("Error collecting Metric: {0}-{1}-{2}" -f $metricId, $metricService, $metricName)
+                }
+    
+                
+                $obj = @{
+                    'ID'                   = $_.Id;
+                    'Subscription'         = $_.SubName;
+                    'ResourceGroup'        = $_.ResourceGroup;
+                    'Name'                 = $_.Name;
+                    'Location'             = $_.Location;
+                    'Service'              = $_.Service;
+                    'Metric'               = $_.MetricName;
+                    'MetricAggregate'      = $_.Aggregation;
+                    'MetricTimeGrain'      = $_.Interval;
+                    'MetricMeasure'        = $_.Measure;
+                    'MetricPercentile'     = $metricPercentile;
+                    'MetricValue'          = $metricQueryResults;
+                    'MetricCount'          = $metricQueryResultsCount;
+                    'MetricSeries'         = $metricTimeSeries;
+                    'MetricError'          = $metricError;
                 }
                 
-                switch ($_.Measure)
+                ($using:tmp).Metrics.Add($obj)
+    
+                if($_.MetricIndex % 100 -eq 0)
                 {
-                    'Average'   { $metricQueryResults = ($metricQueryResults | Measure-Object -Average).Average }
-                    'Maximum'   { $metricQueryResults = ($metricQueryResults | Measure-Object -Maximum).Maximum }
-                    'Sum'       { $metricQueryResults = ($metricQueryResults | Measure-Object -Sum).Sum }
-                    'Minimum'   { $metricQueryResults = ($metricQueryResults | Measure-Object -Minimum).Minimum }
-                    'Largest'   { $metricQueryResults = ($metricQueryResults | Sort-Object -Descending)[0] }
+                    Get-Job 
                 }
-            }
+    
+                $metricQuery = $null
+                $metricQueryResults = $null
+                $metricQueryResultsCount = $null
+                $metricTimeSeries = $null
+                $metricQueryResultsSorted = $null
+                $metricPercentile = $null;
+    
+            } -ThrottleLimit $ConcurrencyLimit
+
+            $defs.Clear()
+
+            $outputPath = $FilePath + "_" + $rangeIdx + ".json"
+            $tmp | ConvertTo-Json -depth 5 -compress | Out-File $outputPath -Encoding utf8
+            $tmp.Metrics.Clear()
+
+            $rangeIdx++
         }
-        catch 
-        {
-            $metricQueryResults = 0
-            $metricQueryResultsCount = 0
-            $metricPercentileIndex = 0
-            $metricPercentile = 0
-
-            $metricError = $_.Exception.Message
-            Write-Error $metricError
-        }
-
-        
-        $obj = @{
-            'ID'                   = $_.Id;
-            'Subscription'         = $_.SubName;
-            'ResourceGroup'        = $_.ResourceGroup;
-            'Name'                 = $_.Name;
-            'Location'             = $_.Location;
-            'Service'              = $_.Service;
-            'Metric'               = $_.MetricName;
-            'MetricAggregate'      = $_.Aggregation;
-            'MetricTimeGrain'      = $_.Interval;
-            'MetricMeasure'        = $_.Measure;
-            'MetricPercentile'     = $metricPercentile;
-            'MetricValue'          = $metricQueryResults;
-            'MetricCount'          = $metricQueryResultsCount;
-            'MetricSeries'         = $metricTimeSeries;
-            'MetricError'          = $metricError;
-        }
-        
-        ($using:tmp).Add($obj)
-
-        $metricQuery = $null
-        $metricQueryResults = $null
-        $metricQueryResultsCount = $null
-        $metricTimeSeries = $null
-        $metricQueryResultsSorted = $null
-        $metricPercentile = $null;
-
-        #$([System.GC]::GetTotalMemory($false))
-        #[System.GC]::Collect()
-        #$([System.GC]::GetTotalMemory($true))
-
-        if($_.MetricIndex % 100 -eq 0)
-        {
-            Get-Job
-        }
-
-    } -ThrottleLimit $ConcurrencyLimit
+    }
 
     $WarningPreference = "Continue"
+
     $metricDefs = $null;
-    
-    $tmp
 }
 else 
 {
