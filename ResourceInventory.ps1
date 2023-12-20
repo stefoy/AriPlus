@@ -817,6 +817,10 @@ function ExecuteInventoryProcessing()
     {
         $DebugPreference = "SilentlyContinue"
 
+        #Force the culture here...
+        [System.Threading.Thread]::CurrentThread.CurrentUICulture = "en-US"; 
+        [System.Threading.Thread]::CurrentThread.CurrentCulture = "en-US";
+
         $reportedStartTime = (Get-Date).AddDays(-30).Date.AddHours(0).AddMinutes(0).AddSeconds(0).DateTime
         $reportedEndTime = (Get-Date).AddDays(-1).Date.AddHours(0).AddMinutes(0).AddSeconds(0).DateTime
 
