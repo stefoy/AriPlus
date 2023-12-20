@@ -230,13 +230,15 @@ if ($Task -eq 'Processing')
 
     $rangeBatch = [math]::Min($metricCount , 500)
     $rangeIdx = 1
+    $metricsProcessed = 0
     $defs = [System.Collections.Generic.List[object]]::new()
 
     for($i = 0; $i -lt $metricCount; $i++)    
     {
         $defs.Add($metricDefs[$i])
+        $metricsProcessed++
 
-        if($defs.Count -ge $rangeBatch -or $i -ge $metricCount)
+        if($defs.Count -ge $rangeBatch -or $i -ge $metricCount -or $metricsProcessed -ge $metricCount)
         {
             Write-Host ("Writing Metrics File Batch: " + $defs.Count)
 
