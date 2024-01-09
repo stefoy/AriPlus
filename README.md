@@ -39,29 +39,19 @@ Install-Module ImportExcel
 git clone https://github.com/stefoy/AriPlus
 ```
 
-2. Run the script. If you are in Azure CloudShell, you're already authenticated. In PowerShell Desktop, you will be redirected to the Azure sign-in page.
-
-```powershell
-./ResourceInventory.ps1 -Online
-```
-
 ## Running the Script
 
 AriPlus uses concurrency to execute commands in parallel, especially when gathering metrics. By default, the concurrency limit is set to 6. To change this, use the `-ConcurrencyLimit` option. 
 
-The `-Online` option fetches the latest modules from GitHub, meaning you only need to download the `ResourceInventory.ps1`.
-
-Standard ARI+ Output:
+2. Run the script. If you are in Azure CloudShell, you're already authenticated. In PowerShell Desktop, you will be redirected to the Azure sign-in page.
 
 ```powershell
-./ResourceInventory.ps1 -Online -ConcurrencyLimit 8
+./ResourceInventory.ps1 -ConcurrencyLimit 8
 ```
-Consumption ARI+ Output
 
-This provides the Consumption in the ARI+ which will give a more comprehensive mapping of the Azure Environment
-```powershell
-./ResourceInventory.ps1 -Online -ConcurrencyLimit 10 -Consumption -Debug
-```
+## Script Output/Reports
+3. When the script has completed, a zip file of the report will be saved in the folder **_AriPlusReports._** 
+
 ---
 
 ## Parameters
@@ -75,18 +65,12 @@ The following table lists the parameters that can be used with the script:
 | `$SubscriptionID` | String   | Specifies the Subscription which will be run for Inventory.                                                                                  |
 | `$Secret`         | String   | Client Secret of the Service Principal key.                                                                                       |
 | `$ResourceGroup`  | String   | Specifies the Resource Group.                                                                                   |
-| `$Online`         | Switch   | A switch to indicate if online mode is used.                                                                    |
 | `$Debug`          | Switch   | Enable Debug Mode                                                                                  |
 | `$SkipMetrics`    | Switch   | A switch to skip metrics retrieval.                                                                             |
 | `$Help`           | Switch   | A switch to display the help message.                                                                           |
 | `$Consumption`    | Switch   | A switch to indicate if consumption metrics should be gathered.                                                |
 | `$DeviceLogin`    | Switch   | A switch to trigger device login.                                                                               |
 | `$ConcurrencyLimit` | Integer | Specifies the concurrency limit for parallel command execution. Default value is `6`.                            |
-
----
-
-## Script Output/Reports
-When the script has completed, a zip file of the report will be saved in the folder **_AriPlusReports._** 
 
 ---
 
