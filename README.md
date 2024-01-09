@@ -1,6 +1,6 @@
-# AriPlus
+# CloudRays Ari+
 
-AriPlus is an enhanced version of the [Azure Resource Inventory](https://github.com/microsoft/ARI) (ARI) tool. ARI is a robust PowerShell script provided by Microsoft that generates an Excel report of any Azure environment to which you have read access. This tool aims to assist Cloud Administrators and other professionals in creating a comprehensive Excel report of an Azure Environment quickly and easily. AriPlus enhances the original script by capturing additional utilization metrics.
+Ari+ is an enhanced version of the [Azure Resource Inventory](https://github.com/microsoft/ARI) (ARI) tool. ARI is a robust PowerShell script provided by Microsoft that generates an Excel report of any Azure environment to which you have read access. This tool aims to assist Cloud Administrators and other professionals in creating a comprehensive Excel report of an Azure Environment quickly and easily. Ari+ enhances the original script by capturing additional utilization metrics.
 
 ## Table of Contents
 
@@ -11,7 +11,7 @@ AriPlus is an enhanced version of the [Azure Resource Inventory](https://github.
 
 ## Prerequisites
 
-AriPlus can be executed in both Azure Cloudshell and PowerShell Desktop environments. 
+Ari+ can be executed in both Azure Cloudshell and PowerShell Desktop environments. 
 
 ### Requirements
 > **Note:** By default, Azure Resource Inventory will attempt to install the necessary PowerShell modules and Azure CLI components, but you need administrator privileges during the script execution.
@@ -41,7 +41,7 @@ git clone https://github.com/stefoy/AriPlus
 
 ## Running the Script
 
-AriPlus uses concurrency to execute commands in parallel, especially when gathering metrics. By default, the concurrency limit is set to 6. To change this, use the `-ConcurrencyLimit` option. 
+Ari+ uses concurrency to execute commands in parallel, especially when gathering metrics. By default, the concurrency limit is set to 6. To change this, use the `-ConcurrencyLimit` option. 
 
 2. Run the script. If you are in Azure CloudShell, you're already authenticated. In PowerShell Desktop, you will be redirected to the Azure sign-in page.
 
