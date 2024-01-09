@@ -43,7 +43,7 @@ git clone https://github.com/stefoy/AriPlus
 
 Ari+ uses concurrency to execute commands in parallel, especially when gathering metrics. By default, the concurrency limit is set to 6. To change this, use the `-ConcurrencyLimit` option. 
 
-2. Run the script. If you are in Azure CloudShell, you're already authenticated. In PowerShell Desktop, you will be redirected to the Azure sign-in page.
+2. If you are in Azure CloudShell, you're already authenticated. In PowerShell Desktop, you will be redirected to the Azure sign-in page.
 
 ```powershell
 ./ResourceInventory.ps1 -ConcurrencyLimit 8
