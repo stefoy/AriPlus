@@ -50,7 +50,15 @@ Ari+ uses concurrency to execute commands in parallel, especially when gathering
 ```
 
 ## Script Output/Reports
-3. When the script has completed, a zip file of the report will be saved in the folder **_AriPlusReports._** 
+3. When the script has completed, a zip file of the report will be saved in the folder **_AriPlusReports._**
+     - ARI+ will create 4 files and one zip 
+         - Consumption_ResourcesReport_(date).json 
+         - Inventory_ResourcesReport_(date).json 
+         - Metrics_ResourcesReport_(date).json 
+         - ResourcesReport_(date).xlsx 
+
+     - These 4 files zipped up automatically and the zip is what is sent back to AWS
+         - ResourcesReport_(date).zip
 
 ---
 
