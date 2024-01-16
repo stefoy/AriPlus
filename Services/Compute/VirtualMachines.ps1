@@ -26,7 +26,7 @@ If ($Task -eq 'Processing')
         {
             $sub1 = $SUB | Where-Object { $_.id -eq $vm.subscriptionId }
             $data = $vm.PROPERTIES 
-            $timecreated = [datetime]($data.timeCreated) | Get-Date -Format "yyyy-MM-dd HH:mm"
+            $timecreated = if ($null -ne $data.timeCreated) { [datetime]($data.timeCreated) | Get-Date -Format "yyyy-MM-dd HH:mm" } else { 'Unknown' }
 
             $Lic = ''
             
