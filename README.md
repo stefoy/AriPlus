@@ -1,6 +1,6 @@
 # CloudRays ARI+
 
-ARI+ is an enhanced version of the [Azure Resource Inventory](https://github.com/microsoft/ARI) (ARI) tool. ARI is a robust PowerShell script provided by Microsoft that generates an Excel report of any Azure environment to which you have read access. This tool aims to assist Cloud Administrators and other professionals in creating a comprehensive Excel report of an Azure Environment quickly and easily. ARI+ enhances the original script by capturing additional utilization metrics. This repository is professionally maintained by AWS, focusing exclusively on read-only integrations with Azure APIs and Azure Monitor.
+ARI+ is an enhanced version of the [Azure Resource Inventory](https://github.com/microsoft/ARI) (ARI) tool. ARI is a robust PowerShell script provided by Microsoft that generates an Excel report of any Azure environment to which you have read access. This tool aims to assist Cloud Administrators and other professionals in creating a comprehensive Excel report of an Azure Environment quickly and easily. ARI+ enhances the original script by capturing additional utilization metrics. This repository is professionally maintained by AWS, focusing exclusively on read-only integrations with Azure API's and Azure Monitor.
 
 ## Table of Contents
 
