@@ -828,7 +828,7 @@ function ExecuteInventoryProcessing()
 
         for($item = 0; $item -lt $consumptionData.Count; $item++) 
         {
-            $instanceInfo = ($consumptionData[$item].InstanceData | ConvertFrom-Json)
+            $instanceInfo = ($consumptionData[$item].InstanceData.tolower() | ConvertFrom-Json)
 
             $consumptionData[$item] | Add-Member -MemberType NoteProperty -Name ResourceId -Value NotSet
             $consumptionData[$item] | Add-Member -MemberType NoteProperty -Name ResourceLocation -Value NotSet
