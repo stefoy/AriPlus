@@ -228,7 +228,7 @@ if ($Task -eq 'Processing')
 
     $WarningPreference = "SilentlyContinue"
 
-    $rangeBatch = [math]::Min($metricCount , 500)
+    $rangeBatch = [math]::Min($metricCount , 250)
     $rangeIdx = 1
     $metricsProcessed = 0
     $defs = [System.Collections.Generic.List[object]]::new()
