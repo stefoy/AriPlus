@@ -27,7 +27,8 @@ if ($Task -eq 'Processing')
                 'State'                                 = $data.provisioningState;
                 'OS'                                    = $data.osType;
                 'Incremental'                           = $data.incremental;
-                'CreatedTime'                           = $timecreated;   
+                'CreatedTime'                           = $timecreated;
+                'SourceResourceId'                      = $data.creationData.sourceResourceId;
             }
 
             $tmp += $obj
@@ -56,6 +57,7 @@ else
         $Exc.Add('OS')
         $Exc.Add('Incremental')
         $Exc.Add('CreatedTime')
+        $Exc.Add('SourceResourceId')
 
         $ExcelVar = $SmaResources.ComputeSnapshots
 
