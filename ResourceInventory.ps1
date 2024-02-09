@@ -6,6 +6,7 @@ param ($TenantID,
         [switch]$Online, 
         [switch]$Debug, 
         [switch]$SkipMetrics, 
+        [switch]$SkipConsumption, 
         [switch]$Help,
         [switch]$DeviceLogin,
         [switch]$EnableLogs,
@@ -908,7 +909,11 @@ function ExecuteInventoryProcessing()
     CreateResourceJobs   
     ProcessMetricsResult
     ProcessResourceResult
-    ProcessResourceConsumption
+
+    if($SkipConsumption.IsPresent)
+    {
+       ProcessResourceConsumption
+    }
 }
 
 function FinalizeOutputs
