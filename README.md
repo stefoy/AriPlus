@@ -76,7 +76,7 @@ The following table lists the parameters that can be used with the script:
 | `$Debug`          | Switch   | Enable Debug Mode                                                                                  |
 | `$SkipMetrics`    | Switch   | A switch to skip metrics retrieval.                                                                             |
 | `$Help`           | Switch   | A switch to display the help message.                                                                           |
-| `$Consumption`    | Switch   | A switch to indicate if consumption metrics should be gathered.                                                |
+| `$SkipConsumption`| Switch   | A switch to indicate if consumption metrics should be gathered.                                                |
 | `$DeviceLogin`    | Switch   | A switch to trigger device login.                                                                               |
 | `$ConcurrencyLimit` | Integer | Specifies the concurrency limit for parallel command execution. Default value is `6`.                            |
 
