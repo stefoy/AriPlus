@@ -910,7 +910,7 @@ function ExecuteInventoryProcessing()
     ProcessMetricsResult
     ProcessResourceResult
 
-    if($SkipConsumption.IsPresent)
+    if(!$SkipConsumption.IsPresent)
     {
        ProcessResourceConsumption
     }
