@@ -1000,6 +1000,7 @@ try
 }
 catch 
 {
+    $_ | Format-List -Force
     Write-Error ("Error Compressing Output File: {0}." -f $Global:ZipOutputFile)
     Write-Error ("Please zip the output files manually.")
 }
