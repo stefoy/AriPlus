@@ -16,6 +16,7 @@ if ($Task -eq 'Processing')
 
             if (![string]::IsNullOrEmpty($data.elasticPoolId)) { $PoolId = $data.elasticPoolId.Split("/")[10] } else { $PoolId = "None"}
             if ($1.kind.Contains("vcore")) { $SqlType = "vcore" } else { $SqlType = "dtu"}
+            if ($1.kind.Contains("serverless")) { $ComputeTier = "Serverless" } else { $ComputeTier = "Provisioned"}
 
             $obj = @{
                 'ID'                         = $1.id;
@@ -28,6 +29,7 @@ if ($Task -eq 'Processing')
                 'SecondaryLocation'          = $data.defaultSecondaryLocation;
                 'Status'                     = $data.status;
                 'Tier'                       = $data.currentSku.Tier;
+                'ComputeTier'                = $ComputeTier
                 'Type'                       = $SqlType;
                 'Capacity'                   = $data.currentSku.capacity;
                 'Sku'                        = $data.requestedServiceObjectiveName;
