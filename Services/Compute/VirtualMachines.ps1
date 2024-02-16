@@ -57,6 +57,8 @@ If ($Task -eq 'Processing')
             $cpus = if ($null -ne $cpus) { $cpus } else { '0' }
             $ram = if ($null -ne $ram) { $ram } else { '0' }
 
+            $powerState = if ($null -ne $data.extended.instanceView.powerState.displayStatus) { $data.extended.instanceView.powerState.displayStatus } else { 'vm running' }    
+
             $obj = @{
                 'ID'                            = $vm.id;
                 'Subscription'                  = $sub1.Name;
@@ -76,7 +78,7 @@ If ($Task -eq 'Processing')
                 'OSVersion'                     = $data.extended.instanceView.osversion;
                 'OSDisk'                        = $OSDisk;
                 'OSDiskSizeGB'                  = $OSDiskSize;
-                'PowerState'                    = $data.extended.instanceView.powerState.displayStatus;
+                'PowerState'                    = $powerState;
                 'Zones'                         = $vm.zones.count;
                 'CreatedTime'                   = $timecreated;
             }
