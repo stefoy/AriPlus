@@ -57,7 +57,7 @@ If ($Task -eq 'Processing')
             $cpus = if ($null -ne $cpus) { $cpus } else { '0' }
             $ram = if ($null -ne $ram) { $ram } else { '0' }
 
-            $powerState = if ($null -ne $data.extended.instanceView.powerState.displayStatus) { $data.extended.instanceView.powerState.displayStatus } else { 'vm running' }    
+            $powerState = if ($null -ne $data.extended.instanceView.powerState.displayStatus) { $data.extended.instanceView.powerState.displayStatus } else { 'vm unknown' }    
 
             $obj = @{
                 'ID'                            = $vm.id;
