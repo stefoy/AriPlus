@@ -74,7 +74,6 @@ The following table lists the parameters that can be used with the script:
 | `$Secret`         | String   | Client Secret of the Service Principal key.                                                                                       |
 | `$ResourceGroup`  | String   | Specifies the Resource Group.                                                                                   |
 | `$Debug`          | Switch   | Enable Debug Mode                                                                                  |
-| `$SkipMetrics`    | Switch   | A switch to skip metrics retrieval.                                                                             |
 | `$Help`           | Switch   | A switch to display the help message.                                                                           |
 | `$SkipConsumption`| Switch   | A switch to indicate if consumption metrics should be gathered.                                                |
 | `$DeviceLogin`    | Switch   | A switch to trigger device login.                                                                               |
