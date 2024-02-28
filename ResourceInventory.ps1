@@ -787,6 +787,15 @@ function ExecuteInventoryProcessing()
 
         foreach($sub in $Global:Subscriptions)
         {
+            # Check if SubscriptionId is not null, not empty, and matches $sub.id
+            if (![string]::IsNullOrEmpty($SubscriptionID))
+            {
+                if($SubscriptionID -ne $sub.Id)
+                {
+                    continue
+                }
+            }
+        
             Set-AzContext -Subscription $sub.id | Out-Null
             Write-Log -Message ("Gathering Consumption for: {0}" -f $sub.Name) -Severity 'Info'
 
