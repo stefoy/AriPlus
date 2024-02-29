@@ -792,6 +792,7 @@ function ExecuteInventoryProcessing()
             {
                 if($SubscriptionID -ne $sub.Id)
                 {
+                    Write-Log -Message ("Skipping: {0}" -f $sub.Name) -Severity 'Info'
                     continue
                 }
             }
