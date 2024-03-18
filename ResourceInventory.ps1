@@ -965,14 +965,14 @@ function FinalizeOutputs
     ProcessSummary
 }
 
+$Global:PowerShellTranscriptFile = ($DefaultPath + "Transcript_Log_"+ $Global:ReportName + "_" + $CurrentDateTime + ".txt")
+Start-Transcript -Path $Global:PowerShellTranscriptFile -UseMinimalHeader
+
 # Setup and Inventory Gathering
 $Global:Runtime = Measure-Command -Expression {
     Variables
     RunInventorySetup
 }
-
-$Global:PowerShellTranscriptFile = ($DefaultPath + "Transcript_Log_"+ $Global:ReportName + "_" + $CurrentDateTime + ".txt")
-Start-Transcript -Path $Global:PowerShellTranscriptFile -UseMinimalHeader
 
 # Execution and processing of inventory
 $Global:ReportingRunTime = Measure-Command -Expression {
